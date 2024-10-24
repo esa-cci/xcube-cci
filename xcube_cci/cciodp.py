@@ -1,12 +1,12 @@
 # The MIT License (MIT)
-# Copyright (c) 2022 by the xcube development team and contributors
+# Copyright (c) 2023 ESA Climate Change Initiative
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy of
-# this software and associated documentation files (the "Software"), to deal in
-# the Software without restriction, including without limitation the rights to
-# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-# of the Software, and to permit persons to whom the Software is furnished to do
-# so, subject to the following conditions:
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
@@ -18,33 +18,40 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import tarfile
 
 import aiohttp
 import asyncio
 import bisect
 import copy
+import geopandas as gpd
+import io
 import json
 import logging
 import lxml.etree as etree
 import math
 import nest_asyncio
+import numcodecs
 import numpy as np
 import os
 import random
 import re
 import pandas as pd
 import pyproj
+import rioxarray
 import time
 import urllib.parse
 import warnings
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from shapely import Point
+from shapely.geometry import mapping
 from typing import List, Dict, Tuple, Optional, Union, Mapping
 from urllib.parse import quote
 
-from pydap.handlers.dap import BaseProxy
+from pydap.handlers.dap import BaseProxyDap2
 from pydap.handlers.dap import SequenceProxy
-from pydap.handlers.dap import unpack_data
+from pydap.handlers.dap import unpack_dap2_data
 from pydap.lib import BytesReader
 from pydap.lib import combine_slices
 from pydap.lib import fix_slice
@@ -52,17 +59,19 @@ from pydap.lib import hyperslab
 from pydap.lib import walk
 from pydap.model import BaseType, SequenceType, GridType
 from pydap.parsers import parse_ce
-from pydap.parsers.dds import build_dataset
+from pydap.parsers.dds import dds_to_dataset
 from pydap.parsers.das import parse_das, add_attributes
 from six.moves.urllib.parse import urlsplit, urlunsplit
 
-from xcube_cci.constants import CCI_ODD_URL
-from xcube_cci.constants import DEFAULT_NUM_RETRIES
-from xcube_cci.constants import DEFAULT_RETRY_BACKOFF_MAX
-from xcube_cci.constants import DEFAULT_RETRY_BACKOFF_BASE
-from xcube_cci.constants import OPENSEARCH_CEDA_URL
-from xcube_cci.constants import COMMON_COORD_VAR_NAMES
-from xcube_cci.timeutil import get_timestrings_from_string
+from .constants import CCI_ODD_URL
+from .constants import DEFAULT_NUM_RETRIES
+from .constants import DEFAULT_RETRY_BACKOFF_MAX
+from .constants import DEFAULT_RETRY_BACKOFF_BASE
+from .constants import OPENSEARCH_CEDA_URL
+from .constants import COMMON_TIME_COORD_VAR_NAMES
+from .constants import TIMESTAMP_FORMAT
+
+from esa_climate_toolbox.util.time import get_time_strings_from_string
 
 _LOG = logging.getLogger('xcube')
 ODD_NS = {'os': 'http://a9.com/-/spec/opensearch/1.1/',
@@ -76,7 +85,6 @@ DESC_NS = {'gmd': 'http://www.isotc211.org/2005/gmd',
 
 _FEATURE_LIST_LOCK = asyncio.Lock()
 
-_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%S"
 _EARLY_START_TIME = '1000-01-01T00:00:00'
 _LATE_END_TIME = '3000-12-31T23:59:59'
 
@@ -84,7 +92,8 @@ nest_asyncio.apply()
 
 _RE_TO_DATETIME_FORMATS = \
     [(re.compile(14 * '\\d'), '%Y%m%d%H%M%S', relativedelta()),
-     (re.compile(12 * '\\d'), '%Y%m%d%H%M', relativedelta(minutes=1, seconds=-1)),
+     (re.compile(12 * '\\d'), '%Y%m%d%H%M',
+      relativedelta(minutes=1, seconds=-1)),
      (re.compile(8 * '\\d'), '%Y%m%d', relativedelta(days=1, seconds=-1)),
      (re.compile(4 * '\\d' + '-' + 2 * '\\d' + '-' + 2 * '\\d'), '%Y-%m-%d',
       relativedelta(days=1, seconds=-1)),
@@ -101,6 +110,7 @@ _DTYPES_TO_DTYPES_WITH_MORE_BYTES = {
     'float32': 'float32',
     'float64': 'float64'
 }
+_VECTOR_DATACUBE_CHUNKING = 50
 
 
 def _convert_time_from_drs_id(time_value: str) -> str:
@@ -120,8 +130,11 @@ def _convert_time_from_drs_id(time_value: str) -> str:
 
 
 async def _run_with_session_executor(async_function, *params, headers):
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=50),
-                                     headers=headers) as session:
+    async with aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(limit=50),
+            headers=headers,
+            trust_env=True
+    ) as session:
         return await async_function(session, *params)
 
 
@@ -169,92 +182,119 @@ def _get_variables_from_feature(feature: dict) -> List:
     return variable_dicts
 
 
-def _harmonize_info_field_names(catalogue: dict, single_field_name: str, multiple_fields_name: str,
-                                multiple_items_name: Optional[str] = None):
+def _harmonize_info_field_names(
+        catalogue: dict, single_field_name: str, multiple_fields_name: str,
+        multiple_items_name: Optional[str] = None
+):
     if single_field_name in catalogue and multiple_fields_name in catalogue:
         if len(multiple_fields_name) == 0:
             catalogue.pop(multiple_fields_name)
         elif len(catalogue[multiple_fields_name]) == 1:
-            if catalogue[multiple_fields_name][0] is catalogue[single_field_name]:
+            if catalogue[multiple_fields_name][0] \
+                    is catalogue[single_field_name]:
                 catalogue.pop(multiple_fields_name)
             else:
-                catalogue[multiple_fields_name].append(catalogue[single_field_name])
+                catalogue[multiple_fields_name].append(
+                    catalogue[single_field_name]
+                )
                 catalogue.pop(single_field_name)
         else:
-            if catalogue[single_field_name] not in catalogue[multiple_fields_name] \
-                    and (multiple_items_name is None
-                         or catalogue[single_field_name] != multiple_items_name):
-                catalogue[multiple_fields_name].append(catalogue[single_field_name])
+            if catalogue[single_field_name] not in \
+                    catalogue[multiple_fields_name] \
+                    and (
+                    multiple_items_name is None
+                    or catalogue[single_field_name] != multiple_items_name
+            ):
+                catalogue[multiple_fields_name].append(
+                    catalogue[single_field_name]
+                )
             catalogue.pop(single_field_name)
 
 
 def _extract_metadata_from_descxml(descxml: etree.XML) -> dict:
     metadata = {}
     metadata_elems = {
-        'abstract': 'gmd:identificationInfo/gmd:MD_DataIdentification/gmd:abstract/'
-                    'gco:CharacterString',
-        'title': 'gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/'
-                 'gmd:title/gco:CharacterString',
-        'licences': 'gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints/'
-                    'gmd:MD_Constraints/gmd:useLimitation/gco:CharacterString',
-        'bbox_minx': 'gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent/'
-                     'gmd:geographicElement/gmd:EX_GeographicBoundingBox/gmd:westBoundLongitude/'
+        'abstract': 'gmd:identificationInfo/gmd:MD_DataIdentification/'
+                    'gmd:abstract/gco:CharacterString',
+        'title': 'gmd:identificationInfo/gmd:MD_DataIdentification/'
+                 'gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString',
+        'licences': 'gmd:identificationInfo/gmd:MD_DataIdentification/'
+                    'gmd:resourceConstraints/gmd:MD_Constraints/'
+                    'gmd:useLimitation/gco:CharacterString',
+        'bbox_minx': 'gmd:identificationInfo/gmd:MD_DataIdentification/'
+                     'gmd:extent/gmd:EX_Extent/gmd:geographicElement/'
+                     'gmd:EX_GeographicBoundingBox/gmd:westBoundLongitude/'
                      'gco:Decimal',
-        'bbox_miny': 'gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent/'
-                     'gmd:geographicElement/gmd:EX_GeographicBoundingBox/gmd:southBoundLatitude/'
+        'bbox_miny': 'gmd:identificationInfo/gmd:MD_DataIdentification/'
+                     'gmd:extent/gmd:EX_Extent/gmd:geographicElement/'
+                     'gmd:EX_GeographicBoundingBox/gmd:southBoundLatitude/'
                      'gco:Decimal',
-        'bbox_maxx': 'gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent/'
-                     'gmd:geographicElement/gmd:EX_GeographicBoundingBox/gmd:eastBoundLongitude/'
+        'bbox_maxx': 'gmd:identificationInfo/gmd:MD_DataIdentification/'
+                     'gmd:extent/gmd:EX_Extent/gmd:geographicElement/'
+                     'gmd:EX_GeographicBoundingBox/gmd:eastBoundLongitude/'
                      'gco:Decimal',
-        'bbox_maxy': 'gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent/'
-                     'gmd:geographicElement/gmd:EX_GeographicBoundingBox/gmd:northBoundLatitude/'
+        'bbox_maxy': 'gmd:identificationInfo/gmd:MD_DataIdentification/'
+                     'gmd:extent/gmd:EX_Extent/gmd:geographicElement/'
+                     'gmd:EX_GeographicBoundingBox/gmd:northBoundLatitude/'
                      'gco:Decimal',
-        'temporal_coverage_start': 'gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/'
-                                   'gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/'
-                                   'gmd:extent/gml:TimePeriod/gml:beginPosition',
-        'temporal_coverage_end': 'gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/'
-                                 'gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/'
-                                 'gmd:extent/gml:TimePeriod/gml:endPosition'
+        'temporal_coverage_start':
+            'gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/'
+            'gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/'
+            'gmd:extent/gml:TimePeriod/gml:beginPosition',
+        'temporal_coverage_end':
+            'gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/'
+            'gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/'
+            'gmd:extent/gml:TimePeriod/gml:endPosition'
     }
     for identifier in metadata_elems:
         content = _get_element_content(descxml, metadata_elems[identifier])
         if content:
             metadata[identifier] = content
     metadata_elems_with_replacement = {'file_formats': [
-        'gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceFormat/gmd:MD_Format/'
-        'gmd:name/gco:CharacterString', 'Data are in NetCDF format', '.nc']
-    }
+        'gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceFormat/'
+        'gmd:MD_Format/gmd:name/gco:CharacterString',
+        'Data are in NetCDF format', '.nc'
+    ]}
     for metadata_elem in metadata_elems_with_replacement:
-        content = \
-            _get_replaced_content_from_descxml_elem(descxml,
-                                                    metadata_elems_with_replacement[metadata_elem])
+        content = _get_replaced_content_from_descxml_elem(
+            descxml, metadata_elems_with_replacement[metadata_elem]
+        )
         if content:
             metadata[metadata_elem] = content
     metadata_linked_elems = {
-        'publication_date': ['gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/'
-                             'gmd:CI_Citation/gmd:date/gmd:CI_Date/gmd:dateType/'
-                             'gmd:CI_DateTypeCode', 'publication', '../../gmd:date/gco:DateTime'],
-        'creation_date': ['gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/'
-                          'gmd:CI_Citation/gmd:date/gmd:CI_Date/gmd:dateType/gmd:CI_DateTypeCode',
-                          'creation', '../../gmd:date/gco:DateTime']
+        'publication_date':
+            ['gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/'
+             'gmd:CI_Citation/gmd:date/gmd:CI_Date/gmd:dateType/'
+             'gmd:CI_DateTypeCode', 'publication',
+             '../../gmd:date/gco:DateTime'],
+        'creation_date':
+            ['gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/'
+             'gmd:CI_Citation/gmd:date/gmd:CI_Date/gmd:dateType/'
+             'gmd:CI_DateTypeCode', 'creation', '../../gmd:date/gco:DateTime']
     }
     for identifier in metadata_linked_elems:
-        content = _get_linked_content_from_descxml_elem(descxml, metadata_linked_elems[identifier])
+        content = _get_linked_content_from_descxml_elem(
+            descxml, metadata_linked_elems[identifier]
+        )
         if content:
             metadata[identifier] = content
     return metadata
 
 
-def _get_element_content(descxml: etree.XML, path: str) -> Optional[Union[str, List[str]]]:
-    elems = descxml.findall(path, namespaces=DESC_NS)
-    if not elems:
+def _get_element_content(
+        descxml: etree.XML, path: str
+) -> Optional[Union[str, List[str]]]:
+    elements = descxml.findall(path, namespaces=DESC_NS)
+    if not elements:
         return None
-    if len(elems) == 1:
-        return elems[0].text
-    return [elem.text for elem in elems]
+    if len(elements) == 1:
+        return elements[0].text
+    return [elem.text for elem in elements]
 
 
-def _get_replaced_content_from_descxml_elem(descxml: etree.XML, paths: List[str]) -> Optional[str]:
+def _get_replaced_content_from_descxml_elem(
+        descxml: etree.XML, paths: List[str]
+) -> Optional[str]:
     descxml_elem = descxml.find(paths[0], namespaces=DESC_NS)
     if descxml_elem is None:
         return None
@@ -262,16 +302,20 @@ def _get_replaced_content_from_descxml_elem(descxml: etree.XML, paths: List[str]
         return paths[2]
 
 
-def _get_linked_content_from_descxml_elem(descxml: etree.XML, paths: List[str]) -> Optional[str]:
-    descxml_elems = descxml.findall(paths[0], namespaces=DESC_NS)
+def _get_linked_content_from_descxml_elem(
+        descxml: etree.XML, paths: List[str]
+) -> Optional[str]:
+    descxml_elements = descxml.findall(paths[0], namespaces=DESC_NS)
     if descxml is None:
         return None
-    for descxml_elem in descxml_elems:
+    for descxml_elem in descxml_elements:
         if descxml_elem.text == paths[1]:
             return _get_element_content(descxml_elem, paths[2])
 
 
-def find_datetime_format(filename: str) -> Tuple[Optional[str], int, int, relativedelta]:
+def find_datetime_format(
+        filename: str
+) -> Tuple[Optional[str], int, int, relativedelta]:
     for regex, time_format, timedelta in _RE_TO_DATETIME_FORMATS:
         searcher = regex.search(filename)
         if searcher:
@@ -282,26 +326,31 @@ def find_datetime_format(filename: str) -> Tuple[Optional[str], int, int, relati
 
 def _extract_metadata_from_odd(odd_xml: etree.XML) -> dict:
     metadata = {'num_files': {}}
-    metadata_names = {'ecv': (['ecv', 'ecvs'], False),
-                      'frequency': (['time_frequency', 'time_frequencies'], False),
-                      'institute': (['institute', 'institutes'], False),
-                      'processingLevel': (['processing_level', 'processing_levels'], False),
-                      'productString': (['product_string', 'product_strings'], False),
-                      'productVersion': (['product_version', 'product_versions'], False),
-                      'dataType': (['data_type', 'data_types'], False),
-                      'sensor': (['sensor_id', 'sensor_ids'], False),
-                      'platform': (['platform_id', 'platform_ids'], False),
-                      'fileFormat': (['file_format', 'file_formats'], False),
-                      'drsId': (['drs_id', 'drs_ids'], True)}
-    for param_elem in odd_xml.findall('os:Url/param:Parameter', namespaces=ODD_NS):
+    metadata_names = {
+        'ecv': (['ecv', 'ecvs'], False),
+        'frequency': (['time_frequency', 'time_frequencies'], False),
+        'institute': (['institute', 'institutes'], False),
+        'processingLevel': (['processing_level', 'processing_levels'], False),
+        'productString': (['product_string', 'product_strings'], False),
+        'productVersion': (['product_version', 'product_versions'], False),
+        'dataType': (['data_type', 'data_types'], False),
+        'sensor': (['sensor_id', 'sensor_ids'], False),
+        'platform': (['platform_id', 'platform_ids'], False),
+        'fileFormat': (['file_format', 'file_formats'], False),
+        'drsId': (['drs_id', 'drs_ids'], True)
+    }
+    for param_elem in odd_xml.findall('os:Url/param:Parameter',
+                                      namespaces=ODD_NS):
         if param_elem.attrib['name'] in metadata_names:
-            element_names, add_to_num_files = metadata_names[param_elem.attrib['name']]
+            element_names, add_to_num_files = \
+                metadata_names[param_elem.attrib['name']]
             param_content = _get_from_param_elem(param_elem)
             if param_content:
                 if type(param_content) == tuple:
                     metadata[element_names[0]] = param_content[0]
                     if add_to_num_files:
-                        metadata['num_files'][param_content[0]] = param_content[1]
+                        metadata['num_files'][param_content[0]] = \
+                            param_content[1]
                 else:
                     names = []
                     for name, num_files in param_content:
@@ -317,7 +366,8 @@ def _get_from_param_elem(param_elem: etree.Element):
     if not options:
         return None
     if len(options) == 1:
-        return options[0].get('value'), int(options[0].get('label').split('(')[-1][:-1])
+        return options[0].get('value'), \
+               int(options[0].get('label').split('(')[-1][:-1])
     return [(option.get('value'), int(option.get('label').split('(')[-1][:-1]))
             for option in options]
 
@@ -336,8 +386,8 @@ def _extract_feature_info(feature: dict) -> List:
             start_time = datetime.strptime(filename[p1:p2], time_format)
             end_time = start_time + timedelta
             # Convert back to text, so we can JSON-encode it
-            start_time = datetime.strftime(start_time, _TIMESTAMP_FORMAT)
-            end_time = datetime.strftime(end_time, _TIMESTAMP_FORMAT)
+            start_time = datetime.strftime(start_time, TIMESTAMP_FORMAT)
+            end_time = datetime.strftime(end_time, TIMESTAMP_FORMAT)
     file_size = feature_props.get("filesize", 0)
     related_links = feature_props.get("links", {}).get("related", [])
     urls = {}
@@ -346,7 +396,7 @@ def _extract_feature_info(feature: dict) -> List:
     return [filename, start_time, end_time, file_size, urls]
 
 
-def _get_res(nc_attrs: dict, dim: str) -> float:
+def get_res(nc_attrs: dict, dim: str) -> float:
     if dim == 'lat':
         attr_name = 'geospatial_lat_resolution'
         index = 0
@@ -361,23 +411,31 @@ def _get_res(nc_attrs: dict, dim: str) -> float:
                     return res_attr
                 elif type(res_attr) == int:
                     return float(res_attr)
-                # as we now expect to deal with a string, we try to parse a float
-                # for that, we remove any trailing units and consider that
-                # lat and lon might be given, separated by an 'x'
-                return float(res_attr.split('(')[0].split('x')[index].split('deg')[0].
-                             split('degree')[0].split('km')[0].split('m')[0])
+                # as we now expect to deal with a string, we try to parse a
+                # float for that, we remove any trailing units and consider
+                # that lat and lon might be given, separated by an 'x'
+                return float(res_attr.split('(')[0].split('x')[index].
+                             split('deg')[0].split('degree')[0].split('km')[0].
+                             split('m')[0])
             except ValueError:
                 continue
     return -1.0
 
 
-class CciOdpWarning(Warning):
+def _determine_fill_value(dtype):
+    if np.issubdtype(dtype, np.integer):
+        return np.iinfo(dtype).max
+    if np.issubdtype(dtype, np.inexact):
+        return np.nan
+
+
+class CciCdcWarning(Warning):
     pass
 
 
-class CciOdp:
+class CciCdc:
     """
-    Represents the ESA CCI Open Data Portal
+    Represents the ESA CCI Climate Data Centre
 
     :param endpoint_url: The base URL to the opensearch service
     :param endpoint_description_url: The URL to a document describing
@@ -391,7 +449,8 @@ class CciOdp:
                  num_retries: int = DEFAULT_NUM_RETRIES,
                  retry_backoff_max: int = DEFAULT_RETRY_BACKOFF_MAX,
                  retry_backoff_base: float = DEFAULT_RETRY_BACKOFF_BASE,
-                 user_agent: str = None
+                 user_agent: str = None,
+                 data_type: str = 'dataset'
                  ):
         self._opensearch_url = endpoint_url
         self._opensearch_description_url = endpoint_description_url
@@ -400,14 +459,41 @@ class CciOdp:
         self._retry_backoff_max = retry_backoff_max
         self._retry_backoff_base = retry_backoff_base
         self._headers = {'User-Agent': user_agent} if user_agent else None
+        self._data_type = data_type
         self._drs_ids = None
         self._data_sources = {}
         self._features = {}
         self._result_dicts = {}
+        self._vector_offsets = {}
+        self._tar_to_tif = {}
+        self._tif_to_array = {}
         eds_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                 'data/excluded_data_sources')
         with open(eds_file, 'r') as eds:
             self._excluded_data_sources = eds.read().split('\n')
+        dataset_states_file = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            'data/dataset_states.json'
+        )
+        with open(dataset_states_file, 'r') as fp:
+            self._dataset_states = json.load(fp)
+
+    def _is_valid_dataset(self, data_id: str):
+        valid = self._dataset_states.get(data_id, {}).get('data_type', 'dataset') \
+                == self._data_type
+        if not valid:
+            replacements = self._get_replacements(data_id)
+            for r in replacements:
+                valid |= self._dataset_states.get(r, {}).get('data_type', 'dataset') \
+                        == self._data_type
+        return valid
+
+    def _get_replacements(self, data_id: str):
+        return [k for k, v in self._dataset_states.items()
+                if data_id in k and data_id != k]
+
+    def get_data_type(self) -> str:
+        return self._data_type
 
     def close(self):
         pass
@@ -416,10 +502,12 @@ class CciOdp:
         # See https://github.com/aio-libs/aiohttp/blob/master/docs/
         # client_advanced.rst#graceful-shutdown
         loop = asyncio.new_event_loop()
-        coro = _run_with_session_executor(async_function, *params, headers=self._headers)
+        coro = _run_with_session_executor(
+            async_function, *params, headers=self._headers
+        )
         result = loop.run_until_complete(coro)
         # Short sleep to allow underlying connections to close
-        loop.run_until_complete(asyncio.sleep(.1))
+        loop.run_until_complete(asyncio.sleep(1.))
         loop.close()
         return result
 
@@ -427,19 +515,35 @@ class CciOdp:
     def dataset_names(self) -> List[str]:
         return self._run_with_session(self._fetch_dataset_names)
 
-    def get_dataset_info(self, dataset_id: str, dataset_metadata: dict = None) -> dict:
+    def get_dataset_info(
+            self, dataset_id: str, dataset_metadata: dict = None
+    ) -> dict:
         data_info = {}
         if not dataset_metadata:
             dataset_metadata = self.get_dataset_metadata(dataset_id)
         nc_attrs = dataset_metadata.get('attributes', {}).get('NC_GLOBAL', {})
         data_info['crs'] = \
             self._get_crs(dataset_metadata.get('variable_infos', {}))
-        data_info['y_res'] = _get_res(nc_attrs, 'lat')
-        data_info['x_res'] = _get_res(nc_attrs, 'lon')
-        data_info['bbox'] = (float(dataset_metadata.get('bbox_minx', np.nan)),
-                             float(dataset_metadata.get('bbox_miny', np.nan)),
-                             float(dataset_metadata.get('bbox_maxx', np.nan)),
-                             float(dataset_metadata.get('bbox_maxy', np.nan)))
+        data_info['y_res'] = get_res(nc_attrs, 'lat')
+        if data_info['y_res'] == -1:
+            data_info['y_res'] = get_res(dataset_metadata.get('attributes', {}), 'lat')
+        data_info['x_res'] = get_res(nc_attrs, 'lon')
+        if data_info['x_res'] == -1:
+            data_info['x_res'] = get_res(dataset_metadata.get('attributes', {}), 'lon')
+        data_info['bbox'] = \
+            (float(dataset_metadata.get('attributes', {}).get(
+                'bbox_minx', dataset_metadata.get('bbox_minx', np.nan))
+            ),
+             float(dataset_metadata.get('attributes', {}).get(
+                 'bbox_miny', dataset_metadata.get('bbox_miny', np.nan))
+             ),
+             float(dataset_metadata.get('attributes', {}).get(
+                 'bbox_maxx', dataset_metadata.get('bbox_maxx', np.nan))
+             ),
+             float(dataset_metadata.get('attributes', {}).get(
+                 'bbox_maxy', dataset_metadata.get('bbox_maxy', np.nan))
+             )
+            )
         if np.isnan(data_info['bbox']).all():
             data_info['bbox'] = None
         data_info['temporal_coverage_start'] = \
@@ -491,7 +595,9 @@ class CciOdp:
 
     def get_datasets_metadata(self, dataset_ids: List[str]) -> List[dict]:
         assert isinstance(dataset_ids, list)
-        self._run_with_session(self._ensure_all_info_in_data_sources, dataset_ids)
+        self._run_with_session(
+            self._ensure_all_info_in_data_sources, dataset_ids
+        )
         metadata = []
         for dataset_id in dataset_ids:
             metadata.append(self._data_sources[dataset_id])
@@ -500,8 +606,9 @@ class CciOdp:
     async def _fetch_dataset_names(self, session):
         if self._drs_ids:
             return self._drs_ids
-        meta_info_dict = \
-            await self._extract_metadata_from_odd_url(session, self._opensearch_description_url)
+        meta_info_dict = await self._extract_metadata_from_odd_url(
+            session, self._opensearch_description_url
+        )
         if 'drs_ids' in meta_info_dict:
             self._drs_ids = meta_info_dict['drs_ids']
             if '_all' in self._drs_ids:
@@ -509,30 +616,47 @@ class CciOdp:
             for excluded_data_source in self._excluded_data_sources:
                 if excluded_data_source in self._drs_ids:
                     self._drs_ids.remove(excluded_data_source)
+            to_be_removed = []
+            for drs_id in self._drs_ids:
+                replacements = self._get_replacements(drs_id)
+                if len(replacements) > 0:
+                    to_be_removed.append(drs_id)
+                    self._drs_ids += replacements
+            for drs_id in self._drs_ids:
+                if drs_id in self._excluded_data_sources or \
+                        not self._is_valid_dataset(drs_id):
+                    to_be_removed.append(drs_id)
+            self._drs_ids = [drs_id for drs_id in self._drs_ids
+                             if drs_id not in to_be_removed]
             return self._drs_ids
         if not self._data_sources:
             self._data_sources = {}
-            catalogue = await self._fetch_data_source_list_json(session,
-                                                                self._opensearch_url,
-                                                                dict(parentIdentifier='cci'))
+            catalogue = await self._fetch_data_source_list_json(
+                session, self._opensearch_url, dict(parentIdentifier='cci')
+            )
             if catalogue:
                 tasks = []
                 for catalogue_item in catalogue:
-                    tasks.append(self._create_data_source(session,
-                                                          catalogue[catalogue_item],
-                                                          catalogue_item))
+                    tasks.append(self._create_data_source(
+                        session, catalogue[catalogue_item], catalogue_item)
+                    )
                 await asyncio.gather(*tasks)
         return list(self._data_sources.keys())
 
-    async def _create_data_source(self, session, json_dict: dict, datasource_id: str):
-        meta_info = await self._fetch_meta_info(session,
-                                                datasource_id,
-                                                json_dict.get('odd_url', None),
-                                                json_dict.get('metadata_url', None))
+    async def _create_data_source(
+            self, session, json_dict: dict, datasource_id: str
+    ):
+        meta_info = await self._fetch_meta_info(
+            session, datasource_id, json_dict.get('odd_url', None),
+            json_dict.get('metadata_url', None)
+        )
         drs_ids = self._get_as_list(meta_info, 'drs_id', 'drs_ids')
-        for excluded_data_source in self._excluded_data_sources:
-            if excluded_data_source in drs_ids:
-                drs_ids.remove(excluded_data_source)
+        to_be_removed = []
+        for drs_id in drs_ids:
+            if drs_id in self._excluded_data_sources or not self._is_valid_dataset(
+                    drs_id):
+                to_be_removed.append(drs_id)
+        drs_ids = [drs_id for drs_id in drs_ids if drs_id not in to_be_removed]
         for drs_id in drs_ids:
             drs_meta_info = copy.deepcopy(meta_info)
             drs_variables = drs_meta_info.get('variables', {}).get(drs_id, None)
@@ -548,25 +672,42 @@ class CciOdp:
             drs_meta_info['cci_project'] = drs_meta_info['ecv']
             drs_meta_info['fid'] = datasource_id
             drs_meta_info['num_files'] = drs_meta_info['num_files'][drs_id]
-            self._data_sources[drs_id] = drs_meta_info
+            replacements = self._get_replacements(drs_id)
+            if len(replacements) > 0:
+                for r in replacements:
+                    self._data_sources[r] = copy.deepcopy(drs_meta_info)
+            else:
+                self._data_sources[drs_id] = drs_meta_info
 
     def _adjust_json_dict(self, json_dict: dict, drs_id: str):
         values = drs_id.split('.')
-        self._adjust_json_dict_for_param(json_dict, 'time_frequency', 'time_frequencies',
-                                         _convert_time_from_drs_id(values[2]))
-        self._adjust_json_dict_for_param(json_dict, 'processing_level', 'processing_levels',
-                                         values[3])
-        self._adjust_json_dict_for_param(json_dict, 'data_type', 'data_types', values[4])
-        self._adjust_json_dict_for_param(json_dict, 'sensor_id', 'sensor_ids', values[5])
-        self._adjust_json_dict_for_param(json_dict, 'platform_id', 'platform_ids', values[6])
-        self._adjust_json_dict_for_param(json_dict, 'product_string', 'product_strings',
-                                         values[7])
-        self._adjust_json_dict_for_param(json_dict, 'product_version', 'product_versions',
-                                         values[8])
+        self._adjust_json_dict_for_param(
+            json_dict, 'time_frequency', 'time_frequencies',
+            _convert_time_from_drs_id(values[2])
+        )
+        self._adjust_json_dict_for_param(
+            json_dict, 'processing_level', 'processing_levels', values[3]
+        )
+        self._adjust_json_dict_for_param(
+            json_dict, 'data_type', 'data_types', values[4]
+        )
+        self._adjust_json_dict_for_param(
+            json_dict, 'sensor_id', 'sensor_ids', values[5]
+        )
+        self._adjust_json_dict_for_param(
+            json_dict, 'platform_id', 'platform_ids', values[6]
+        )
+        self._adjust_json_dict_for_param(
+            json_dict, 'product_string', 'product_strings', values[7]
+        )
+        self._adjust_json_dict_for_param(
+            json_dict, 'product_version', 'product_versions', values[8]
+        )
 
     @staticmethod
-    def _adjust_json_dict_for_param(json_dict: dict, single_name: str, list_name: str,
-                                    param_value: str):
+    def _adjust_json_dict_for_param(
+            json_dict: dict, single_name: str, list_name: str, param_value: str
+    ):
         json_dict[single_name] = param_value
         if list_name in json_dict:
             json_dict.pop(list_name)
@@ -579,15 +720,25 @@ class CciOdp:
             return meta_info[list_name]
         return []
 
-    def var_and_coord_names(self, dataset_name: str) -> Tuple[List[str], List[str]]:
-        self._run_with_session(self._ensure_all_info_in_data_sources, [dataset_name])
-        return self._get_data_var_and_coord_names(self._data_sources[dataset_name])
+    def var_and_coord_names(
+            self, dataset_name: str
+    ) -> Tuple[List[str], List[str]]:
+        self._run_with_session(
+            self._ensure_all_info_in_data_sources, [dataset_name]
+        )
+        return self._get_data_var_and_coord_names(
+            self._data_sources[dataset_name]
+        )
 
-    async def _ensure_all_info_in_data_sources(self, session, dataset_names: List[str]):
+    async def _ensure_all_info_in_data_sources(
+            self, session, dataset_names: List[str]
+    ):
         await self._ensure_in_data_sources(session, dataset_names)
         all_info_tasks = []
         for dataset_name in dataset_names:
-            all_info_tasks.append(self._ensure_all_info_in_data_source(session, dataset_name))
+            all_info_tasks.append(
+                self._ensure_all_info_in_data_source(session, dataset_name)
+            )
         await asyncio.gather(*all_info_tasks)
 
     async def _ensure_all_info_in_data_source(self, session, dataset_name: str):
@@ -597,29 +748,33 @@ class CciOdp:
                 and 'attributes' in data_source:
             return
         data_fid = await self._get_dataset_id(session, dataset_name)
-        await self._set_variable_infos(self._opensearch_url, data_fid, dataset_name,
-                                       session, data_source)
+        await self._set_variable_infos(
+            self._opensearch_url, data_fid, dataset_name, session, data_source
+        )
 
-    @staticmethod
-    def _get_data_var_and_coord_names(data_source) \
+    def _get_data_var_and_coord_names(self, data_source) \
             -> Tuple[List[str], List[str]]:
         names_of_dims = list(data_source.get('dimensions', {}).keys())
         variable_infos = data_source['variable_infos']
         variables = []
         coords = []
-        for variable in variable_infos:
-            if variable in names_of_dims:
-                coords.append(variable)
-            elif variable.endswith('bounds') or variable.endswith('bnds'):
-                coords.append(variable)
-            elif variable in COMMON_COORD_VAR_NAMES:
-                coords.append(variable)
-            elif variable_infos[variable].get('data_type', '') == 'bytes1024' \
-                and len(variable_infos[variable]['dimensions']) > 0:
+        for variable_name, variable_info in variable_infos.items():
+            if variable_name in names_of_dims:
+                coords.append(variable_name)
+            elif variable_name.endswith('bounds') or variable_name.endswith('bnds'):
+                coords.append(variable_name)
+            elif variable_name in COMMON_TIME_COORD_VAR_NAMES:
+                coords.append(variable_name)
+            elif variable_name == 'geometry':
+                coords.append(variable_name)
+            elif variable_info.get('data_type', '') == 'bytes1024' \
+                    and len(variable_info['dimensions']) > 0:
                 # add as neither coordinate nor variable
                 continue
             else:
-                variables.append(variable)
+                variables.append(variable_name)
+        if self._data_type == "vectordatacube" and "geometry" not in coords:
+            coords.append("geometry")
         return variables, coords
 
     def search(self,
@@ -627,6 +782,8 @@ class CciOdp:
                end_date: Optional[str] = None,
                bbox: Optional[Tuple[float, float, float, float]] = None,
                cci_attrs: Optional[Mapping[str, str]] = None) -> List[str]:
+        if cci_attrs is None:
+            cci_attrs = {}
         candidate_names = []
         if not self._data_sources and 'ecv' not in cci_attrs \
                 and 'frequency' not in cci_attrs \
@@ -640,7 +797,7 @@ class CciOdp:
             for dataset_name in self.dataset_names:
                 _, ecv, frequency, processing_level, data_type, sensor, \
                 platform, product_string, product_version, _ = \
-                    dataset_name.split('.')
+                    dataset_name.split("~")[0].split('.')
                 if cci_attrs.get('ecv', ecv) != ecv:
                     continue
                 if cci_attrs.get('processing_level', processing_level) \
@@ -674,7 +831,7 @@ class CciOdp:
         self._run_with_session(self._ensure_in_data_sources, candidate_names)
         for candidate_name in candidate_names:
             data_source_info = self._data_sources.get(candidate_name, None)
-            if not data_source_info:
+            if data_source_info is None:
                 continue
             institute = cci_attrs.get('institute')
             if institute is not None and \
@@ -690,16 +847,16 @@ class CciOdp:
             if bbox:
                 if float(data_source_info.get('bbox_minx', np.inf)) > bbox[2]:
                     continue
-                if float(data_source_info.get('bbox_maxx', np.NINF)) < bbox[0]:
+                if float(data_source_info.get('bbox_maxx', -np.inf)) < bbox[0]:
                     continue
                 if float(data_source_info.get('bbox_miny', np.inf)) > bbox[3]:
                     continue
-                if float(data_source_info.get('bbox_maxy', np.NINF)) < bbox[1]:
+                if float(data_source_info.get('bbox_maxy', -np.inf)) < bbox[1]:
                     continue
             if start_date:
                 data_source_end = datetime.strptime(
                     data_source_info['temporal_coverage_end'],
-                    _TIMESTAMP_FORMAT
+                    TIMESTAMP_FORMAT
                 )
                 # noinspection PyUnboundLocalVariable
                 if converted_start_date > data_source_end:
@@ -707,7 +864,7 @@ class CciOdp:
             if end_date:
                 data_source_start = datetime.strptime(
                     data_source_info['temporal_coverage_start'],
-                    _TIMESTAMP_FORMAT
+                    TIMESTAMP_FORMAT
                 )
                 # noinspection PyUnboundLocalVariable
                 if converted_end_date < data_source_start:
@@ -716,15 +873,15 @@ class CciOdp:
         return results
 
     async def _read_all_data_sources(self, session):
-        catalogue = await self._fetch_data_source_list_json(session,
-                                                            self._opensearch_url,
-                                                            dict(parentIdentifier='cci'))
+        catalogue = await self._fetch_data_source_list_json(
+            session, self._opensearch_url, dict(parentIdentifier='cci')
+        )
         if catalogue:
             tasks = []
             for catalogue_item in catalogue:
-                tasks.append(self._create_data_source(session,
-                                                      catalogue[catalogue_item],
-                                                      catalogue_item))
+                tasks.append(self._create_data_source(
+                    session, catalogue[catalogue_item], catalogue_item)
+                )
             await asyncio.gather(*tasks)
 
     async def _ensure_in_data_sources(self, session, dataset_names: List[str]):
@@ -738,24 +895,25 @@ class CciOdp:
         catalogue = {}
         for dataset_name in dataset_names_to_check:
             fetch_fid_tasks.append(
-                self._update_catalogue_with_data_source_list(session, catalogue, dataset_name)
+                self._update_catalogue_with_data_source_list(
+                    session, catalogue, dataset_name
+                )
             )
         await asyncio.gather(*fetch_fid_tasks)
         create_source_tasks = []
         for catalogue_item in catalogue:
-            create_source_tasks.append(self._create_data_source(session,
-                                                                catalogue[catalogue_item],
-                                                                catalogue_item))
+            create_source_tasks.append(self._create_data_source(
+                session, catalogue[catalogue_item], catalogue_item)
+            )
         await asyncio.gather(*create_source_tasks)
 
-    async def _update_catalogue_with_data_source_list(self,
-                                                      session,
-                                                      catalogue: dict,
-                                                      dataset_name: str):
-        dataset_catalogue = await self._fetch_data_source_list_json(session,
-                                                                    self._opensearch_url,
-                                                                    dict(parentIdentifier='cci',
-                                                                         drsId=dataset_name))
+    async def _update_catalogue_with_data_source_list(
+            self, session, catalogue: dict, dataset_name: str
+    ):
+        dataset_catalogue = await self._fetch_data_source_list_json(
+            session, self._opensearch_url, dict(
+                parentIdentifier='cci', drsId=dataset_name)
+        )
         catalogue.update(dataset_catalogue)
 
     @staticmethod
@@ -768,11 +926,10 @@ class CciOdp:
                           variable_dict: Dict[str, int],
                           start_time: str = '1900-01-01T00:00:00',
                           end_time: str = '3001-12-31T00:00:00'):
-        dimension_data = self._run_with_session(self._get_var_data,
-                                                dataset_name,
-                                                variable_dict,
-                                                start_time,
-                                                end_time)
+        dimension_data = self._run_with_session(
+            self._get_var_data, dataset_name, variable_dict,
+            start_time, end_time
+        )
         return dimension_data
 
     async def _get_var_data(self,
@@ -790,6 +947,39 @@ class CciOdp:
         opendap_url = await self._get_opendap_url(session, request)
         var_data = {}
         if not opendap_url:
+            request = dict(parentIdentifier=dataset_id,
+                           startDate=start_time,
+                           endDate=end_time,
+                           drsId=dataset_name
+                           )
+            tar_url = await self._get_tar_url(session, request)
+            if tar_url is not None:
+                tif_files = await self._get_tif_files_from_tar_url(tar_url, session)
+                if len(tif_files) > 0:
+                    array = rioxarray.open_rasterio(
+                        f"tar+{tar_url}!{tif_files[0]}", chunks=dict(x=512, y=512)
+                    )
+                    for var_name in variable_dict:
+                        data = array[var_name].values
+                        var_data[var_name] = dict(size=array[var_name].size,
+                                                  shape=array[var_name].shape,
+                                                  chunkSize=array[var_name].shape,
+                                                  data=list(data))
+            else:
+                request = dict(parentIdentifier=dataset_id,
+                               startDate=start_time,
+                               endDate=end_time,
+                               drsId=dataset_name
+                               )
+                tif_url = await self._get_tif_url(session, request)
+                if tif_url is not None:
+                    array = rioxarray.open_rasterio(tif_url, chunks=dict(x=512, y=512))
+                    for var_name in variable_dict:
+                        data = array[var_name].values
+                        var_data[var_name] = dict(size=array[var_name].size,
+                                                  shape=array[var_name].shape,
+                                                  chunkSize=array[var_name].shape,
+                                                  data=list(data))
             return var_data
         dataset = await self._get_opendap_dataset(session, opendap_url)
         if not dataset:
@@ -812,31 +1002,49 @@ class CciOdp:
                         var_data[var_name]['data'] = data
                 else:
                     var_data[var_name]['data'] = []
+            elif var_name == "geometry" and self._data_type == "vectordatacube":
+                var_data[var_name] = dict(
+                    size=variable_dict[var_name],
+                    chunkSize=_VECTOR_DATACUBE_CHUNKING,
+                    data=[]
+                )
             else:
                 var_data[var_name] = dict(
                     size=variable_dict[var_name],
                     chunkSize=variable_dict[var_name],
-                    data=list(range(variable_dict[var_name])))
+                    data=list(range(variable_dict[var_name]))
+                )
         return var_data
 
-    async def _get_feature_list(self, session, request):
+    async def _get_feature_list(self, session, request, file_format):
+        request["fileFormat"] = file_format
+        extender = self._extract_times_and_opendap_url
+        if file_format != ".nc":
+            extender = self._extract_times_and_download_url
         ds_id = request['drsId']
+        sdrsid = ds_id.split("~")
+        name_filter = ""
+        if len(sdrsid) > 1:
+            request['drsId'] = sdrsid[0]
+            name_filter = sdrsid[1]
         start_date_str = request['startDate']
         try:
-            start_date = datetime.strptime(start_date_str, _TIMESTAMP_FORMAT)
-        except:
+            start_date = datetime.strptime(start_date_str, TIMESTAMP_FORMAT)
+        except (TypeError, IndexError, ValueError, KeyError):
             start_date = int(start_date_str)
         end_date_str = request['endDate']
         try:
-            end_date = datetime.strptime(end_date_str, _TIMESTAMP_FORMAT)
-        except:
+            end_date = datetime.strptime(end_date_str, TIMESTAMP_FORMAT)
+        except (TypeError, IndexError, ValueError, KeyError):
             end_date = int(end_date_str)
         feature_list = []
-        if ds_id not in self._features or len(self._features[ds_id]) == 0:
-            self._features[ds_id] = []
+        if ds_id not in self._features:
+            self._features[ds_id] = {}
+        if len(self._features[ds_id].get(file_format, {})) == 0:
+            self._features[ds_id][file_format] = []
             await self._fetch_opensearch_feature_list(
                 session, self._opensearch_url, feature_list,
-                self._extract_times_and_opendap_url, request
+                extender, request, name_filter
             )
             if len(feature_list) == 0:
                 # try without dates. For some data sets, this works better
@@ -844,86 +1052,111 @@ class CciOdp:
                     request.pop('startDate')
                 if 'endDate' in request:
                     request.pop('endDate')
-                await self._fetch_opensearch_feature_list(session,
-                                                          self._opensearch_url,
-                                                          feature_list,
-                                                          self._extract_times_and_opendap_url,
-                                                          request)
+                await self._fetch_opensearch_feature_list(
+                    session, self._opensearch_url, feature_list,
+                    extender, request, name_filter
+                )
             feature_list.sort(key=lambda x: x[0])
-            self._features[ds_id] = feature_list
+            self._features[ds_id][file_format] = feature_list
         else:
-            if start_date < self._features[ds_id][0][0]:
-                request['endDate'] = datetime.strftime(self._features[ds_id][0][0],
-                                                       _TIMESTAMP_FORMAT)
-                await self._fetch_opensearch_feature_list(session,
-                                                          self._opensearch_url,
-                                                          feature_list,
-                                                          self._extract_times_and_opendap_url,
-                                                          request)
+            if start_date < self._features[ds_id][file_format][0][0]:
+                request['endDate'] = datetime.strftime(
+                    self._features[ds_id][file_format][0][0], TIMESTAMP_FORMAT
+                )
+                await self._fetch_opensearch_feature_list(
+                    session, self._opensearch_url, feature_list,
+                    extender, request, name_filter
+                )
                 if len(feature_list) > 0:
                     feature_list.sort(key=lambda x: x[0])
                     end_offset = -1
-                    while feature_list[end_offset] in self._features[ds_id] \
+                    while feature_list[end_offset] in self._features[ds_id][file_format] \
                             and end_offset > 0:
                         end_offset -= 1
-                    self._features[ds_id] = feature_list[:end_offset] \
-                                            + self._features[ds_id]
-            if end_date > self._features[ds_id][-1][1]:
-                request['startDate'] = datetime.strftime(self._features[ds_id][-1][1],
-                                                         _TIMESTAMP_FORMAT)
+                    self._features[ds_id][file_format] = \
+                        feature_list[:end_offset] + self._features[ds_id][file_format]
+            if end_date > self._features[ds_id][file_format][-1][1]:
+                request['startDate'] = datetime.strftime(
+                    self._features[ds_id][file_format][-1][1], TIMESTAMP_FORMAT
+                )
                 request['endDate'] = end_date_str
-                await self._fetch_opensearch_feature_list(session,
-                                                          self._opensearch_url,
-                                                          feature_list,
-                                                          self._extract_times_and_opendap_url,
-                                                          request)
+                await self._fetch_opensearch_feature_list(
+                    session, self._opensearch_url, feature_list,
+                    extender, request, name_filter
+                )
                 if len(feature_list) > 0:
                     feature_list.sort(key=lambda x: x[0])
                     end_offset = 0
-                    while feature_list[end_offset] in self._features[ds_id] \
+                    while feature_list[end_offset] in self._features[ds_id][file_format] \
                             and end_offset < len(feature_list) - 1:
                         end_offset += 1
-                    if feature_list[end_offset] not in self._features[ds_id]:
-                        self._features[ds_id] = self._features[ds_id] \
-                                                + feature_list[end_offset:]
-        start = bisect.bisect_left([feature[1] for feature in self._features[ds_id]], start_date)
-        end = bisect.bisect_right([feature[0] for feature in self._features[ds_id]], end_date)
-        return self._features[ds_id][start:end]
+                    if feature_list[end_offset] not in self._features[ds_id][file_format]:
+                        self._features[ds_id][file_format] = \
+                            self._features[ds_id][file_format] + feature_list[end_offset:]
+        start = bisect.bisect_left(
+            [feature[1] for feature in self._features[ds_id][file_format]], start_date
+        )
+        end = bisect.bisect_right(
+            [feature[0] for feature in self._features[ds_id][file_format]], end_date
+        )
+        return self._features[ds_id][file_format][start:end]
 
     @staticmethod
-    def _extract_times_and_opendap_url(features: List[Tuple], feature_list: List[Dict]):
+    def _extract_times_and_opendap_url(
+            features: List[Tuple], feature_list: List[Dict], name_filter: str
+    ):
+        CciCdc._extract_times_and_url(features, feature_list, "Opendap", name_filter)
+
+    @staticmethod
+    def _extract_times_and_download_url(
+            features: List[Tuple], feature_list: List[Dict], name_filter: str
+    ):
+        CciCdc._extract_times_and_url(features, feature_list, "Download", name_filter)
+
+    @staticmethod
+    def _extract_times_and_url(
+            features: List[Tuple], feature_list: List[Dict], url_type: str,
+            name_filter: str
+    ):
         for feature in feature_list:
             start_time = None
             end_time = None
             properties = feature.get('properties', {})
-            opendap_url = None
+            url = None
             links = properties.get('links', {}).get('related', {})
             for link in links:
-                if link.get('title', '') == 'Opendap':
-                    opendap_url = link.get('href', None)
-            if not opendap_url:
+                if link.get('title', '') == url_type:
+                    url = link.get('href', None)
+                    url = url if name_filter in url else None
+            if not url:
                 continue
             date_property = properties.get('date', None)
             if date_property:
                 split_date = date_property.split('/')
                 # remove trailing symbols from times
-                start_time = datetime.strptime(split_date[0].split('.')[0].split('+')[0],
-                                               _TIMESTAMP_FORMAT)
-                end_time = datetime.strptime(split_date[1].split('.')[0].split('+')[0],
-                                             _TIMESTAMP_FORMAT)
+                start_time = datetime.strptime(
+                    split_date[0].split('.')[0].split('+')[0], TIMESTAMP_FORMAT
+                )
+                end_time = datetime.strptime(
+                    split_date[1].split('.')[0].split('+')[0], TIMESTAMP_FORMAT
+                )
             else:
                 title = properties.get('title', None)
                 if title:
-                    start_time, end_time = get_timestrings_from_string(title)
+                    start_time, end_time = get_time_strings_from_string(title)
                     if start_time:
                         try:
-                            start_time = datetime.strptime(start_time, _TIMESTAMP_FORMAT)
+                            start_time = datetime.strptime(
+                                start_time, TIMESTAMP_FORMAT
+                            )
                         except TypeError:
                             # just use the previous start value
                             pass
                     if end_time:
                         try:
-                            end_time = datetime.strptime(end_time, _TIMESTAMP_FORMAT)
+                            end_time = datetime.strptime(
+                                end_time, TIMESTAMP_FORMAT
+                            )
                         except TypeError:
                             # just use the previous end value
                             pass
@@ -931,14 +1164,16 @@ class CciOdp:
                         end_time = start_time
             if start_time:
                 try:
-                    start_time = pd.Timestamp(datetime.strftime(start_time,
-                                                            _TIMESTAMP_FORMAT))
-                    end_time = pd.Timestamp(datetime.strftime(end_time,
-                                                              _TIMESTAMP_FORMAT))
-                except:
+                    start_time = pd.Timestamp(datetime.strftime(
+                        start_time, TIMESTAMP_FORMAT)
+                    )
+                    end_time = pd.Timestamp(datetime.strftime(
+                        end_time, TIMESTAMP_FORMAT)
+                    )
+                except (TypeError, IndexError, ValueError, KeyError):
                     # just use the previous values
                     pass
-                features.append((start_time, end_time, opendap_url))
+                features.append((start_time, end_time, url))
 
     def get_time_ranges_from_data(self, dataset_name: str,
                                   start_time: str = _EARLY_START_TIME,
@@ -949,16 +1184,24 @@ class CciOdp:
                                       start_time,
                                       end_time)
 
-    async def _get_time_ranges_from_data(self, session, dataset_name: str, start_time: str,
-                                         end_time: str) -> List[Tuple[datetime, datetime]]:
+    async def _get_time_ranges_from_data(
+            self, session, dataset_name: str, start_time: str, end_time: str
+    ) -> List[Tuple[datetime, datetime]]:
         dataset_id = await self._get_dataset_id(session, dataset_name)
         request = dict(parentIdentifier=dataset_id,
                        startDate=start_time,
                        endDate=end_time,
-                       drsId=dataset_name,
-                       fileFormat='.nc')
+                       drsId=dataset_name)
 
-        feature_list = await self._get_feature_list(session, request)
+        feature_list = await self._get_feature_list(session, request, '.nc')
+        if len(feature_list) == 0:
+            request = dict(parentIdentifier=dataset_id,
+                           startDate=start_time,
+                           endDate=end_time,
+                           drsId=dataset_name,
+                           fileFormat='.shp')
+
+            feature_list = await self._get_feature_list(session, request, '.shp')
         request_time_ranges = [feature[0:2] for feature in feature_list]
         return request_time_ranges
 
@@ -967,54 +1210,262 @@ class CciOdp:
 
     async def _get_dataset_id(self, session, dataset_name: str) -> str:
         await self._ensure_in_data_sources(session, [dataset_name])
-        return self._data_sources[dataset_name].get('uuid',
-                                                    self._data_sources[dataset_name]['fid'])
+        return self._data_sources[dataset_name].get(
+            'uuid', self._data_sources[dataset_name]['fid']
+        )
 
-    async def _get_opendap_url(self, session, request: Dict):
-        request['fileFormat'] = '.nc'
-        # async with _FEATURE_LIST_LOCK:
-        feature_list = await self._get_feature_list(session, request)
+    async def _get_shapefile_url(self, session, request: Dict):
+        request['fileFormat'] = '.shp'
+        feature_list = await self._get_feature_list(session, request, '.shp')
         if len(feature_list) == 0:
             return
         return feature_list[0][2]
 
-    def get_data_chunk(self, request: Dict, dim_indexes: Tuple) -> Optional[bytes]:
-        data_chunk = self._run_with_session(self._get_data_chunk, request, dim_indexes)
+    async def _get_tif_url(self, session, request: Dict):
+        feature_list = await self._get_feature_list(session, request, '.tif')
+        if len(feature_list) == 0:
+            return
+        return feature_list[0][2]
+
+    async def _get_tar_url(self, session, request: Dict):
+        feature_list = await self._get_feature_list(session, request, '.gz')
+        if len(feature_list) == 0:
+            return
+        return feature_list[0][2]
+
+    async def _get_opendap_url(self, session, request: Dict):
+        feature_list = await self._get_feature_list(session, request, '.nc')
+        if len(feature_list) == 0:
+            return
+        return feature_list[0][2]
+
+    def get_data_chunk(
+            self, request: Dict, dim_indexes: Tuple, to_bytes: bool = True
+    ) -> Optional[Union[bytes, np.array]]:
+        data_chunk = self._run_with_session(
+            self._get_data_chunk, request, dim_indexes, to_bytes
+        )
         return data_chunk
 
-    async def _get_data_chunk(self, session, request: Dict, dim_indexes: Tuple) -> Optional[bytes]:
+    async def _get_data_chunk(
+            self, session, request: Dict, dim_indexes: Tuple, to_bytes: bool = True
+    ) -> Optional[bytes]:
+        if self._data_type == "vectordatacube":
+            return await self._get_vectordatacube_chunk(
+                session, request, dim_indexes, to_bytes
+            )
+        return await self._get_dataset_chunk(session, request, dim_indexes, to_bytes)
+
+    async def get_geometry_data(
+            self, session, dataset, data_source, geom_var_name, ds_dim_indexes
+    ):
+        var_name = data_source[geom_var_name]
+        data_type = [d for d in data_source.get('variables', {})
+                     if d["var_id"] == var_name][0].get("data_type")
+        data = await self._get_data_from_opendap_dataset(
+            dataset, session, var_name, ds_dim_indexes
+        )
+        return np.array(data, copy=False, dtype=data_type)
+
+    async def _get_vectordatacube_chunk(
+            self, session, request: Dict, dim_indexes: Tuple, to_bytes: bool = True
+    ) -> Optional[bytes]:
+        var_name = request.get('varNames')[0]
+        drsId = request.get('drsId')
+        vector_offsets = self._vector_offsets[drsId]
+        await self._ensure_all_info_in_data_sources(session, [drsId])
+        data_source = self._data_sources[drsId]
+        dimensions = (data_source.get('variable_infos', {}).
+                      get(var_name, {}).get('file_dimensions'))
+        geometry_index = dimensions.index(data_source.get("geometry_dimension"), -1)
+        geom_start_index = dim_indexes[geometry_index].start
+        geom_stop_index = dim_indexes[geometry_index].stop
+        start = bisect.bisect_right(
+            [vo[0] for vo in vector_offsets], geom_start_index
+        ) - 1
+        end = bisect.bisect_right(
+            [vo[0] for vo in vector_offsets], geom_stop_index
+        ) - 1
+        res = None
+        for i in range(start, end + 1):
+            vo = vector_offsets[i]
+            geom_dim_start_index = max(0, geom_start_index - vo[0])
+            geom_dim_stop_index = min(geom_stop_index, vo[1]) - vo[0]
+            if geom_dim_start_index == geom_dim_stop_index:
+                continue
+            opendap_url = vo[2]
+            dataset = await self._get_opendap_dataset(session, opendap_url)
+            ds_dim_index_list = []
+            for i, di in enumerate(dim_indexes):
+                if i == geometry_index:
+                    ds_dim_index_list.append(
+                        slice(geom_dim_start_index, geom_dim_stop_index)
+                    )
+                else:
+                    ds_dim_index_list.append(di)
+            ds_dim_indexes = tuple(ds_dim_index_list)
+            if var_name == "geometry":
+                lat_data = await self.get_geometry_data(
+                    session, dataset, data_source, "lat_var", ds_dim_indexes
+                )
+                lon_data = await self.get_geometry_data(
+                    session, dataset, data_source, "lon_var", ds_dim_indexes
+                )
+                lat_lon_data = np.array((lon_data, lat_data)).T
+                geometry_data = [mapping(Point(ll)) for ll in lat_lon_data]
+                np_array = np.array(geometry_data, dtype=object)
+            else:
+                data_type = (data_source.get('variable_infos', {}).get(var_name, {}).
+                             get('data_type'))
+                data = await self._get_data_from_opendap_dataset(
+                    dataset, session, var_name, ds_dim_indexes
+                )
+                np_array = np.array(data, copy=False, dtype=data_type)
+            if res is None:
+                res = np_array
+            else:
+                res = np.append(res, np_array)
+        if to_bytes:
+            if var_name == "geometry":
+                if len(res) < _VECTOR_DATACUBE_CHUNKING:
+                    to_fill = _VECTOR_DATACUBE_CHUNKING - len(res)
+                    nones = [None] * to_fill
+                    res = np.append(res, np.array(nones))
+                codec = numcodecs.JSON()
+                return codec.encode(res)
+            else:
+                return res.flatten().tobytes()
+        return res
+
+    async def _get_dataset_chunk(
+            self, session, request: Dict, dim_indexes: Tuple, to_bytes: bool = True
+    ) -> Optional[bytes]:
         var_name = request['varNames'][0]
+        drs_id = request.get("drsId")
+        orig_request = copy.deepcopy(request)
         opendap_url = await self._get_opendap_url(session, request)
+        await self._ensure_all_info_in_data_sources(
+            session, [drs_id]
+        )
+        data_type = self._data_sources[drs_id].\
+            get('variable_infos', {}).get(var_name, {}).get('data_type')
         if not opendap_url:
+            request = copy.deepcopy(orig_request)
+            tar_url = await self._get_tar_url(session, request)
+            if tar_url is not None:
+                dims = self._data_sources[drs_id].get("variable_infos", {}).\
+                    get(var_name, {}).get("dimensions")
+                chunks = {}
+                sel_chunks = {}
+                offset = len(dim_indexes)  - len(dims)
+                for i in range(len(dims)):
+                    di = dim_indexes[offset + i]
+                    chunks[dims[i]] = di.stop - di.start
+                    sel_chunks[dims[i]] = di
+                if tar_url not in self._tar_to_tif:
+                    tif_files = await self._get_tif_files_from_tar_url(tar_url, session)
+                    self._tar_to_tif[tar_url] = tif_files
+                tif_files = self._tar_to_tif[tar_url]
+                tif_files = [tf for tf in tif_files if var_name in tf]
+                if len(tif_files) > 0:
+                    file_path = f"tar+{tar_url}!{tif_files[0]}"
+                    if file_path not in self._tif_to_array:
+                        array = rioxarray.open_rasterio(file_path, chunks=chunks)
+                        self._tif_to_array[file_path] = array
+                    array = self._tif_to_array[file_path]
+                    data = array.isel(sel_chunks)
+                    data = np.array(data, copy=False, dtype=data_type)
+                    if to_bytes:
+                        return data.flatten().tobytes()
+                    return data
+            else:
+                request = copy.deepcopy(orig_request)
+                tif_url = await self._get_tif_url(session, request)
+                if tif_url is not None:
+                    dims = self._data_sources[drs_id].get("variable_infos", {}). \
+                        get(var_name, {}).get("dimensions")
+                    chunks = {}
+                    sel_chunks = {}
+                    offset = len(dim_indexes) - len(dims)
+                    for i in range(len(dims)):
+                        di = dim_indexes[offset + i]
+                        chunks[dims[i]] = di.stop - di.start
+                        sel_chunks[dims[i]] = di
+                    if tif_url not in self._tif_to_array:
+                        array = rioxarray.open_rasterio(tif_url, chunks=chunks)
+                        self._tif_to_array[tif_url] = array
+                    array = self._tif_to_array[tif_url]
+                    data = array.isel(sel_chunks)
+                    data = np.array(data, copy=False, dtype=data_type)
+                    if to_bytes:
+                        return data.flatten().tobytes()
+                    return data
             return None
         dataset = await self._get_opendap_dataset(session, opendap_url)
         if not dataset:
             return None
-        await self._ensure_all_info_in_data_sources(session, [request.get('drsId')])
-        data_type = self._data_sources[request['drsId']].get('variable_infos', {})\
-            .get(var_name, {}).get('data_type')
-        data = await self._get_data_from_opendap_dataset(dataset, session, var_name, dim_indexes)
+        data = await self._get_data_from_opendap_dataset(
+            dataset, session, var_name, dim_indexes
+        )
         if data is None:
             return None
-        data = np.array(data, copy=False, dtype=data_type)
-        return data.flatten().tobytes()
+        if data_type == 'bytes1024':
+            if data.size > 1:
+                data = [d.decode() for d in data]
+        else:
+            data = np.array(data, dtype=data_type)
+        if to_bytes:
+            return data.flatten().tobytes()
+        return data
+
+    def get_geodataframe_from_shapefile(
+            self, request: Dict
+    ) -> Optional[gpd.geodataframe]:
+        gdf = self._run_with_session(
+            self._get_geodataframe_from_shapefile, request
+        )
+        return gdf
+
+    async def _get_geodataframe_from_shapefile(
+            self, session, request: Dict
+    ) -> Optional[gpd.geodataframe]:
+        var_names = request['varNames']
+        shapefile_url = await self._get_shapefile_url(session, request)
+        if not shapefile_url:
+            return None
+        gdf = gpd.read_file(shapefile_url)
+        gdf = gdf[var_names]
+        return gdf
 
     async def _fetch_data_source_list_json(self, session, base_url, query_args,
                                            max_wanted_results=100000) -> Dict:
-        def _extender(inner_catalogue: dict, feature_list: List[Dict]):
+        def _extender(
+                inner_catalogue: dict, feature_list: List[Dict], name_filter: str
+        ):
             for fc in feature_list:
                 fc_props = fc.get("properties", {})
                 fc_id = fc_props.get("identifier", None)
-                if not fc_id:
+                fc_title = fc_props.get("title", "")
+                if not fc_id or name_filter not in fc_title:
                     continue
                 inner_catalogue[fc_id] = _get_feature_dict_from_feature(fc)
         catalogue = {}
-        await self._fetch_opensearch_feature_list(session, base_url, catalogue, _extender,
-                                                  query_args, max_wanted_results)
+        name_filter = ""
+        if "drsId" in query_args:
+            sdrsid = query_args.get("drsId").split("~")
+            query_args["drsId"] = sdrsid[0]
+            if query_args.get("parentIdentifier", "cci") != "cci":
+                name_filter = sdrsid[1] if len(sdrsid) > 1 else ""
+        await self._fetch_opensearch_feature_list(
+            session, base_url, catalogue, _extender, query_args, name_filter,
+            max_wanted_results
+        )
         return catalogue
 
-    async def _fetch_opensearch_feature_list(self, session, base_url, extension, extender,
-                                             query_args, max_wanted_results=100000):
+    async def _fetch_opensearch_feature_list(
+            self, session, base_url, extension, extender, query_args, name_filter,
+            max_wanted_results=100000
+    ):
         """
         Return JSON value read from Opensearch web service.
         :return:
@@ -1022,11 +1473,10 @@ class CciOdp:
         start_page = 1
         initial_maximum_records = min(1000, max_wanted_results)
         maximum_records = 10000
-        total_results = await self._fetch_opensearch_feature_part_list(session, base_url,
-                                                                       query_args, start_page,
-                                                                       initial_maximum_records,
-                                                                       extension, extender,
-                                                                       None, None)
+        total_results = await self._fetch_opensearch_feature_part_list(
+            session, base_url, query_args, start_page, initial_maximum_records,
+            extension, extender, None, None, name_filter
+        )
         if total_results < initial_maximum_records or max_wanted_results < 1000:
             return
         # num_results = maximum_records
@@ -1034,10 +1484,14 @@ class CciOdp:
         extension.clear()
         while num_results < total_results:
             if 'startDate' in query_args and 'endDate' in query_args:
-                # we have to clear the extension of any previous values to avoid duplicate values
-                # extension.clear()
-                start_time = datetime.strptime(query_args.pop('startDate'), _TIMESTAMP_FORMAT)
-                end_time = datetime.strptime(query_args.pop('endDate'), _TIMESTAMP_FORMAT)
+                # we have to clear the extension of any previous values
+                # to avoid duplicate values extension.clear()
+                start_time = datetime.strptime(
+                    query_args.pop('startDate'), TIMESTAMP_FORMAT
+                )
+                end_time = datetime.strptime(
+                    query_args.pop('endDate'), TIMESTAMP_FORMAT
+                )
                 num_days_per_delta = \
                     max(1,
                         int(np.ceil((end_time - start_time).days /
@@ -1046,35 +1500,33 @@ class CciOdp:
                 tasks = []
                 current_time = start_time
                 while current_time < end_time:
-                    task_start = current_time.strftime(_TIMESTAMP_FORMAT)
+                    task_start = current_time.strftime(TIMESTAMP_FORMAT)
                     current_time += delta
                     if current_time > end_time:
                         current_time = end_time
-                    task_end = current_time.strftime(_TIMESTAMP_FORMAT)
-                    tasks.append(self._fetch_opensearch_feature_part_list(session, base_url,
-                                                                          query_args, start_page,
-                                                                          maximum_records,
-                                                                          extension,
-                                                                          extender,
-                                                                          task_start, task_end))
+                    task_end = current_time.strftime(TIMESTAMP_FORMAT)
+                    tasks.append(self._fetch_opensearch_feature_part_list(
+                        session, base_url, query_args, start_page,
+                        maximum_records, extension, extender,
+                        task_start, task_end, name_filter)
+                    )
                 await asyncio.gather(*tasks)
                 num_results = total_results
             else:
                 tasks = []
                 # do not have more than 4 open connections at the same time
                 while len(tasks) < 4 and num_results < total_results:
-                    tasks.append(self._fetch_opensearch_feature_part_list(session, base_url,
-                                                                          query_args, start_page,
-                                                                          maximum_records,
-                                                                          extension,
-                                                                          extender, None, None))
+                    tasks.append(self._fetch_opensearch_feature_part_list(
+                        session, base_url, query_args, start_page,
+                        maximum_records, extension, extender, None, None, name_filter)
+                    )
                     start_page += 1
                     num_results += maximum_records
                 await asyncio.gather(*tasks)
 
     async def _fetch_opensearch_feature_part_list(
             self, session, base_url, query_args, start_page, maximum_records,
-            extension, extender, start_date, end_date
+            extension, extender, start_date, end_date, name_filter
     ) -> int:
         paging_query_args = dict(query_args or {})
         paging_query_args.update(startPage=start_page,
@@ -1094,7 +1546,7 @@ class CciOdp:
                 json_dict = json.loads(json_text.decode('utf-8'))
                 if extender:
                     feature_list = json_dict.get("features", [])
-                    extender(extension, feature_list)
+                    extender(extension, feature_list, name_filter)
                 return json_dict['totalResults']
             attempt += 1
             if 'startDate' in paging_query_args and \
@@ -1111,7 +1563,6 @@ class CciOdp:
 
     async def _set_variable_infos(self, opensearch_url: str, dataset_id: str,
                                   dataset_name: str, session, data_source):
-        time_dimension_size = data_source.get('num_files', -1)
         attributes = {}
         dimensions = {}
         variable_infos = {}
@@ -1122,50 +1573,229 @@ class CciOdp:
                 json_dict = await resp.json(encoding='utf-8')
                 data_source['variables'] = json_dict.get(dataset_name, [])
 
-
-        feature, time_dimension_size = \
-            await self._fetch_feature_and_num_nc_files_at(
+        feature, num_shapefiles = \
+            await self._fetch_feature_from_shapefile(
                 session,
                 opensearch_url,
                 dict(parentIdentifier=dataset_id,
-                     drsId=dataset_name),
+                        drsId=dataset_name),
                 1
             )
         if feature is not None:
             variable_infos, attributes = \
-                await self._get_variable_infos_from_feature(feature, session)
-            for variable_info in variable_infos:
-                for index, dimension in enumerate(variable_infos[variable_info]['dimensions']):
-                    if dimension not in dimensions:
-                        dimensions[dimension] = variable_infos[variable_info]['shape'][index]
-            time_name = 'month' if 'AEROSOL.climatology' in dataset_name \
-                else 'time'
-            dimensions[time_name] = time_dimension_size * dimensions.get(time_name, 1)
-            for variable_info in variable_infos.values():
-                if 'time' in variable_info['dimensions']:
-                    time_index = variable_info['dimensions'].index('time')
-                    if 'shape' in variable_info:
-                        variable_info['shape'][time_index] = dimensions[time_name]
-                        variable_info['size'] = np.prod(variable_info['shape'])
+                await self._get_variable_infos_from_shapefile_feature(feature)
+            attributes["shapefile"] = True
+            dimensions = {}
+        else:
+            feature, time_dimension_size = \
+                await self._fetch_feature_and_num_nc_files_at(
+                    session,
+                    opensearch_url,
+                    dict(parentIdentifier=dataset_id,
+                         drsId=dataset_name),
+                    1
+                )
+            if feature is None:
+                feature, time_dimension_size = \
+                    await self._fetch_feature_and_num_tar_files_at(
+                        session,
+                        opensearch_url,
+                        dict(parentIdentifier=dataset_id,
+                             drsId=dataset_name),
+                        1
+                    )
+            if feature is None:
+                feature, time_dimension_size = \
+                    await self._fetch_feature_and_num_tif_files_at(
+                        session,
+                        opensearch_url,
+                        dict(parentIdentifier=dataset_id,
+                             drsId=dataset_name),
+                        1
+                    )
+            if feature is not None:
+                variable_infos, attributes = \
+                    await self._get_variable_infos_from_feature(feature, session)
+                attributes["shapefile"] = False
+                for variable_info in variable_infos:
+                    for index, dimension in enumerate(
+                            variable_infos[variable_info]['dimensions']
+                    ):
+                        if dimension not in dimensions:
+                            dimensions[dimension] = \
+                                variable_infos[variable_info]['shape'][index]
+                time_name = "time"
+                if 'AEROSOL.climatology' in dataset_name:
+                    time_name = 'month'
+                if "Time" in dimensions:
+                    time_name = "Time"
+                if "nbmonth" in dimensions:
+                    time_name = "nbmonth"
+                    time_dimension_size = 1
+                data_source["time_chunking"] = dimensions.get(time_name, 1)
+                dimensions[time_name] = (
+                        time_dimension_size * data_source["time_chunking"])
+                for variable_info in variable_infos.values():
+                    if time_name in variable_info['dimensions']:
+                        time_index = variable_info['dimensions'].index(time_name)
+                        if 'shape' in variable_info:
+                            variable_info['shape'][time_index] = \
+                                dimensions[time_name]
+                            variable_info['size'] = np.prod(variable_info['shape'])
         data_source['dimensions'] = dimensions
         data_source['variable_infos'] = variable_infos
         data_source['attributes'] = attributes
+        if self._data_type == "vectordatacube":
+            start_time = data_source.get("temporal_coverage_start")
+            end_time = data_source.get("temporal_coverage_end")
+            non_time_dimension = [dim for dim in dimensions if not dim == time_name][0]
+            num_geometries = await self._count_geometries(
+                session, dataset_id, dataset_name, start_time, end_time,
+                non_time_dimension
+            )
+            data_source["dimensions"][non_time_dimension] = num_geometries
+            data_source["geometry_dimension"] = non_time_dimension
+            for variable_name, var_dict in variable_infos.items():
+                if non_time_dimension in var_dict.get("dimensions"):
+                    index = var_dict.get("dimensions").index(non_time_dimension)
+                    if "shape" in var_dict:
+                        data_source["variable_infos"][variable_name]["shape"][index] \
+                            = num_geometries
+                        data_source["variable_infos"][variable_name]["size"] = \
+                            sum(data_source["variable_infos"][variable_name]["shape"])
+                    if len(var_dict.get("dimensions")) > 1:
+                        data_source["variable_infos"][variable_name]["chunk_sizes"][index] \
+                            = _VECTOR_DATACUBE_CHUNKING
+                        data_source["variable_infos"][variable_name]["file_chunk_sizes"][index] \
+                            = _VECTOR_DATACUBE_CHUNKING
+                    else:
+                        data_source["variable_infos"][variable_name]["chunk_sizes"] \
+                                = _VECTOR_DATACUBE_CHUNKING
+                        data_source["variable_infos"][variable_name]["file_chunk_sizes"] \
+                                = _VECTOR_DATACUBE_CHUNKING
+            lat_lons = [("lat", "lon"), ("latitude", "longitude")]
+            for lat_lon in lat_lons:
+                data_source["lat_var"] = lat_lon[0]
+                data_source["lon_var"] = lat_lon[1]
+                if lat_lon[0] in variable_infos.keys() \
+                        and lat_lon[1] in variable_infos.keys():
+                    var_info = variable_infos.pop(lat_lon[0])
+                    variable_infos["geometry"] = dict(
+                        standard_name="geometry",
+                        long_name="geometry",
+                        dimensions=var_info.get('dimensions'),
+                        file_dimensions=var_info.get('file_dimensions'),
+                        size=var_info.get('size'),
+                        shape=var_info.get('shape'),
+                        chunk_sizes=[_VECTOR_DATACUBE_CHUNKING],
+                        file_chunk_sizes=[_VECTOR_DATACUBE_CHUNKING],
+                        data_type="object"
+                    )
+                    variable_infos.pop(lat_lon[1])
+                    break
 
-    async def _fetch_feature_and_num_nc_files_at(self, session, base_url, query_args, index) -> \
-            Tuple[Optional[Dict], int]:
+    async def _count_geometries(
+            self, session, dataset_id, dataset_name, start_time, end_time,
+            non_time_dimension
+    ):
+        request = dict(parentIdentifier=dataset_id,
+                       startDate=start_time,
+                       endDate=end_time,
+                       drsId=dataset_name,
+                       fileFormat='.nc')
+        feature_list = await self._get_feature_list(session, request, '.nc')
+        search_string = f"{non_time_dimension} = "
+        offsets = []
+        offset = 0
+        for feature in feature_list:
+            opendap_url = feature[2]
+            res_dict = {}
+            await self._get_content_from_opendap_url(
+                opendap_url, 'dds', res_dict, session
+            )
+            index = res_dict.get("dds").index(search_string)
+            sub_dds = res_dict.get("dds")[index + len(search_string):]
+            next_offset = offset + int(sub_dds[:sub_dds.index("]")])
+            offsets.append([offset, next_offset, opendap_url])
+            offset = next_offset
+        self._vector_offsets[dataset_name] = offsets
+        return offset
+
+    async def _fetch_feature_and_num_nc_files_at(
+            self, session, base_url, query_args, index
+    ) -> Tuple[Optional[Dict], int]:
+        return await self._fetch_feature_and_num_files_at(
+            session, base_url, query_args, index, '.nc'
+        )
+
+    async def _fetch_feature_and_num_tar_files_at(
+            self, session, base_url, query_args, index
+    ) -> Tuple[Optional[Dict], int]:
+        return await self._fetch_feature_and_num_files_at(
+            session, base_url, query_args, index, '.gz'
+        )
+
+    async def _fetch_feature_and_num_tif_files_at(
+            self, session, base_url, query_args, index
+    ) -> Tuple[Optional[Dict], int]:
+        return await self._fetch_feature_and_num_files_at(
+            session, base_url, query_args, index, '.tif'
+        )
+
+    async def _fetch_feature_and_num_files_at(
+            self, session, base_url, query_args, index, file_format
+    ) -> Tuple[Optional[Dict], int]:
         paging_query_args = dict(query_args or {})
         paging_query_args.update(startPage=index,
                                  maximumRecords=5,
                                  httpAccept='application/geo+json',
-                                 fileFormat='.nc')
+                                 fileFormat=file_format)
+        drs_id = paging_query_args.get("drsId", "")
+        sdrsid = drs_id.split("~")
+        name_filter = ""
+        if len(sdrsid) == 2:
+            paging_query_args["drsId"] = sdrsid[0]
+            name_filter = sdrsid[1]
+            paging_query_args["maximumRecords"] = 348
         url = base_url + '?' + urllib.parse.urlencode(paging_query_args)
         resp = await self.get_response(session, url)
         if resp:
             json_text = await resp.read()
             json_dict = json.loads(json_text.decode('utf-8'))
             feature_list = json_dict.get("features", [])
-            # we try not to take the first feature, as the last and the first one may have
-            # different time chunkings
+            if len(feature_list) > 0:
+                len_before = len(feature_list)
+                feature_list = [f for f in feature_list if name_filter in
+                                f.get("properties", {}).get("links",{}).
+                                get("related", [{}])[0].get("href", "")
+                                ]
+                len_after = len(feature_list)
+                divisor = int(len_before/len_after)
+                # we try not to take the first feature,
+                # as the last and the first one may have different time chunkings
+                index = math.floor(len(feature_list) / 2)
+                total_num_files = json_dict.get("totalResults", 0)
+                if total_num_files > 0:
+                    total_num_files = int(total_num_files / divisor)
+                return feature_list[index], total_num_files
+        return None, 0
+
+    async def _fetch_feature_from_shapefile(
+            self, session, base_url, query_args, index
+    ) -> Tuple[Optional[Dict], int]:
+        paging_query_args = dict(query_args or {})
+        paging_query_args.update(startPage=index,
+                                 maximumRecords=5,
+                                 httpAccept='application/geo+json',
+                                 fileFormat='.shp')
+        url = base_url + '?' + urllib.parse.urlencode(paging_query_args)
+        resp = await self.get_response(session, url)
+        if resp:
+            json_text = await resp.read()
+            json_dict = json.loads(json_text.decode('utf-8'))
+            feature_list = json_dict.get("features", [])
+            # we try not to take the first feature,
+            # as the last and the first one may have different time chunkings
             if len(feature_list) > 0:
                 index = math.floor(len(feature_list) / 2)
                 return feature_list[index], json_dict.get("totalResults", 0)
@@ -1190,19 +1820,30 @@ class CciOdp:
                 if item not in meta_info_dict:
                     meta_info_dict[item] = desc_metadata[item]
         await self._set_drs_metadata(session, datasource_id, meta_info_dict)
-        _harmonize_info_field_names(meta_info_dict, 'file_format', 'file_formats')
-        _harmonize_info_field_names(meta_info_dict, 'platform_id', 'platform_ids')
-        _harmonize_info_field_names(meta_info_dict, 'sensor_id', 'sensor_ids')
-        _harmonize_info_field_names(meta_info_dict, 'processing_level', 'processing_levels')
-        _harmonize_info_field_names(meta_info_dict, 'time_frequency', 'time_frequencies')
+        _harmonize_info_field_names(
+            meta_info_dict, 'file_format', 'file_formats'
+        )
+        _harmonize_info_field_names(
+            meta_info_dict, 'platform_id', 'platform_ids'
+        )
+        _harmonize_info_field_names(
+            meta_info_dict, 'sensor_id', 'sensor_ids'
+        )
+        _harmonize_info_field_names(
+            meta_info_dict, 'processing_level', 'processing_levels'
+        )
+        _harmonize_info_field_names(
+            meta_info_dict, 'time_frequency', 'time_frequencies'
+        )
         return meta_info_dict
 
     async def _set_drs_metadata(self, session, datasource_id, metainfo_dict):
         data_source_list = \
-            await self._fetch_data_source_list_json(session,
-                                                    OPENSEARCH_CEDA_URL,
-                                                    {'parentIdentifier': datasource_id},
-                                                    max_wanted_results=20)
+            await self._fetch_data_source_list_json(
+                session, OPENSEARCH_CEDA_URL, {
+                    'parentIdentifier': datasource_id
+                }, max_wanted_results=20
+            )
         for data_source_key, data_source_value in data_source_list.items():
             drs_id = data_source_value.get('title', 'All Files')
             variables = data_source_value.get('variables', None)
@@ -1217,7 +1858,9 @@ class CciOdp:
                             metainfo_dict['uuids'] = {}
                         metainfo_dict['uuids'][drs_id] = uuid
 
-    async def _extract_metadata_from_descxml_url(self, session, descxml_url: str = None) -> dict:
+    async def _extract_metadata_from_descxml_url(
+            self, session, descxml_url: str = None
+    ) -> dict:
         if not descxml_url:
             return {}
         resp = await self.get_response(session, descxml_url)
@@ -1226,11 +1869,13 @@ class CciOdp:
             try:
                 return _extract_metadata_from_descxml(descxml)
             except etree.ParseError:
-                _LOG.info(f'Cannot read metadata from {descxml_url} due to parsing error.')
+                _LOG.info(f'Cannot read metadata from {descxml_url} '
+                          f'due to parsing error.')
         return {}
 
-    async def _extract_metadata_from_odd_url(self, session: aiohttp.ClientSession,
-                                             odd_url: str = None) -> dict:
+    async def _extract_metadata_from_odd_url(
+            self, session: aiohttp.ClientSession, odd_url: str = None
+    ) -> dict:
         if not odd_url:
             return {}
         resp = await self.get_response(session, odd_url)
@@ -1239,11 +1884,21 @@ class CciOdp:
         xml_text = await resp.read()
         return _extract_metadata_from_odd(etree.XML(xml_text))
 
-    def _determine_fill_value(self, dtype):
-        if np.issubdtype(dtype, np.integer):
-            return np.iinfo(dtype).max
-        if np.issubdtype(dtype, np.inexact):
-            return np.nan
+    async def _get_variable_infos_from_shapefile_feature(
+            self, feature: dict
+    ) -> (dict, dict):
+        feature_info = _extract_feature_info(feature)
+        shapefile_url = f"{feature_info[4].get('Download')}"
+        if shapefile_url == 'None':
+            _LOG.warning(f'Shapefile is not accessible')
+            return {}, {}
+        geodataframe = gpd.read_file(shapefile_url)
+        variable_infos = {}
+        for column in geodataframe.columns:
+            variable_infos[column] = {}
+            variable_infos[column]["name"] = geodataframe[column].name
+            variable_infos[column]["dtype"] = geodataframe[column].dtype
+        return variable_infos, geodataframe.attrs
 
     async def _get_variable_infos_from_feature(self,
                                                feature: dict,
@@ -1251,7 +1906,12 @@ class CciOdp:
         feature_info = _extract_feature_info(feature)
         opendap_url = f"{feature_info[4].get('Opendap')}"
         if opendap_url == 'None':
-            _LOG.warning(f'Dataset is not accessible via Opendap')
+            download_url = f"{feature_info[4].get('Download', '')}"
+            if download_url.endswith(".tar.gz"):
+                return await self._get_variable_infos_from_tar_feature(feature, session)
+            elif download_url.endswith(".tif"):
+                return await self._get_variable_infos_from_tif_feature(feature, session)
+            _LOG.warning(f'Dataset is not accessible via Opendap or Download')
             return {}, {}
         dataset = await self._get_opendap_dataset(session, opendap_url)
         if not dataset:
@@ -1259,6 +1919,7 @@ class CciOdp:
                          f'and attributes from {opendap_url}')
             return {}, {}
         variable_infos = {}
+        time_set_as_dim = False
         for key in dataset.keys():
             fixed_key = key.replace('%2E', '_').replace('.', '_')
             data_type = dataset[key].dtype.name
@@ -1271,14 +1932,14 @@ class CciOdp:
                 if data_type in _DTYPES_TO_DTYPES_WITH_MORE_BYTES:
                     data_type = _DTYPES_TO_DTYPES_WITH_MORE_BYTES[data_type]
                     var_attrs['fill_value'] = \
-                        self._determine_fill_value(np.dtype(data_type))
+                        _determine_fill_value(np.dtype(data_type))
                 else:
                     warnings.warn(f'Variable "{fixed_key}" has no fill value, '
                                   f'cannot set one. For parts where no data is '
                                   f'available you will see random values. This '
                                   f'is usually the case when data is missing '
                                   f'for a time step.',
-                                  category=CciOdpWarning)
+                                  category=CciCdcWarning)
             var_attrs['size'] = dataset[key].size
             var_attrs['shape'] = list(dataset[key].shape)
             if len(var_attrs['shape']) == 0:
@@ -1303,11 +1964,124 @@ class CciOdp:
                     copy.deepcopy(var_attrs['chunk_sizes'])
             var_attrs['data_type'] = data_type
             var_attrs['dimensions'] = list(dataset[key].dimensions)
+            if "time" in var_attrs['dimensions']:
+                time_set_as_dim: True
             var_attrs['file_dimensions'] = \
                 copy.deepcopy(var_attrs['dimensions'])
             variable_infos[fixed_key] = var_attrs
-
+        if variable_infos.get("time", {}).get("size", 1) > 1 and not time_set_as_dim:
+            variable_infos.pop("time")
         return variable_infos, dataset.attributes
+
+    async def _get_tif_files_from_tar_url(self, tar_url: str, session) -> List[str]:
+        resp = await self.get_response(session, tar_url)
+        if resp:
+            tar_file = io.BytesIO(await resp.read())
+            tar = tarfile.open(fileobj=tar_file, mode="r:gz")
+            content = tar.getnames()
+            return [c for c in content if c.endswith(".tif")]
+        return []
+
+    async def _get_variable_infos_from_tar_feature(
+            self, feature: dict, session
+    ) -> (dict, dict):
+        feature_info = _extract_feature_info(feature)
+        download_url = f"{feature_info[4].get('Download')}"
+        if download_url == 'None':
+            _LOG.warning(f'Dataset is not accessible via Download')
+            return {}, {}
+        tif_files = await self._get_tif_files_from_tar_url(download_url, session)
+        var_infos = {}
+        attributes = {}
+        for file in tif_files:
+            array = rioxarray.open_rasterio(
+                f"tar+{download_url}!{file}", chunks=dict(x=512, y=512)
+            )
+            var_name = file.split(".tif")[0].split("-")[-1]
+            self._put_variable_info_from_tif_file_var_infos_attributes(
+                array, var_name, var_infos, attributes
+            )
+        return var_infos, attributes
+
+    async def _get_variable_infos_from_tif_feature(
+            self, feature: dict, session
+    ) -> (dict, dict):
+        feature_info = _extract_feature_info(feature)
+        download_url = f"{feature_info[4].get('Download')}"
+        if download_url == 'None':
+            _LOG.warning(f'Dataset is not accessible via Download')
+            return {}, {}
+        var_infos = {}
+        attributes = {}
+        array = rioxarray.open_rasterio(download_url, chunks=dict(x=512, y=512))
+        var_name = download_url.split(".tif")[0].split("-")[-1]
+        self._put_variable_info_from_tif_file_var_infos_attributes(
+            array, var_name, var_infos, attributes
+        )
+        return var_infos, attributes
+
+    @staticmethod
+    def _put_variable_info_from_tif_file_var_infos_attributes(
+            array, var_name, var_infos, attributes
+    ):
+        var_infos[var_name] = {}
+        band_dim = -1
+        if "band" in array.dims:
+            band_dim = list(array.dims).index("band")
+        dims = [d for d in array.dims if d != "band"]
+        var_infos[var_name]["dimensions"] = dims
+        var_infos[var_name]["file_dimensions"] = dims
+        var_infos[var_name]["size"] = array.size
+        var_infos[var_name]["shape"] = \
+            [s for i, s in enumerate(array.shape) if i != band_dim]
+        var_infos[var_name]["data_type"] = array.dtype.name
+        preferred_chunks = array.encoding.get("preferred_chunks", {})
+        chunk_sizes = []
+        for dim in dims:
+            if dim in preferred_chunks:
+                chunk_sizes.append(preferred_chunks.get(dim))
+        if len(chunk_sizes) == len(dims):
+            var_infos[var_name]["chunk_sizes"] = chunk_sizes
+            var_infos[var_name]["file_chunk_sizes"] = chunk_sizes
+        for dim in dims:
+            if dim in var_infos:
+                continue
+            var_infos[dim] = {}
+            var_infos[dim]["dimensions"] = dim
+            var_infos[dim]["file_dimensions"] = dim
+            var_infos[dim]["size"] = array[dim].size
+            var_infos[dim]["shape"] = array[dim].shape
+            var_infos[dim]["data_type"] = array[dim].dtype.name
+            var_infos[dim]["chunk_sizes"] = array[dim].shape
+            var_infos[dim]["file_chunk_sizes"] = array[dim].shape
+            if dim == "x":
+                diff = array.x.diff(dim="x")
+                if np.allclose(diff[0], array.x.diff(dim="x"), rtol=1e-8):
+                    attributes["geospatial_lon_resolution"] = \
+                        float(diff[0].values)
+                attributes["bbox_minx"] = \
+                    float(array.x[0].values -
+                          attributes["geospatial_lon_resolution"])
+                attributes["bbox_maxx"] = \
+                    float(array.x[-1].values +
+                          attributes["geospatial_lon_resolution"])
+            if dim == "y":
+                diff = array.y.diff(dim="y")
+                if np.allclose(diff[0], array.y.diff(dim="y"), rtol=1e-8):
+                    attributes["geospatial_lat_resolution"] = \
+                        abs(float(diff[0].values))
+                if diff[0] > 0:
+                    min = 0
+                    max = -1
+                else:
+                    min = -1
+                    max = 0
+                attributes["bbox_miny"] = \
+                    float(array.y[min].values -
+                          attributes["geospatial_lat_resolution"])
+                attributes["bbox_maxy"] = \
+                    float(array.y[max].values +
+                          attributes["geospatial_lat_resolution"])
 
     def get_opendap_dataset(self, url: str):
         return self._run_with_session(self._get_opendap_dataset, url)
@@ -1317,24 +2091,34 @@ class CciOdp:
             return self._result_dicts[url]
         tasks = []
         res_dict = {}
-        tasks.append(self._get_content_from_opendap_url(url, 'dds', res_dict, session))
-        tasks.append(self._get_content_from_opendap_url(url, 'das', res_dict, session))
+        tasks.append(self._get_content_from_opendap_url(
+            url, 'dds', res_dict, session)
+        )
+        tasks.append(self._get_content_from_opendap_url(
+            url, 'das', res_dict, session)
+        )
         await asyncio.gather(*tasks)
         if 'das' in res_dict:
-            res_dict['das'] = res_dict['das'].replace('        Float32 valid_min -Infinity;\n', '')
-            res_dict['das'] = res_dict['das'].replace('        Float32 valid_max Infinity;\n', '')
+            res_dict['das'] = res_dict['das'].replace(
+                '        Float32 valid_min -Infinity;\n', ''
+            )
+            res_dict['das'] = res_dict['das'].replace(
+                '        Float32 valid_max Infinity;\n', ''
+            )
         self._result_dicts[url] = res_dict
         return res_dict
 
     async def _get_opendap_dataset(self, session, url: str):
         res_dict = await self._get_result_dict(session, url)
         if 'dds' not in res_dict or 'das' not in res_dict:
-            _LOG.warning('Could not open opendap url. No dds or das file provided.')
+            _LOG.warning(
+                'Could not open opendap url. No dds or das file provided.'
+            )
             return
         if res_dict['dds'] == '':
             _LOG.warning('Could not open opendap url. dds file is empty.')
             return
-        dataset = build_dataset(res_dict['dds'])
+        dataset = dds_to_dataset(res_dict['dds'])
         add_attributes(dataset, parse_das(res_dict['das']))
 
         # remove any projection from the url, leaving selections
@@ -1344,7 +2128,7 @@ class CciOdp:
 
         # now add data proxies
         for var in walk(dataset, BaseType):
-            var.data = BaseProxy(url, var.id, var.dtype, var.shape)
+            var.data = BaseProxyDap2(url, var.id, var.dtype, var.shape)
         for var in walk(dataset, SequenceType):
             template = copy.copy(var)
             var.data = SequenceProxy(url, template)
@@ -1371,7 +2155,9 @@ class CciOdp:
 
         return dataset
 
-    async def _get_content_from_opendap_url(self, url: str, part: str, res_dict: dict, session):
+    async def _get_content_from_opendap_url(
+            self, url: str, part: str, res_dict: dict, session
+    ):
         scheme, netloc, path, query, fragment = urlsplit(url)
         url = urlunsplit((scheme, netloc, path + f'.{part}', query, fragment))
         resp = await self.get_response(session, url)
@@ -1379,7 +2165,9 @@ class CciOdp:
             res_dict[part] = await resp.read()
             res_dict[part] = str(res_dict[part], 'utf-8')
 
-    async def _get_data_from_opendap_dataset(self, dataset, session, variable_name, slices):
+    async def _get_data_from_opendap_dataset(
+            self, dataset, session, variable_name, slices
+    ):
         proxy = dataset[variable_name].data
         if type(proxy) == list:
             proxy = proxy[0]
@@ -1399,9 +2187,9 @@ class CciOdp:
         dds, data = content.split(b'\nData:\n', 1)
         dds = str(dds, 'utf-8')
         # Parse received dataset:
-        dataset = build_dataset(dds)
+        dataset = dds_to_dataset(dds)
         try:
-            dataset.data = unpack_data(BytesReader(data), dataset)
+            dataset.data = unpack_dap2_data(BytesReader(data), dataset)
         except ValueError:
             _LOG.warning(f'Could not read data from "{url}"')
             return None
@@ -1427,10 +2215,11 @@ class CciOdp:
                 retry_backoff = random.random() * retry_backoff_max
                 retry_total = retry_min + retry_backoff
                 if self._enable_warnings:
-                    retry_message = f'Error 429: Too Many Requests. ' \
-                                    f'Attempt {i + 1} of {num_retries} to retry after ' \
-                                    f'{"%.2f" % retry_min} + {"%.2f" % retry_backoff} = ' \
-                                    f'{"%.2f" % retry_total} ms...'
+                    retry_message = \
+                        f'Error 429: Too Many Requests. ' \
+                        f'Attempt {i + 1} of {num_retries} to retry after ' \
+                        f'{"%.2f" % retry_min} + {"%.2f" % retry_backoff} = ' \
+                        f'{"%.2f" % retry_total} ms ...'
                     warnings.warn(retry_message)
                 time.sleep(retry_total / 1000.0)
                 retry_backoff_max *= retry_backoff_base

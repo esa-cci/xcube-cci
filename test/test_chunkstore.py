@@ -6,28 +6,37 @@ import xarray as xr
 
 from unittest import skipIf
 
-from xcube_cci.cciodp import CciOdp
+from xcube_cci.ccicdc import CciCdc
 from xcube_cci.chunkstore import CciChunkStore
+
+OC_ID = 'esacci.OC.5-days.L3S.K_490.multi-sensor.multi-platform.MERGED.6-0.' \
+        'sinusoidal'
+OZONE_ID = 'esacci.OZONE.mon.L3.NP.multi-sensor.multi-platform.MERGED.fv0002.r1'
+SEAICE_ID = 'esacci.SEAICE.day.L4.SICONC.multi-sensor.multi-platform.' \
+            'AMSR_50kmEASE2.2-1.NH'
+SST_ID = 'esacci.SST.satellite-orbit-frequency.L3U.SSTskin.AATSR.Envisat.' \
+         'AATSR.2-1.r1'
 
 
 class CciChunkStoreTest(unittest.TestCase):
 
-    def _get_test_store(self):
-        cci_odp = CciOdp()
-        dataset_id = 'esacci.OZONE.mon.L3.NP.multi-sensor.multi-platform.MERGED.fv0002.r1'
+    @staticmethod
+    def _get_test_store():
+        cci_cdc = CciCdc()
+        dataset_id = OZONE_ID
         time_range = (pd.to_datetime('2010-02-10', utc=True),
                       pd.to_datetime('2010-05-20', utc=True))
         cube_params = dict(
             time_range=time_range,
             variable_names=['O3_vmr']
         )
-        return CciChunkStore(cci_odp, dataset_id, cube_params)
+        return CciChunkStore(cci_cdc, dataset_id, cube_params)
 
-    @skipIf(os.environ.get('XCUBE_DISABLE_WEB_TESTS', None) == '1', 'XCUBE_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
+            'ECT_DISABLE_WEB_TESTS = 1')
     def test_unconstrained_chunk_store(self):
-        cci_odp = CciOdp()
-        dataset_id = 'esacci.OZONE.mon.L3.NP.multi-sensor.multi-platform.MERGED.fv0002.r1'
-        store = CciChunkStore(cci_odp, dataset_id, cube_params=None)
+        cci_cdc = CciCdc()
+        store = CciChunkStore(cci_cdc, OZONE_ID, cube_params=None)
         self.assertIsNotNone(store)
         time_ranges = store._time_ranges
         self.assertEqual(144, len(time_ranges))
@@ -37,14 +46,12 @@ class CciChunkStoreTest(unittest.TestCase):
              'O3_du_tot', 'O3_ndens', 'O3_du', 'O3_vmr'},
             set(store._variable_names))
 
-    @skipIf(os.environ.get('XCUBE_DISABLE_WEB_TESTS', None) == '1',
-            'XCUBE_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
+            'ECT_DISABLE_WEB_TESTS = 1')
     def test_chunk_store_with_region_constraint(self):
-        cci_odp = CciOdp()
-        dataset_id = 'esacci.OZONE.mon.L3.NP.multi-sensor.multi-platform.' \
-                     'MERGED.fv0002.r1'
+        cci_cdc = CciCdc()
         cube_params = dict(bbox=[-10, 5, 0, 10])
-        store = CciChunkStore(cci_odp, dataset_id, cube_params=cube_params)
+        store = CciChunkStore(cci_cdc, OZONE_ID, cube_params=cube_params)
         self.assertIsNotNone(store)
 
         ds = xr.open_zarr(store)
@@ -63,16 +70,14 @@ class CciChunkStoreTest(unittest.TestCase):
                          ds.O3_du.dimensions)
         self.assertEqual((144, 16, 5, 10), ds.O3_du.shape)
 
-    @skipIf(os.environ.get('XCUBE_DISABLE_WEB_TESTS', None) == '1',
-            'XCUBE_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
+            'ECT_DISABLE_WEB_TESTS = 1')
     def test_get_time_ranges(self):
         store = self._get_test_store()
         time_range = (pd.to_datetime('2010-02-10', utc=True),
                       pd.to_datetime('2010-05-20', utc=True))
         cube_params = dict(time_range=time_range)
-        time_ranges = store.get_time_ranges(
-            'esacci.OZONE.mon.L3.NP.multi-sensor.multi-platform.MERGED.'
-            'fv0002.r1', cube_params)
+        time_ranges = store.get_time_ranges(OZONE_ID, cube_params)
         self.assertEqual([('2010-02-01T00:00:00', '2010-03-01T00:00:00'),
                           ('2010-03-01T00:00:00', '2010-04-01T00:00:00'),
                           ('2010-04-01T00:00:00', '2010-05-01T00:00:00'),
@@ -83,9 +88,7 @@ class CciChunkStoreTest(unittest.TestCase):
         time_range = (pd.to_datetime('2002-07-24', utc=True),
                       pd.to_datetime('2002-07-24', utc=True))
         cube_params = dict(time_range=time_range)
-        time_ranges = store.get_time_ranges(
-            'esacci.SST.satellite-orbit-frequency.L3U.SSTskin.AATSR.'
-            'Envisat.AATSR.2-1.r1', cube_params)
+        time_ranges = store.get_time_ranges(SST_ID, cube_params)
         self.assertEqual([('2002-07-24T12:33:21', '2002-07-24T14:13:57'),
                           ('2002-07-24T14:13:57', '2002-07-24T15:54:33'),
                           ('2002-07-24T15:54:33', '2002-07-24T17:35:09'),
@@ -99,9 +102,7 @@ class CciChunkStoreTest(unittest.TestCase):
         time_range = (pd.to_datetime('2002-07-04', utc=True),
                       pd.to_datetime('2002-07-27', utc=True))
         cube_params = dict(time_range=time_range)
-        time_ranges = store.get_time_ranges(
-            'esacci.OC.5-days.L3S.K_490.multi-sensor.multi-platform.MERGED.6-0.'
-            'sinusoidal', cube_params)
+        time_ranges = store.get_time_ranges(OC_ID, cube_params)
         self.assertEqual([('2002-06-30T00:00:00', '2002-07-04T23:59:00'),
                           ('2002-07-05T00:00:00', '2002-07-09T23:59:00'),
                           ('2002-07-10T00:00:00', '2002-07-14T23:59:00'),
@@ -114,10 +115,7 @@ class CciChunkStoreTest(unittest.TestCase):
         time_range = (pd.to_datetime('2002-07-04', utc=True),
                       pd.to_datetime('2002-07-09', utc=True))
         cube_params = dict(time_range=time_range)
-        time_ranges = store.get_time_ranges(
-            'esacci.SEAICE.day.L4.SICONC.multi-sensor.multi-platform.'
-            'AMSR_50kmEASE2.2-1.NH',
-            cube_params)
+        time_ranges = store.get_time_ranges(SEAICE_ID, cube_params)
         self.assertEqual([('2002-07-04T00:00:00', '2002-07-05T00:00:00'),
                           ('2002-07-05T00:00:00', '2002-07-06T00:00:00'),
                           ('2002-07-06T00:00:00', '2002-07-07T00:00:00'),
@@ -127,17 +125,21 @@ class CciChunkStoreTest(unittest.TestCase):
                          [(tr[0].isoformat(), tr[1].isoformat())
                           for tr in time_ranges])
 
-    @skipIf(os.environ.get('XCUBE_DISABLE_WEB_TESTS', None) == '1', 'XCUBE_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
+            'ECT_DISABLE_WEB_TESTS = 1')
     def test_get_dimension_indexes_for_chunk(self):
         store = self._get_test_store()
-        dim_indexes = store._get_dimension_indexes_for_chunk('O3_vmr', (5, 0, 0, 0))
+        dim_indexes = store._get_dimension_indexes_for_chunk(
+            'O3_vmr', (5, 0, 0, 0)
+        )
         self.assertIsNotNone(dim_indexes)
         self.assertEqual(slice(None, None, None), dim_indexes[0])
         self.assertEqual(slice(0, 17), dim_indexes[1])
         self.assertEqual(slice(0, 180), dim_indexes[2])
         self.assertEqual(slice(0, 360), dim_indexes[3])
 
-    @skipIf(os.environ.get('XCUBE_DISABLE_WEB_TESTS', None) == '1', 'XCUBE_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
+            'ECT_DISABLE_WEB_TESTS = 1')
     def test_get_encoding(self):
         store = self._get_test_store()
         encoding_dict = store.get_encoding('surface_pressure')
@@ -148,7 +150,8 @@ class CciChunkStoreTest(unittest.TestCase):
         self.assertTrue(numpy.isnan(encoding_dict['fill_value']))
         self.assertEqual('float32', encoding_dict['dtype'])
 
-    @skipIf(os.environ.get('XCUBE_DISABLE_WEB_TESTS', None) == '1', 'XCUBE_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
+            'ECT_DISABLE_WEB_TESTS = 1')
     def test_get_attrs(self):
         store = self._get_test_store()
         attrs = store.get_attrs('surface_pressure')
@@ -160,7 +163,8 @@ class CciChunkStoreTest(unittest.TestCase):
         self.assertTrue('data_type' in attrs)
         self.assertTrue('dimensions' in attrs)
         self.assertEqual('surface_air_pressure', attrs['standard_name'])
-        self.assertEqual('Pressure at the bottom of the atmosphere.', attrs['long_name'])
+        self.assertEqual('Pressure at the bottom of the atmosphere.',
+                         attrs['long_name'])
         self.assertEqual('hPa', attrs['units'])
         self.assertTrue(numpy.isnan(attrs['fill_value']))
         self.assertEqual([1, 180, 360], attrs['chunk_sizes'])
