@@ -71,7 +71,7 @@ from .constants import OPENSEARCH_CEDA_URL
 from .constants import COMMON_TIME_COORD_VAR_NAMES
 from .constants import TIMESTAMP_FORMAT
 
-from esa_climate_toolbox.util.time import get_time_strings_from_string
+from xcube_cci.timeutil import get_timestrings_from_string
 
 _LOG = logging.getLogger('xcube')
 ODD_NS = {'os': 'http://a9.com/-/spec/opensearch/1.1/',
@@ -429,11 +429,11 @@ def _determine_fill_value(dtype):
         return np.nan
 
 
-class CciCdcWarning(Warning):
+class CciOdpWarning(Warning):
     pass
 
 
-class CciCdc:
+class CciOdp:
     """
     Represents the ESA CCI Climate Data Centre
 
@@ -1105,13 +1105,13 @@ class CciCdc:
     def _extract_times_and_opendap_url(
             features: List[Tuple], feature_list: List[Dict], name_filter: str
     ):
-        CciCdc._extract_times_and_url(features, feature_list, "Opendap", name_filter)
+        CciOdp._extract_times_and_url(features, feature_list, "Opendap", name_filter)
 
     @staticmethod
     def _extract_times_and_download_url(
             features: List[Tuple], feature_list: List[Dict], name_filter: str
     ):
-        CciCdc._extract_times_and_url(features, feature_list, "Download", name_filter)
+        CciOdp._extract_times_and_url(features, feature_list, "Download", name_filter)
 
     @staticmethod
     def _extract_times_and_url(
@@ -1143,7 +1143,7 @@ class CciCdc:
             else:
                 title = properties.get('title', None)
                 if title:
-                    start_time, end_time = get_time_strings_from_string(title)
+                    start_time, end_time = get_timestrings_from_string(title)
                     if start_time:
                         try:
                             start_time = datetime.strptime(
@@ -1939,7 +1939,7 @@ class CciCdc:
                                   f'available you will see random values. This '
                                   f'is usually the case when data is missing '
                                   f'for a time step.',
-                                  category=CciCdcWarning)
+                                  category=CciOdpWarning)
             var_attrs['size'] = dataset[key].size
             var_attrs['shape'] = list(dataset[key].shape)
             if len(var_attrs['shape']) == 0:

@@ -47,7 +47,7 @@ from xcube.util.jsonschema import JsonNumberSchema
 from xcube.util.jsonschema import JsonObjectSchema
 from xcube.util.jsonschema import JsonStringSchema
 
-from .cciodp import CciCdc
+from .cciodp import CciOdp
 from .chunkstore import CciChunkStore
 from .constants import CCI_ODD_URL
 from .constants import DATAFRAME_OPENER_ID
@@ -101,11 +101,11 @@ def get_temporal_resolution_from_id(data_id: str) -> Optional[str]:
                 return f'1{time_res_pandas_id}'
 
 
-class CciCdcDataOpener(DataOpener):
+class CciOdpDataOpener(DataOpener):
 
     # noinspection PyShadowingBuiltins
     def __init__(self,
-                 cci_cdc: CciCdc,
+                 cci_cdc: CciOdp,
                  id: str,
                  data_type: DataType,
                  normalize_data: bool = True):
@@ -248,11 +248,11 @@ class CciCdcDataOpener(DataOpener):
         return coord_names
 
 
-class CciCdcDatasetOpener(CciCdcDataOpener):
+class CciOdpDatasetOpener(CciOdpDataOpener):
 
     def __init__(self, normalize_data: bool = True, **cdc_params):
         super().__init__(
-            CciCdc(**cdc_params, data_type='dataset'),
+            CciOdp(**cdc_params, data_type='dataset'),
             DATASET_OPENER_ID,
             DATASET_TYPE,
             normalize_data=normalize_data,
@@ -426,11 +426,11 @@ class CciCdcDatasetOpener(CciCdcDataOpener):
         return cci_schema
 
 
-class CciCdcDataFrameOpener(CciCdcDataOpener):
+class CciOdpDataFrameOpener(CciOdpDataOpener):
 
     def __init__(self, **cdc_params):
         super().__init__(
-            CciCdc(**cdc_params, data_type='geodataframe'),
+            CciOdp(**cdc_params, data_type='geodataframe'),
             DATAFRAME_OPENER_ID,
             GEO_DATA_FRAME_TYPE
         )
@@ -548,11 +548,11 @@ class CciCdcDataFrameOpener(CciCdcDataOpener):
         return cci_schema
 
 
-class CciCdcVectorDataCubeOpener(CciCdcDataOpener):
+class CciOdpVectorDataCubeOpener(CciOdpDataOpener):
 
     def __init__(self, normalize_data: bool = True, **cdc_params):
         super().__init__(
-            CciCdc(**cdc_params, data_type='vectordatacube'),
+            CciOdp(**cdc_params, data_type='vectordatacube'),
             VECTORDATACUBE_OPENER_ID,
             VECTOR_DATA_CUBE_TYPE,
             normalize_data=normalize_data,
@@ -682,7 +682,7 @@ class CciCdcVectorDataCubeOpener(CciCdcDataOpener):
         return ds
 
 
-class CciCdcDataStore(DataStore):
+class CciOdpDataStore(DataStore):
 
     def __init__(self, normalize_data=True, **store_params):
         cci_schema = self.get_data_store_params_schema()
@@ -693,14 +693,14 @@ class CciCdcDataStore(DataStore):
                            'retry_backoff_max', 'retry_backoff_base',
                            'user_agent')
         )
-        dataset_opener = CciCdcDatasetOpener(
+        dataset_opener = CciOdpDatasetOpener(
             normalize_data=normalize_data,
             **cdc_kwargs
         )
-        dataframe_opener = CciCdcDataFrameOpener(
+        dataframe_opener = CciOdpDataFrameOpener(
             **cdc_kwargs
         )
-        vectordatacube_opener = CciCdcVectorDataCubeOpener(
+        vectordatacube_opener = CciOdpVectorDataCubeOpener(
             **cdc_kwargs
         )
         self._openers = {
@@ -717,7 +717,7 @@ class CciCdcDataStore(DataStore):
 
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
-        ccicdc_params = dict(
+        cciodp_params = dict(
             endpoint_url=JsonStringSchema(default=OPENSEARCH_CEDA_URL),
             endpoint_description_url=JsonStringSchema(default=CCI_ODD_URL),
             enable_warnings=JsonBooleanSchema(
@@ -736,7 +736,7 @@ class CciCdcDataStore(DataStore):
             user_agent=JsonStringSchema(default=None)
         )
         return JsonObjectSchema(
-            properties=dict(**ccicdc_params),
+            properties=dict(**cciodp_params),
             required=None,
             additional_properties=False
         )
@@ -759,7 +759,7 @@ class CciCdcDataStore(DataStore):
 
     def _get_openers(
             self, opener_id: str = None, data_type: str = None
-    ) -> List[CciCdcDataOpener]:
+    ) -> List[CciOdpDataOpener]:
         self._assert_valid_opener_id(opener_id)
         try:
             self._assert_valid_data_type(data_type)
@@ -824,11 +824,11 @@ class CciCdcDataStore(DataStore):
     ) -> JsonObjectSchema:
         cls._assert_valid_data_type(data_type)
         if data_type is not None:
-            data_ids = CciCdc(data_type=data_type).dataset_names
+            data_ids = CciOdp(data_type=data_type).dataset_names
         else:
-            data_ids = CciCdc(data_type=DATASET_TYPE.alias).dataset_names + \
-                       CciCdc(data_type=GEO_DATA_FRAME_TYPE.alias).dataset_names + \
-                       CciCdc(data_type=VECTOR_DATA_CUBE_TYPE.alias).dataset_names
+            data_ids = CciOdp(data_type=DATASET_TYPE.alias).dataset_names + \
+                       CciOdp(data_type=GEO_DATA_FRAME_TYPE.alias).dataset_names + \
+                       CciOdp(data_type=VECTOR_DATA_CUBE_TYPE.alias).dataset_names
         ecvs = set([data_id.split('.')[1] for data_id in data_ids])
         frequencies = set(
             [data_id.split('.')[2].replace('-days', ' days').

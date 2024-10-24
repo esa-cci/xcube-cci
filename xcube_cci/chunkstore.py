@@ -37,7 +37,7 @@ from typing import Iterator, Any, List, Dict, Tuple, Callable, Iterable, \
 import numpy as np
 import pandas as pd
 
-from .cciodp import CciCdc
+from .cciodp import CciOdp
 from .constants import COMMON_COORD_VAR_NAMES
 from .constants import TIMESTAMP_FORMAT
 from .timerangegetter import extract_time_range_as_strings
@@ -874,7 +874,7 @@ class CciChunkStore(RemoteChunkStore):
     }
 
     def __init__(self,
-                 cci_cdc: CciCdc,
+                 cci_cdc: CciOdp,
                  dataset_id: str,
                  cube_params: Mapping[str, Any] = None,
                  observer: Callable = None,

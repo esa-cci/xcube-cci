@@ -19,10 +19,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+CCI_DATA_STORE_ID = 'esa-cci'
 CDC_SHORT_DATA_STORE_ID = 'esa-cdc'
+CDC_LONG_DATA_STORE_ID = 'esa-climate-data-centre'
+KC_CCI_DATA_STORE_ID = 'esa-cci-kc'
+KC_CDC_DATA_STORE_ID = 'esa-cdc-kc'
+ZARR_CCI_DATA_STORE_ID = 'esa-cci-zarr'
+ZARR_CDC_DATA_STORE_ID = 'esa-cdc-zarr'
+
+DATA_STORE_ID = 'cciodp'
+KC_DATA_STORE_ID = 'ccikc'
+ZARR_DATA_STORE_ID = 'ccizarr'
 
 DATAFRAME_OPENER_ID = f'dataframe:geojson:{CDC_SHORT_DATA_STORE_ID}'
-DATASET_OPENER_ID = f'dataset:zarr:{CDC_SHORT_DATA_STORE_ID}'
+CDC_DATASET_OPENER_ID = f'dataset:zarr:{CDC_SHORT_DATA_STORE_ID}'
+DATASET_OPENER_ID = f'dataset:zarr:{DATA_STORE_ID}'
 VECTORDATACUBE_OPENER_ID = f'vectordatacube::{CDC_SHORT_DATA_STORE_ID}'
 DATA_ARRAY_NAME = 'var_data'
 OPENSEARCH_CEDA_URL = 'https://archive.opensearch.ceda.ac.uk/opensearch/request'

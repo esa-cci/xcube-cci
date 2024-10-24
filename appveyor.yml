@@ -9,13 +9,17 @@ configuration: Release
 platform:
   - x64
 
+environment:
+  # For the unit-tests, disable Numba JIT, otherwise Coverage wont reach the actual Python code
+  NUMBA_DISABLE_JIT: 1
+
 for:
 -
   matrix:
     only:
       - image: macos
   install:
-    - curl -L https://repo.continuum.io/miniconda/Miniconda3-py310_23.3.1-0-MacOSX-x86_64.sh > miniconda.sh
+    - curl -L https://repo.anaconda.com/miniconda/Miniconda3-py310_23.3.1-0-MacOSX-x86_64.sh > miniconda.sh
     - bash miniconda.sh -b -p $HOME/miniconda
 -
   matrix:
@@ -41,8 +45,6 @@ build_script:
   # avoids potential breakage due to changes in mamba behaviour.
   - conda install -c conda-forge mamba
 
-  - git clone https://github.com/dcs4cop/xcube.git
-  - cd xcube
   - mamba env create
   - conda activate xcube
   - python setup.py develop
@@ -56,7 +58,6 @@ build_script:
 #  - mamba install --prefix $HOME/mamba-env pytest
 #  - conda activate $HOME/mamba-env
   - conda list
-  - python setup.py install
 
   # Run the test suite.
   - pytest -v --cov=xcube-cci test

@@ -4,9 +4,9 @@ import pandas as pd
 import unittest
 from unittest import skip, skipIf
 
-from xcube_cci.ccicdc import get_res
-from xcube_cci.ccicdc import CciCdc
-from xcube_cci.ccicdc import find_datetime_format
+from xcube_cci.cciodp import get_res
+from xcube_cci.cciodp import CciOdp
+from xcube_cci.cciodp import find_datetime_format
 from xcube_cci.constants import OPENSEARCH_CEDA_URL
 
 AEROSOL_ID = 'esacci.AEROSOL.day.L3C.AER_PRODUCTS.AATSR.Envisat.ORAC.04-01-.r1'
@@ -42,7 +42,7 @@ class CciCdcTest(unittest.TestCase):
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
     def test_get_data_chunk(self):
-        cci_cdc = CciCdc()
+        cci_cdc = CciOdp()
         ds_id = cci_cdc.get_dataset_id(OZONE_ID)
         request = dict(parentIdentifier=ds_id,
                        startDate='1997-05-01T00:00:00',
@@ -73,7 +73,7 @@ class CciCdcTest(unittest.TestCase):
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
     def test_dataset_names(self):
-        cci_cdc = CciCdc()
+        cci_cdc = CciOdp()
         dataset_names = cci_cdc.dataset_names
         self.assertIsNotNone(dataset_names)
         list(dataset_names)
@@ -85,7 +85,7 @@ class CciCdcTest(unittest.TestCase):
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
     def test_var_and_coord_names(self):
-        cci_cdc = CciCdc()
+        cci_cdc = CciOdp()
         var_names, coord_names = cci_cdc.var_and_coord_names(OC_5DAYS_GEO_ID)
         self.assertIsNotNone(var_names)
         self.assertEqual(
@@ -100,7 +100,7 @@ class CciCdcTest(unittest.TestCase):
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
     def test_get_dataset_info(self):
-        cci_cdc = CciCdc()
+        cci_cdc = CciOdp()
         dataset_info = cci_cdc.get_dataset_info(CLOUD_ID)
         self.assertIsNotNone(dataset_info)
         self.assertTrue('y_res' in dataset_info)
@@ -162,7 +162,7 @@ class CciCdcTest(unittest.TestCase):
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
     def test_fetch_data_source_list_json(self):
-        cci_cdc = CciCdc()
+        cci_cdc = CciOdp()
 
         async def fetch_data_source_list_json(session):
             return await cci_cdc._fetch_data_source_list_json(
@@ -219,7 +219,7 @@ class CciCdcTest(unittest.TestCase):
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
     def test_get_datasets_metadata(self):
-        cci_cdc = CciCdc()
+        cci_cdc = CciOdp()
         datasets = [OC_DAY_ID, OC_5DAYS_CHLOR_SIN_ID, SEAICE_ID]
         datasets_metadata = cci_cdc.get_datasets_metadata(datasets)
         self.assertIsNotNone(datasets_metadata)
@@ -252,7 +252,7 @@ class CciCdcTest(unittest.TestCase):
             'ECT_DISABLE_WEB_TESTS = 1')
     @skip('Disabled while old archive is set up')
     def test_get_drs_metadata(self):
-        cci_cdc = CciCdc()
+        cci_cdc = CciOdp()
         fid = '12d6f4bdabe144d7836b0807e65aa0e2'
         metadata = {}
 
@@ -303,7 +303,7 @@ class CciCdcTest(unittest.TestCase):
                       'aerosol/data/AATSR_SU/L3/v4.21/DAILY/2002/07/' \
                       '20020724-ESACCI-L3C_AEROSOL-AER_PRODUCTS-AATSR_' \
                       'ENVISAT-SU_DAILY-v4.21.nc'
-        cci_cdc = CciCdc()
+        cci_cdc = CciOdp()
         dataset = cci_cdc.get_opendap_dataset(opendap_url)
         self.assertIsNotNone(dataset)
         self.assertEqual(53, len(list(dataset.keys())))
@@ -389,7 +389,7 @@ class CciCdcTest(unittest.TestCase):
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
     def test_get_variable_data(self):
-        cci_cdc = CciCdc()
+        cci_cdc = CciOdp()
         dimension_data = cci_cdc.get_variable_data(
             AEROSOL_ID,
             {'latitude': 180,
@@ -430,7 +430,7 @@ class CciCdcTest(unittest.TestCase):
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
     def test_search_ecv(self):
-        cci_cdc = CciCdc()
+        cci_cdc = CciOdp()
         aerosol_sources = cci_cdc.search(
             start_date='1990-05-01',
             end_date='2021-08-01',
@@ -444,7 +444,7 @@ class CciCdcTest(unittest.TestCase):
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
     def test_search_frequency(self):
-        cci_cdc = CciCdc()
+        cci_cdc = CciOdp()
         five_day_sources = cci_cdc.search(
             start_date='1990-05-01',
             end_date='2021-08-01',
@@ -458,7 +458,7 @@ class CciCdcTest(unittest.TestCase):
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
     def test_search_processing_level(self):
-        cci_cdc = CciCdc()
+        cci_cdc = CciOdp()
         l2p_sources = cci_cdc.search(
             start_date='1990-05-01',
             end_date='2021-08-01',
@@ -472,7 +472,7 @@ class CciCdcTest(unittest.TestCase):
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
     def test_search_product_string(self):
-        cci_cdc = CciCdc()
+        cci_cdc = CciOdp()
         avhrr19g_sources = cci_cdc.search(
             start_date='1990-05-01',
             end_date='2021-08-01',
@@ -486,7 +486,7 @@ class CciCdcTest(unittest.TestCase):
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
     def test_search_product_version(self):
-        cci_cdc = CciCdc(data_type="geodataframe")
+        cci_cdc = CciOdp(data_type="geodataframe")
         v238_sources = cci_cdc.search(
             start_date='1990-05-01',
             end_date='2021-08-01',
@@ -500,7 +500,7 @@ class CciCdcTest(unittest.TestCase):
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
     def test_search_data_type(self):
-        cci_cdc = CciCdc()
+        cci_cdc = CciOdp()
         siconc_sources = cci_cdc.search(
             start_date='2007-05-01',
             end_date='2009-08-01',
@@ -514,7 +514,7 @@ class CciCdcTest(unittest.TestCase):
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
     def test_search_sensor(self):
-        cci_cdc = CciCdc(data_type="geodataframe")
+        cci_cdc = CciOdp(data_type="geodataframe")
         sciamachy_sources = cci_cdc.search(
             start_date='1990-05-01',
             end_date='2021-08-01',
@@ -528,7 +528,7 @@ class CciCdcTest(unittest.TestCase):
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
     def test_get_time_ranges_from_data(self):
-        cci_cdc = CciCdc()
+        cci_cdc = CciOdp()
         first_time_ranges = cci_cdc.get_time_ranges_from_data(
             dataset_name='esacci.OC.5-days.L3S.RRS.multi-sensor.multi-platform.'
             'MERGED.6-0.geographic',

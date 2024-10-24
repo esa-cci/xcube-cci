@@ -26,13 +26,13 @@ import geopandas as gpd
 import pandas as pd
 import shapely
 
-from xcube_cci.ccicdc import CciCdc
+from xcube_cci.cciodp import CciOdp
 from xcube_cci.timerangegetter import TimeRangeGetter
 
 
 class DataFrameAccessor:
 
-    def __init__(self, cci_cdc: CciCdc, df_id: str, gdf_params: Mapping[str, Any]):
+    def __init__(self, cci_cdc: CciOdp, df_id: str, gdf_params: Mapping[str, Any]):
         self._cci_cdc = cci_cdc
         self._df_id = df_id
         self._metadata = cci_cdc.get_dataset_metadata(df_id)
@@ -154,8 +154,6 @@ class DataFrameAccessor:
             yield feature
 
 
-# this class is originally from esa_climate_toolbox.core.types
-# it is duplicated here to avoid circular imports
 class GeoDataFrame:
     """
     Proxy for a ``geopandas.GeoDataFrame`` that holds an iterable of features
@@ -213,11 +211,6 @@ class GeoDataFrame:
         return self._lazy_data_frame
 
     def close(self):
-        """
-        In the ESA Climate Toolbox, closable resources are closed when removed
-        from the resources cache. Therefore we provide a close method here,
-        although geopandas.GeoDataFrame doesn't have one.
-        """
         try:
             self._features.close()
         except AttributeError:

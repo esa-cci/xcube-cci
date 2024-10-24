@@ -6,7 +6,7 @@ import xarray as xr
 
 from unittest import skipIf
 
-from xcube_cci.ccicdc import CciCdc
+from xcube_cci.cciodp import CciOdp
 from xcube_cci.chunkstore import CciChunkStore
 
 OC_ID = 'esacci.OC.5-days.L3S.K_490.multi-sensor.multi-platform.MERGED.6-0.' \
@@ -22,7 +22,7 @@ class CciChunkStoreTest(unittest.TestCase):
 
     @staticmethod
     def _get_test_store():
-        cci_cdc = CciCdc()
+        cci_cdc = CciOdp()
         dataset_id = OZONE_ID
         time_range = (pd.to_datetime('2010-02-10', utc=True),
                       pd.to_datetime('2010-05-20', utc=True))
@@ -35,7 +35,7 @@ class CciChunkStoreTest(unittest.TestCase):
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
     def test_unconstrained_chunk_store(self):
-        cci_cdc = CciCdc()
+        cci_cdc = CciOdp()
         store = CciChunkStore(cci_cdc, OZONE_ID, cube_params=None)
         self.assertIsNotNone(store)
         time_ranges = store._time_ranges
@@ -49,7 +49,7 @@ class CciChunkStoreTest(unittest.TestCase):
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
     def test_chunk_store_with_region_constraint(self):
-        cci_cdc = CciCdc()
+        cci_cdc = CciOdp()
         cube_params = dict(bbox=[-10, 5, 0, 10])
         store = CciChunkStore(cci_cdc, OZONE_ID, cube_params=cube_params)
         self.assertIsNotNone(store)

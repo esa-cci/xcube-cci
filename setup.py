@@ -45,6 +45,8 @@ setup(
     include_package_data=True,
     data_files=[('xcube_cci', [
         'xcube_cci/data/excluded_data_sources',
+        'xcube_cci/data/stores.yml',
+        'xcube_cci/data/kc_refs.json'
         'xcube_cci/data/dataset_states.json']
                  )],
     install_requires=requirements,

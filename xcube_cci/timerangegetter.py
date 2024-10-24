@@ -28,7 +28,7 @@ from typing import Mapping
 from typing import Tuple
 from typing import Union
 
-from xcube_cci.ccicdc import CciCdc
+from xcube_cci.cciodp import CciOdp
 
 from xcube_cci.constants import MONTHS
 from .constants import TIMESTAMP_FORMAT
@@ -57,7 +57,7 @@ def extract_time_as_string(
 
 class TimeRangeGetter:
 
-    def __init__(self, cci_cdc: CciCdc, metadata: dict):
+    def __init__(self, cci_cdc: CciOdp, metadata: dict):
         self._cci_cdc = cci_cdc
         self._metadata = metadata
 

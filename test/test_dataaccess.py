@@ -13,11 +13,11 @@ from xcube.core.store.descriptor import DatasetDescriptor
 from xcube.core.store.descriptor import GeoDataFrameDescriptor
 from xcube.core.verify import assert_cube
 
-from xcube_cci.dataaccess import CciCdcDataStore
-from xcube_cci.dataaccess import CciCdcDataFrameOpener
-from xcube_cci.dataaccess import CciCdcDatasetOpener
+from xcube_cci.dataaccess import CciOdpDataStore
+from xcube_cci.dataaccess import CciOdpDataFrameOpener
+from xcube_cci.dataaccess import CciOdpDatasetOpener
 from xcube_cci.dataaccess import get_temporal_resolution_from_id
-from xcube_cci.dataaccess import CciCdcVectorDataCubeOpener
+from xcube_cci.dataaccess import CciOdpVectorDataCubeOpener
 from xcube_cci.dataaccess import VectorDataCubeDescriptor
 from xcube_cci.dataaccess import VECTOR_DATA_CUBE_TYPE
 
@@ -83,10 +83,10 @@ class DataAccessTest(unittest.TestCase):
         ))
 
 
-class CciCdcDatasetOpenerTest(unittest.TestCase):
+class CciOdpDatasetOpenerTest(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.opener = CciCdcDatasetOpener(normalize_data=False)
+        self.opener = CciOdpDatasetOpener(normalize_data=False)
 
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
@@ -394,7 +394,7 @@ class CciCdcDatasetOpenerTest(unittest.TestCase):
 class CciOdpDatasetOpenerTimeSeriesTest(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.opener = CciCdcDatasetOpener(normalize_data=False)
+        self.opener = CciOdpDatasetOpener(normalize_data=False)
 
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
@@ -456,7 +456,7 @@ class CciOdpDatasetOpenerTimeSeriesTest(unittest.TestCase):
 class CciOdpDatasetOpenerTimeSeriesNormalizeTest(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.opener = CciCdcDatasetOpener(normalize_data=True)
+        self.opener = CciOdpDatasetOpener(normalize_data=True)
 
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
@@ -518,7 +518,7 @@ class CciOdpDatasetOpenerTimeSeriesNormalizeTest(unittest.TestCase):
 class CciOdpDatasetOpenerNormalizeTest(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.opener = CciCdcDatasetOpener(normalize_data=True)
+        self.opener = CciOdpDatasetOpener(normalize_data=True)
 
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
@@ -583,7 +583,7 @@ class CciOdpDatasetOpenerNormalizeTest(unittest.TestCase):
         self.assertEqual(
             f'Cannot describe metadata of data resource '
             f'"{AEROSOL_DAY_ENVISAT_ID}", as it cannot be accessed by '
-            f'data accessor "dataset:zarr:esa-cdc".', f'{dse.exception}')
+            f'data accessor "dataset:zarr:cciodp".', f'{dse.exception}')
 
     @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
             'ECT_DISABLE_WEB_TESTS = 1')
@@ -662,12 +662,12 @@ class CciOdpDatasetOpenerNormalizeTest(unittest.TestCase):
 
 
 def user_agent(ext: str = "") -> str:
-    from esa_climate_toolbox.version import __version__
+    from xcube_cci.version import version
     from platform import machine, python_version, system
 
     return "xcube-cci-testing/{version} (Python {python};" \
            " {system} {arch}) {ext}".format(
-        version=__version__,
+        version=version,
         python=python_version(),
         system=system(),
         arch=machine(),
@@ -675,10 +675,10 @@ def user_agent(ext: str = "") -> str:
     )
 
 
-class CciCdcDataFrameOpenerTest(unittest.TestCase):
+class CciOdpDataFrameOpenerTest(unittest.TestCase):
 
     def setUp(self) -> None:
-        self._opener = CciCdcDataFrameOpener()
+        self._opener = CciOdpDataFrameOpener()
 
     def test_dataset_names(self):
         ds_names = self._opener.dataset_names
@@ -745,10 +745,10 @@ class CciCdcDataFrameOpenerTest(unittest.TestCase):
         )
 
 
-class CciCdcVectorDataCubeOpenerTest(unittest.TestCase):
+class CciOdpVectorDataCubeOpenerTest(unittest.TestCase):
 
     def setUp(self) -> None:
-        self._opener = CciCdcVectorDataCubeOpener()
+        self._opener = CciOdpVectorDataCubeOpener()
 
     def test_dataset_names(self):
         ds_names = self._opener.dataset_names
@@ -810,15 +810,15 @@ class CciCdcVectorDataCubeOpenerTest(unittest.TestCase):
         self.assertIsNotNone(data.zarr_store.get())
 
 
-class CciCdcDataStoreTest(unittest.TestCase):
+class CciOdpDataStoreTest(unittest.TestCase):
 
     def setUp(self) -> None:
         odp_params = {'user_agent': user_agent()}
-        self.store = CciCdcDataStore(normalize_data=False, **odp_params)
+        self.store = CciOdpDataStore(normalize_data=False, **odp_params)
 
     def test_get_data_store_params_schema(self):
         cci_store_params_schema = \
-            CciCdcDataStore.get_data_store_params_schema().to_dict()
+            CciOdpDataStore.get_data_store_params_schema().to_dict()
         self.assertIsNotNone(cci_store_params_schema)
         self.assertTrue('endpoint_url' in cci_store_params_schema['properties'])
         self.assertTrue(
@@ -829,7 +829,7 @@ class CciCdcDataStoreTest(unittest.TestCase):
     def test_get_data_types(self):
         self.assertEqual(
             ('dataset', "geodataframe", "vectordatacube"),
-            CciCdcDataStore.get_data_types()
+            CciOdpDataStore.get_data_types()
         )
 
     def test_get_data_types_for_data(self):
@@ -883,7 +883,7 @@ class CciDataNormalizationTest(unittest.TestCase):
 
     @skip('Execute to test whether all data sets can be normalized')
     def test_normalization(self):
-        store = CciCdcDataStore(normalize_data=True)
+        store = CciOdpDataStore(normalize_data=True)
         all_data = store.search_data()
         datasets_without_variables = []
         datasets_with_unsupported_frequencies = []

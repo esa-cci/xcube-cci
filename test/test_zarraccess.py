@@ -81,6 +81,7 @@ class CciZarrDataStoreTest(unittest.TestCase):
              'cache_size',
              'chunks',
              'consolidated',
+             'data_type',
              'decode_cf',
              'decode_coords',
              'decode_times',
