@@ -46,17 +46,9 @@ build_script:
   - conda install -c conda-forge mamba
 
   - mamba env create
-  - conda activate xcube
-  - python setup.py develop
-  - cd ..
-  - mamba install -c conda-forge lxml aiohttp nest-asyncio pydap=3.3
+  - conda activate xcube-cci
+  - pip install -e .
 
-  # Environments created by mamba can't be referenced by name from conda
-  # (presumably a bug), so we use an explicit path instead.
-#  - mamba env create --prefix $HOME/mamba-env --file environment.yml
-  # install pytest for testing
-#  - mamba install --prefix $HOME/mamba-env pytest
-#  - conda activate $HOME/mamba-env
   - conda list
 
   # Run the test suite.
