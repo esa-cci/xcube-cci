@@ -1,5 +1,19 @@
 ## Changes in 0.11 (in development)
 
+* Migrated code from `ESA CCI Toolbox`. This encompasses the following changes:
+  * Added store aliases `esa-cdc` and  `esa-climate-data-centre`, `esa-cci` 
+    and `esa-cci-zarr`
+  * Added new data store `esa-cci-kc` 
+    (and corresponding xcube data store `esa-cci-kc`) that allows performant 
+    accessing of selected datasets of the ESA Climate Data Centre using a 
+    Zarr view of the original NetCDF files. This approach is made possible by 
+    using the [kerchunk](https://fsspec.github.io/kerchunk/) package. Also 
+    added new Notebook that demonstrates usage of the new data store.
+  * Added opener `"datafame:geojson:esa-cdc"` to open data as data frames
+  * Added opener `"vectordatacube::esa-cdc"` to open data as vector data cubes
+  * Updated list of dataset states
+* Set up pipeline to publish package on pypi
+
 ## Changes in 0.10.2
 
 * Fixed support for climatology datasets
