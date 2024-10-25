@@ -55,4 +55,4 @@ build_script:
   - conda list
 
   # Run the test suite.
-  - pytest -v --cov=xcube-cci test
+  - pytest -v --cov=xcube_cci test
