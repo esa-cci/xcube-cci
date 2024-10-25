@@ -32,8 +32,8 @@ class CciChunkStoreTest(unittest.TestCase):
         )
         return CciChunkStore(cci_cdc, dataset_id, cube_params)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_unconstrained_chunk_store(self):
         cci_cdc = CciOdp()
         store = CciChunkStore(cci_cdc, OZONE_ID, cube_params=None)
@@ -46,8 +46,8 @@ class CciChunkStoreTest(unittest.TestCase):
              'O3_du_tot', 'O3_ndens', 'O3_du', 'O3_vmr'},
             set(store._variable_names))
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_chunk_store_with_region_constraint(self):
         cci_cdc = CciOdp()
         cube_params = dict(bbox=[-10, 5, 0, 10])
@@ -70,8 +70,8 @@ class CciChunkStoreTest(unittest.TestCase):
                          ds.O3_du.dimensions)
         self.assertEqual((144, 16, 5, 10), ds.O3_du.shape)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_get_time_ranges(self):
         store = self._get_test_store()
         time_range = (pd.to_datetime('2010-02-10', utc=True),
@@ -125,8 +125,8 @@ class CciChunkStoreTest(unittest.TestCase):
                          [(tr[0].isoformat(), tr[1].isoformat())
                           for tr in time_ranges])
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_get_dimension_indexes_for_chunk(self):
         store = self._get_test_store()
         dim_indexes = store._get_dimension_indexes_for_chunk(
@@ -138,8 +138,8 @@ class CciChunkStoreTest(unittest.TestCase):
         self.assertEqual(slice(0, 180), dim_indexes[2])
         self.assertEqual(slice(0, 360), dim_indexes[3])
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_get_encoding(self):
         store = self._get_test_store()
         encoding_dict = store.get_encoding('surface_pressure')
@@ -150,8 +150,8 @@ class CciChunkStoreTest(unittest.TestCase):
         self.assertTrue(numpy.isnan(encoding_dict['fill_value']))
         self.assertEqual('float32', encoding_dict['dtype'])
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_get_attrs(self):
         store = self._get_test_store()
         attrs = store.get_attrs('surface_pressure')

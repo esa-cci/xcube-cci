@@ -39,8 +39,8 @@ SST_ID = 'esacci.SST.satellite-orbit-frequency.L3U.SSTskin.AVHRR-3.NOAA-19.' \
 
 class CciCdcTest(unittest.TestCase):
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_get_data_chunk(self):
         cci_cdc = CciOdp()
         ds_id = cci_cdc.get_dataset_id(OZONE_ID)
@@ -70,8 +70,8 @@ class CciCdcTest(unittest.TestCase):
         self.assertEqual(16, len(data_array))
         self.assertAlmostEqual(15, data_array[-2])
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_dataset_names(self):
         cci_cdc = CciOdp()
         dataset_names = cci_cdc.dataset_names
@@ -82,8 +82,8 @@ class CciCdcTest(unittest.TestCase):
         self.assertTrue(OC_MON_ID in dataset_names)
         self.assertTrue(SST_ID in dataset_names)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_var_and_coord_names(self):
         cci_cdc = CciOdp()
         var_names, coord_names = cci_cdc.var_and_coord_names(OC_5DAYS_GEO_ID)
@@ -97,8 +97,8 @@ class CciCdcTest(unittest.TestCase):
         self.assertIsNotNone(coord_names)
         self.assertEqual(['lat', 'lon', 'time'], coord_names)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_get_dataset_info(self):
         cci_cdc = CciOdp()
         dataset_info = cci_cdc.get_dataset_info(CLOUD_ID)
@@ -159,8 +159,8 @@ class CciCdcTest(unittest.TestCase):
         self.assertEqual('2014-12-31T23:59:59',
                          dataset_info['temporal_coverage_end'])
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_fetch_data_source_list_json(self):
         cci_cdc = CciOdp()
 
@@ -216,8 +216,8 @@ class CciCdcTest(unittest.TestCase):
             )
         )
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_get_datasets_metadata(self):
         cci_cdc = CciOdp()
         datasets = [OC_DAY_ID, OC_5DAYS_CHLOR_SIN_ID, SEAICE_ID]
@@ -248,8 +248,8 @@ class CciCdcTest(unittest.TestCase):
         self.assertEqual('uint16', datasets_metadata[2].get('variable_infos').
                          get('status_flag').get('data_type'))
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     @skip('Disabled while old archive is set up')
     def test_get_drs_metadata(self):
         cci_cdc = CciOdp()
@@ -296,8 +296,8 @@ class CciCdcTest(unittest.TestCase):
         self.assertEqual('e7f59d6547d610fdd04ae05cca77ddfee15e3a5a',
                          drs_uuids[OC_MON_31_ID])
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_get_opendap_dataset(self):
         opendap_url = 'http://data.cci.ceda.ac.uk/thredds/dodsC/esacci/' \
                       'aerosol/data/AATSR_SU/L3/v4.21/DAILY/2002/07/' \
@@ -386,8 +386,8 @@ class CciCdcTest(unittest.TestCase):
         self.assertEqual(0, timedelta.minutes)
         self.assertEqual(-1, timedelta.seconds)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_get_variable_data(self):
         cci_cdc = CciOdp()
         dimension_data = cci_cdc.get_variable_data(
@@ -427,8 +427,8 @@ class CciCdcTest(unittest.TestCase):
         self.assertEqual(dimension_data['lon']['chunkSize'], 72900)
         self.assertEqual(len(dimension_data['lon']['data']), 0)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_search_ecv(self):
         cci_cdc = CciOdp()
         aerosol_sources = cci_cdc.search(
@@ -441,8 +441,8 @@ class CciCdcTest(unittest.TestCase):
         )
         self.assertTrue(len(aerosol_sources) > 13)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_search_frequency(self):
         cci_cdc = CciOdp()
         five_day_sources = cci_cdc.search(
@@ -455,8 +455,8 @@ class CciCdcTest(unittest.TestCase):
         )
         self.assertTrue(len(five_day_sources) > 10)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_search_processing_level(self):
         cci_cdc = CciOdp()
         l2p_sources = cci_cdc.search(
@@ -469,8 +469,8 @@ class CciCdcTest(unittest.TestCase):
         )
         self.assertTrue(len(l2p_sources) > 10)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_search_product_string(self):
         cci_cdc = CciOdp()
         avhrr19g_sources = cci_cdc.search(
@@ -483,8 +483,8 @@ class CciCdcTest(unittest.TestCase):
         )
         self.assertTrue(len(avhrr19g_sources) > 3)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_search_product_version(self):
         cci_cdc = CciOdp(data_type="geodataframe")
         v238_sources = cci_cdc.search(
@@ -497,8 +497,8 @@ class CciCdcTest(unittest.TestCase):
         )
         self.assertTrue(len(v238_sources) > 2)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_search_data_type(self):
         cci_cdc = CciOdp()
         siconc_sources = cci_cdc.search(
@@ -511,8 +511,8 @@ class CciCdcTest(unittest.TestCase):
         )
         self.assertTrue(len(siconc_sources) > 3)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_search_sensor(self):
         cci_cdc = CciOdp(data_type="geodataframe")
         sciamachy_sources = cci_cdc.search(
@@ -525,8 +525,8 @@ class CciCdcTest(unittest.TestCase):
         )
         self.assertTrue(len(sciamachy_sources) > 2)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_get_time_ranges_from_data(self):
         cci_cdc = CciOdp()
         first_time_ranges = cci_cdc.get_time_ranges_from_data(

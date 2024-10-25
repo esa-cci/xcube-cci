@@ -88,13 +88,13 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
     def setUp(self) -> None:
         self.opener = CciOdpDatasetOpener(normalize_data=False)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_dataset_names(self):
         self.assertTrue(len(self.opener.dataset_names) > 275)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_has_data(self):
         self.assertTrue(self.opener.has_data(
             'esacci.FIRE.mon.L4.BA.MODIS.Terra.MODIS_TERRA.v5-1.grid')
@@ -141,8 +141,8 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
             'fv0002.r1')
         )
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_dataset_crs_variable(self):
         descriptor = self.opener.describe_data(SEAICE_ID)
         self.assertIsNotNone(descriptor)
@@ -152,8 +152,8 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
         self.assertTrue('yc' in descriptor.coords.keys())
         self.assertEqual('Lambert Azimuthal Equal Area', descriptor.crs)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_climatology_dataset(self):
         descriptor = self.opener.describe_data(AEROSOL_CLIMATOLOGY_ID)
         self.assertIsNotNone(descriptor)
@@ -164,8 +164,8 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
         )
         self.assertIsNone(descriptor.time_range)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_data(self):
         descriptor = self.opener.describe_data(OZONE_MON_ID)
         self.assertIsNotNone(descriptor)
@@ -219,8 +219,8 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
                          descriptor.time_range)
         self.assertEqual('1D', descriptor.time_period)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_2d_grid_coords_data(self):
         descriptor = self.opener.describe_data(COORDS_2D_ID)
         self.assertIsNotNone(descriptor)
@@ -249,8 +249,8 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
         self.assertTrue('time_range' in schema['properties'])
         self.assertFalse(schema['additionalProperties'])
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_get_open_data_params_schema(self):
         schema = self.opener.get_open_data_params_schema(OZONE_MON_ID).to_dict()
         self.assertIsNotNone(schema)
@@ -267,8 +267,8 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
         self.assertTrue('bbox' in schema['properties'])
         self.assertFalse(schema['additionalProperties'])
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_open_data_sst(self):
         dataset = self.opener.open_data(
             SST_ID,
@@ -285,8 +285,8 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
         self.assertEqual({1, 20, 20}, set(dataset.analysed_sst.chunk_sizes))
         self.assertIsNotNone(dataset.zarr_store.get())
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_open_data_aerosol(self):
         dataset = self.opener.open_data(
             AEROSOL_DAY_ID,
@@ -319,14 +319,14 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
                          set(full_dataset.absorbing_aerosol_index.chunk_sizes))
         self.assertIsNotNone(full_dataset.zarr_store.get())
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_open_climatology_data(self):
         dataset = self.opener.open_data(AEROSOL_CLIMATOLOGY_ID)
         self.assertIsNotNone(dataset)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_open_data_with_crs(self):
         dataset = self.opener.open_data(ICESHEETS_ID)
         self.assertIsNotNone(dataset)
@@ -337,8 +337,8 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
         self.assertEqual(('x', 'y'), grid_mapping.xy_var_names)
         self.assertEqual((3200, 5400), grid_mapping.size)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     @skip('Disabled while time series are not supported')
     def test_open_data_with_time_series_and_latitude_centers(self):
         dataset = self.opener.open_data(
@@ -356,8 +356,8 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
                          dataset.ozone_mixing_ratio.dims)
         self.assertEqual({1, 32, 18}, dataset.ozone_mixing_ratio.chunk_sizes)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_open_2d_grid_coords_data(self):
         dataset = self.opener.open_data(
             COORDS_2D_ID,
@@ -371,8 +371,8 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
         self.assertEqual(('y', 'x', 'Time'), dataset.AltiKaSEC.dims)
         self.assertEqual([635, 634, 1], dataset.AltiKaSEC.chunk_sizes)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_search(self):
         search_result = list(self.opener.search_data(cci_attrs=dict(
             ecv='CLOUD',
@@ -396,8 +396,8 @@ class CciOdpDatasetOpenerTimeSeriesTest(unittest.TestCase):
     def setUp(self) -> None:
         self.opener = CciOdpDatasetOpener(normalize_data=False)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_monthly_ozone(self):
         descriptor = self.opener.describe_data(OZONE_MON_GOMOS_ID)
         self.assertIsNotNone(descriptor)
@@ -409,8 +409,8 @@ class CciOdpDatasetOpenerTimeSeriesTest(unittest.TestCase):
         self.assertTrue('time' in descriptor.coords)
         self.assertEqual(120, descriptor.coords['time'].attrs.get('size'))
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_open_monthly_ozone_full(self):
         dataset = self.opener.open_data(
             OZONE_MON_GOMOS_ID,
@@ -430,8 +430,8 @@ class CciOdpDatasetOpenerTimeSeriesTest(unittest.TestCase):
                          set(dataset.ozone_mixing_ratio.chunk_sizes))
         self.assertIsNotNone(dataset.zarr_store.get())
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_open_monthly_ozone_time_restricted(self):
         dataset = self.opener.open_data(
             OZONE_MON_GOMOS_ID,
@@ -458,8 +458,8 @@ class CciOdpDatasetOpenerTimeSeriesNormalizeTest(unittest.TestCase):
     def setUp(self) -> None:
         self.opener = CciOdpDatasetOpener(normalize_data=True)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_monthly_ozone(self):
         descriptor = self.opener.describe_data(OZONE_MON_GOMOS_ID)
         self.assertIsNotNone(descriptor)
@@ -471,8 +471,8 @@ class CciOdpDatasetOpenerTimeSeriesNormalizeTest(unittest.TestCase):
         self.assertTrue('time' in descriptor.coords)
         self.assertEqual(120, descriptor.coords['time'].attrs.get('size'))
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_open_monthly_ozone_full(self):
         dataset = self.opener.open_data(
             OZONE_MON_GOMOS_ID,
@@ -492,8 +492,8 @@ class CciOdpDatasetOpenerTimeSeriesNormalizeTest(unittest.TestCase):
                          set(dataset.ozone_mixing_ratio.chunk_sizes))
         self.assertIsNotNone(dataset.zarr_store.get())
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_open_monthly_ozone_time_restricted(self):
         dataset = self.opener.open_data(
             OZONE_MON_GOMOS_ID,
@@ -520,15 +520,15 @@ class CciOdpDatasetOpenerNormalizeTest(unittest.TestCase):
     def setUp(self) -> None:
         self.opener = CciOdpDatasetOpener(normalize_data=True)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_dataset_crs_variable(self):
         descriptor = self.opener.describe_data(ICESHEETS_ID)
         self.assertIsNotNone(descriptor)
         self.assertTrue('crs' in descriptor.data_vars.keys())
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_dataset(self):
         descriptor = self.opener.describe_data(AEROSOL_DAY_ID)
         self.assertIsNotNone(descriptor)
@@ -561,8 +561,8 @@ class CciOdpDatasetOpenerNormalizeTest(unittest.TestCase):
         self.assertTrue('time_range' in schema['properties'])
         self.assertFalse(schema['additionalProperties'])
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_get_open_data_params_schema(self):
         schema = self.opener.get_open_data_params_schema(AEROSOL_DAY_ID).\
             to_dict()
@@ -572,8 +572,8 @@ class CciOdpDatasetOpenerNormalizeTest(unittest.TestCase):
         self.assertTrue('bbox' in schema['properties'])
         self.assertFalse(schema['additionalProperties'])
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_open_data(self):
         with self.assertRaises(DataStoreError) as dse:
             self.opener.open_data(AEROSOL_DAY_ENVISAT_ID,
@@ -585,8 +585,8 @@ class CciOdpDatasetOpenerNormalizeTest(unittest.TestCase):
             f'"{AEROSOL_DAY_ENVISAT_ID}", as it cannot be accessed by '
             f'data accessor "dataset:zarr:cciodp".', f'{dse.exception}')
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_open_data_aerosol(self):
         dataset = self.opener.open_data(
             AEROSOL_DAY_ID,
@@ -619,8 +619,8 @@ class CciOdpDatasetOpenerNormalizeTest(unittest.TestCase):
                          set(full_dataset.absorbing_aerosol_index.chunk_sizes))
         self.assertIsNotNone(dataset.zarr_store.get())
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     @skip('Disabled while time series are not supported')
     def test_open_data_with_time_series_and_latitude_centers(self):
         dataset = self.opener.open_data(
@@ -639,8 +639,8 @@ class CciOdpDatasetOpenerNormalizeTest(unittest.TestCase):
                          set(dataset.ozone_mixing_ratio.chunk_sizes))
         self.assertIsNotNone(dataset.zarr_store.get())
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_search(self):
         search_result = list(self.opener.search_data(
             cci_attrs=(dict(ecv='LAKES')))
@@ -689,13 +689,13 @@ class CciOdpDataFrameOpenerTest(unittest.TestCase):
         self.assertEqual(1, len(data_types))
         self.assertEqual(GEO_DATA_FRAME_TYPE, data_types[0])
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_has_data(self):
         self.assertTrue(self._opener.has_data(GHG_DS_ID))
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_data(self):
         descriptor = self._opener.describe_data(GHG_DS_ID)
         self.assertIsNotNone(descriptor)
@@ -720,8 +720,8 @@ class CciOdpDataFrameOpenerTest(unittest.TestCase):
             var_list, set(descriptor.feature_schema.properties.keys())
         )
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_get_open_data_params_schema(self):
         schema = self._opener.get_open_data_params_schema(GHG_DS_ID).to_dict()
         self.assertIsNotNone(schema)
@@ -759,13 +759,13 @@ class CciOdpVectorDataCubeOpenerTest(unittest.TestCase):
         self.assertEqual(1, len(data_types))
         self.assertEqual(VECTOR_DATA_CUBE_TYPE, data_types[0])
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_has_data(self):
         self.assertTrue(self._opener.has_data(VDC_ID))
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_data_sealevel(self):
         descriptor = self._opener.describe_data(VDC_ID)
         self.assertIsNotNone(descriptor)
@@ -785,16 +785,16 @@ class CciOdpVectorDataCubeOpenerTest(unittest.TestCase):
         self.assertEqual(('2002-01-01', '2019-12-31'), descriptor.time_range)
         self.assertEqual('1M', descriptor.time_period)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_get_open_data_params_schema(self):
         schema = self._opener.get_open_data_params_schema(VDC_ID).to_dict()
         self.assertIsNotNone(schema)
         self.assertTrue('variable_names' in schema['properties'])
         self.assertFalse(schema['additionalProperties'])
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_open_data(self):
         data = self._opener.open_data(VDC_ID,
                                       variable_names=["distance_to_coast", "sla"])
@@ -863,16 +863,16 @@ class CciOdpDataStoreTest(unittest.TestCase):
         self.assertTrue('sensor' in cci_properties)
         self.assertTrue('platform' in cci_properties)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_search_geodataframe(self):
         geodataframe_search_result = \
             list(self.store.search_data('geodataframe'))
         self.assertIsNotNone(geodataframe_search_result)
         self.assertTrue(len(geodataframe_search_result) > 20)
 
-    @skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-            'ECT_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_search_vectordatacube(self):
         vectordatacube_search_result = list(self.store.search_data('vectordatacube'))
         self.assertIsNotNone(vectordatacube_search_result)

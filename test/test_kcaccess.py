@@ -30,11 +30,11 @@ from xcube.core.store import DatasetDescriptor
 from xcube.core.store import DataType
 from xcube_cci.kcaccess import CciKerchunkDataStore
 
-# os.environ['ECT_DISABLE_WEB_TESTS'] = '0'
+# os.environ['XCUBE_CCI_DISABLE_WEB_TESTS'] = '0'
 
 
-@unittest.skipIf(os.environ.get('ECT_DISABLE_WEB_TESTS', '1') == '1',
-                 'ECT_DISABLE_WEB_TESTS = 1')
+@unittest.skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+                 'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
 class CciKerchunkDataStoreOpenTest(unittest.TestCase):
     store = CciKerchunkDataStore()
 
