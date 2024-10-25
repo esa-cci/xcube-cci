@@ -41,11 +41,11 @@ If you want to install xcube-cci directly from the git repository (for example
 in order to use an unreleased version or to modify the code), you can do so as follows:
 
 ```
-$ git clone https://github.com/dcs4cop/xcube-cci.git
+$ git clone https://github.com/esa-cci/xcube-cci.git
 $ cd xcube-cci
 $ conda env create
 $ conda activate xcube-cci
-$ python setup.py develop
+$ pip install --no-deps -e .
 ```
 
 ## Testing
