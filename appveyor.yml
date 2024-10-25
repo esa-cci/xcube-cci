@@ -51,7 +51,6 @@ build_script:
 
   - mamba install --yes --channel conda-forge pytest attrs
   - git status
-
   - conda list
 
   # Run the test suite.
