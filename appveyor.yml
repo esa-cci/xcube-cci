@@ -49,7 +49,6 @@ build_script:
   - conda activate xcube-cci
   - pip install --no-deps .
 
-  - mamba install --yes --channel conda-forge pytest attrs
   - git status
   - conda list
 
