@@ -13,3 +13,6 @@ dependencies:
   - pydap >= 3.4
   - rioxarray
   - xvec
+  # Test libs
+  - pytest
+  - pytest-cov
