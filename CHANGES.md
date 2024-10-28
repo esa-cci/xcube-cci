@@ -1,4 +1,4 @@
-## Changes in 0.11 (in development)
+## Changes in 0.11
 
 * Migrated code from `ESA CCI Toolbox`. This encompasses the following changes:
   * Added store aliases `esa-cdc` and  `esa-climate-data-centre`, `esa-cci` 
