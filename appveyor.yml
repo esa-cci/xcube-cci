@@ -50,8 +50,9 @@ build_script:
   - export MAMBA_EXE=$(pwd)/micromamba
   - . $MAMBA_ROOT_PREFIX/etc/profile.d/mamba.sh
 
-  - micromamba env create
+  - micromamba create --name xcube-cci --file $APPVEYOR_BUILD_FOLDER/environment.yml
   - micromamba activate xcube-cci
+  - cd $APPVEYOR_BUILD_FOLDER
   - pip install --no-deps .
 
   - git status
