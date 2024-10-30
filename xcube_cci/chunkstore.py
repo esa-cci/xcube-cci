@@ -256,9 +256,12 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
             time_dim_name = 'month'
         if "Time" in self._dimensions:
             time_dim_name = "Time"
+        # elif "nbmonth" in self._dimensions:
+        #     time_dim_name = "nbmonth"
+        time_bounds_name = f"{time_dim_name}_bnds"
         if is_climatology:
             month_attrs = {
-                "_ARRAY_DIMENSIONS": ['time'],
+                "_ARRAY_DIMENSIONS": [time_dim_name],
                 "standard_name": "month"
             }
             self._add_static_array('month', t_array, month_attrs)
@@ -267,20 +270,26 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
                 "_ARRAY_DIMENSIONS": [time_dim_name],
                 "units": "seconds since 1970-01-01T00:00:00Z",
                 "calendar": "proleptic_gregorian",
-                "standard_name": "time",
-                "bounds": "time_bnds",
+                "standard_name": time_dim_name,
+                "bounds": time_bounds_name,
             }
             time_bnds_attrs = {
                 "_ARRAY_DIMENSIONS": [time_dim_name, 'bnds'],
                 "units": "seconds since 1970-01-01T00:00:00Z",
                 "calendar": "proleptic_gregorian",
-                "standard_name": "time_bnds",
+                "standard_name": time_bounds_name,
             }
             self._add_static_array(time_dim_name, t_array, time_attrs)
-            self._add_static_array('time_bnds', t_bnds_array, time_bnds_attrs)
+            self._add_static_array(
+                time_bounds_name, t_bnds_array, time_bnds_attrs
+            )
 
         coordinate_names = [coord for coord in coords_data.keys()
                             if coord not in COMMON_COORD_VAR_NAMES]
+        if time_dim_name not in coordinate_names:
+            coordinate_names.append(time_dim_name)
+        if time_bounds_name not in coordinate_names:
+            coordinate_names.append(time_bounds_name)
         coordinate_names = ' '.join(coordinate_names)
 
         global_attrs = dict(
@@ -301,8 +310,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
         self._time_indexes = {}
         for coord_name in sorted_coords_names:
             self._time_indexes[coord_name] = -1
-            if coord_name == 'time' or coord_name == 'time_bnds' or \
-                    coord_name == 'month':
+            if coord_name == time_dim_name or coord_name == time_bounds_name:
                 self._time_indexes[coord_name] = 0
         remove = []
         logging.debug('Adding variables to dataset ...')
@@ -312,7 +320,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
             if grid_mapping_name not in self._variable_names:
                 self._variable_names.append(grid_mapping_name)
         for variable_name in self._variable_names:
-            if variable_name in coords_data or variable_name == 'time_bnds':
+            if variable_name in coords_data or variable_name == time_bounds_name:
                 remove.append(variable_name)
                 continue
             var_encoding = self.get_encoding(variable_name)
@@ -370,8 +378,8 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
                 var_attrs['file_chunk_sizes'] = chunk_sizes[1:].copy()
             elif len(var_attrs.get('file_dimensions', [])) > 0:
                 var_attrs['file_chunk_sizes'] = chunk_sizes.copy()
-                var_attrs['file_chunk_sizes'][time_dimension] \
-                    = self._time_chunking
+                if time_dimension >= 0:
+                    var_attrs['file_chunk_sizes'][time_dimension] = self._time_chunking
             self._add_remote_array(variable_name,
                                    sizes,
                                    chunk_sizes,
@@ -482,11 +490,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
                 continue
             valid_dim_chunk_sizes = []
             if sum_chunks > _MAX_CHUNK_SIZE:
-                valid_dim_chunk_sizes.append(chunk)
-                half_chunk = chunk
-                while half_chunk % 2 == 0:
-                    half_chunk /= 2
-                    valid_dim_chunk_sizes.append(int(half_chunk))
+                valid_dim_chunk_sizes = common_divisors(chunk)
             else:  # sum_chunks < _MIN_CHUNK_SIZE
                 # handle case that the size cannot be
                 # divided evenly by the chunk
@@ -535,9 +539,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
                     continue
             else:
                 test_chunk_size = np.prod(test_chunks, dtype=np.int64)
-                test_indexes = cls.index_of_list(valid_sizes, test_chunks)
-                test_deviation = cls.compare_lists(test_indexes,
-                                                   orig_indexes)
+                test_deviation = cls.determine_deviation(test_chunks, time_dimension)
             if cls._is_of_acceptable_chunk_size(test_chunk_size):
                 if test_deviation < best_deviation:
                     best_chunk_size = test_chunk_size
@@ -551,12 +553,10 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
                                             where=where)
                     best_min_chunk = np.max(best_chunks, initial=0,
                                             where=where)
-                    if best_min_chunk > test_min_chunk:
+                    if best_min_chunk < test_min_chunk:
                         best_chunk_size = test_chunk_size
                         best_chunks = test_chunks.copy()
                         best_deviation = test_deviation
-                else:
-                    break
         return best_chunks, best_chunk_size, best_deviation
 
     @classmethod
@@ -571,6 +571,18 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
         deviation = 0
         for i in range(len(list1)):
             deviation += abs(list1[i] - list2[i])
+        return deviation
+
+    @classmethod
+    def determine_deviation(cls, list1, time_dimension):
+        deviation = 0
+        for i in range(0, len(list1)):
+            if i == time_dimension:
+                continue
+            for j in range(i+1, len(list1)):
+                if j == time_dimension:
+                    continue
+                deviation += abs(list1[i] - list1[j])
         return deviation
 
     @classmethod
@@ -1035,14 +1047,15 @@ class CciChunkStore(RemoteChunkStore):
         return tuple(dim_indexes)
 
 
-def greatest_common_divisor(a: int, b: int, c: int):
-    return _greatest_common_divisor_two_numbers(
-        a,
-        _greatest_common_divisor_two_numbers(b, c)
-    )
-
-
-def _greatest_common_divisor_two_numbers(a: int, b: int) -> int:
-    if b == 0:
-        return a
-    return _greatest_common_divisor_two_numbers(b, a % b)
+def common_divisors(orig_number: int) -> List[int]:
+    sqrt = math.sqrt(orig_number)
+    factor = int(math.floor(sqrt))
+    divisors = []
+    if sqrt - factor < 1e-8:
+        divisors.append(factor)
+    while factor > 0:
+        if orig_number % factor == 0:
+            divisors.append(factor)
+            divisors.append(int(orig_number / factor))
+        factor -= 1
+    return sorted(divisors, reverse=True)
