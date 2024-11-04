@@ -256,8 +256,8 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
             time_dim_name = 'month'
         if "Time" in self._dimensions:
             time_dim_name = "Time"
-        # elif "nbmonth" in self._dimensions:
-        #     time_dim_name = "nbmonth"
+        elif "nbmonth" in self._dimensions:
+            time_dim_name = "nbmonth"
         time_bounds_name = f"{time_dim_name}_bnds"
         if is_climatology:
             month_attrs = {

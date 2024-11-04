@@ -800,7 +800,7 @@ class CciOdpVectorDataCubeOpenerTest(unittest.TestCase):
                                       variable_names=["distance_to_coast", "sla"])
         self.assertIsNotNone(data)
         self.assertEqual({"distance_to_coast", "sla"}, set(data.data_vars))
-        self.assertEqual({"geometry", "time", "time_bnds"}, set(data.coords))
+        self.assertEqual({"geometry", "nbmonth", "nbmonth_bnds"}, set(data.coords))
         self.assertEqual({"nbpoints"}, set(data.distance_to_coast.dims))
         self.assertEqual({50}, set(data.distance_to_coast.chunk_sizes))
         self.assertEqual({1867}, set(data.distance_to_coast.shape))
