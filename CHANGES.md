@@ -1,3 +1,6 @@
+## Changes in 0.11.2 (in development)
+
+
 ## Changes in 0.11.1
 * Improved support of vector data cubes
 * Improved support of FIRE ECV datasets
