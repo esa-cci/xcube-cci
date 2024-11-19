@@ -27,6 +27,7 @@ AEROSOL_DAY_ENVISAT_ID = 'esacci.AEROSOL.day.L3C.AER_PRODUCTS.AATSR.Envisat.' \
                          'ATSR2-ENVISAT-ENS_DAILY.v2-6.r1'
 AEROSOL_CLIMATOLOGY_ID = 'esacci.AEROSOL.climatology.L3.AAI.multi-sensor.' \
                          'multi-platform.MSAAI.1-7.r1'
+BIOMASS_ID = "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.MERGED.5-0.1000m"
 CLOUD_ID = "esacci.CLOUD.mon.L3C.CLD_PRODUCTS.MODIS.Terra.MODIS_TERRA.2-0.r1"
 ICESHEETS_ID = 'esacci.ICESHEETS.yr.Unspecified.IV.PALSAR.ALOS.UNSPECIFIED.' \
                '1-1.greenland_margin_2006_2011'
@@ -324,6 +325,14 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
     def test_open_climatology_data(self):
         dataset = self.opener.open_data(AEROSOL_CLIMATOLOGY_ID)
         self.assertIsNotNone(dataset)
+
+    # @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+    #         'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    def test_open_biomass_data(self):
+        dataset = self.opener.open_data(BIOMASS_ID)
+        self.assertIsNotNone(dataset)
+        self.assertIn("time", dataset.coords)
+        self.assertEqual(8, len(dataset["time"].values))
 
     @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
             'XCUBE_CCI_DISABLE_WEB_TESTS = 1')

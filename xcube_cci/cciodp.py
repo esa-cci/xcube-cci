@@ -1175,6 +1175,10 @@ class CciOdp:
                     pass
                 features.append((start_time, end_time, url))
 
+    async def get_time_chunking(self, session, dataset_name: str):
+        await self._ensure_all_info_in_data_source(session, dataset_name)
+        return self._data_sources[dataset_name].get("time_chunking", 1)
+
     def get_time_ranges_from_data(self, dataset_name: str,
                                   start_time: str = _EARLY_START_TIME,
                                   end_time: str = _LATE_END_TIME
@@ -1208,8 +1212,38 @@ class CciOdp:
                            endDate=end_time,
                            drsId=dataset_name)
             feature_list = await self._get_feature_list(session, request, '.tif')
-        request_time_ranges = [feature[0:2] for feature in feature_list]
+        time_chunking = await self.get_time_chunking(session, dataset_name)
+        if time_chunking > 1:
+            ds = self._data_sources[dataset_name]
+            time_dim_name = ds.get("time_dimension", "time")
+            request_time_ranges = []
+            for feature in feature_list:
+                start_time = datetime.strftime(feature[0], TIMESTAMP_FORMAT)
+                end_time = datetime.strftime(feature[1], TIMESTAMP_FORMAT)
+                time_data = await self._get_var_data(
+                    session, dataset_name, {time_dim_name: time_chunking},
+                    start_time, end_time
+                )
+                for raw_time_value in time_data[time_dim_name]["data"]:
+                    time_value = self._convert_time_value(ds, raw_time_value)
+                    time_step_range = time_value, time_value
+                    request_time_ranges.append(time_step_range)
+        else:
+            request_time_ranges = [feature[0:2] for feature in feature_list]
         return request_time_ranges
+
+    @staticmethod
+    def _convert_time_value(data_source, raw_time_value):
+        time_dim_name = data_source.get("time_dimension", "time")
+        time_units = (data_source.get("variable_infos", {}).get(time_dim_name, {}).
+                      get("units"))
+        if "since" in time_units:
+            time_unit, t_offset = time_units.split("since")
+            time_offset = pd.Timestamp(t_offset)
+            time_unit = time_unit.strip().lower()
+            return time_offset + pd.Timedelta(raw_time_value, unit=time_unit)
+        else:
+            return pd.Timestamp(raw_time_value)
 
     def get_dataset_id(self, dataset_name: str) -> str:
         return self._run_with_session(self._get_dataset_id, dataset_name)
@@ -1656,6 +1690,7 @@ class CciOdp:
                     time_name = "nbmonth"
                     time_dimension_size = 1
                 data_source["time_chunking"] = dimensions.get(time_name, 1)
+                data_source["time_dimension"] = time_name
                 dimensions[time_name] = (
                         time_dimension_size * data_source["time_chunking"])
                 for variable_info in variable_infos.values():
@@ -1988,7 +2023,7 @@ class CciOdp:
             var_attrs['data_type'] = data_type
             var_attrs['dimensions'] = list(dataset[key].dimensions)
             if "time" in var_attrs['dimensions']:
-                time_set_as_dim: True
+                time_set_as_dim = True
             var_attrs['file_dimensions'] = \
                 copy.deepcopy(var_attrs['dimensions'])
             variable_infos[fixed_key] = var_attrs

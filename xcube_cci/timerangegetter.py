@@ -67,6 +67,7 @@ class TimeRangeGetter:
             self._extract_time_range_as_datetime(
                 params.get('time_range',
                            self.get_default_time_range(dataset_id)))
+        ecv = dataset_id.split('.')[1]
         time_period = dataset_id.split('.')[2]
         if time_period == 'day':
             start_time = datetime(year=start_time.year, month=start_time.month,
@@ -81,7 +82,7 @@ class TimeRangeGetter:
             end_time = datetime(year=end_time.year, month=end_time.month, day=1)
             delta = relativedelta(months=1)
             end_time += delta
-        elif time_period == 'year' or time_period == 'yr':
+        elif time_period == 'year' or time_period == 'yr' and ecv != "BIOMASS":
             start_time = datetime(year=start_time.year, month=1, day=1)
             end_time = datetime(year=end_time.year, month=12, day=31)
             delta = relativedelta(years=1)
