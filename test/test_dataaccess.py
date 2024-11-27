@@ -326,10 +326,10 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
         dataset = self.opener.open_data(AEROSOL_CLIMATOLOGY_ID)
         self.assertIsNotNone(dataset)
 
-    # @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
-    #         'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_open_biomass_data(self):
-        dataset = self.opener.open_data(BIOMASS_ID)
+        dataset = self.opener.open_data("BIOMASS_ID")
         self.assertIsNotNone(dataset)
         self.assertIn("time", dataset.coords)
         self.assertEqual(8, len(dataset["time"].values))
