@@ -1,4 +1,4 @@
-## Changes in 0.11.2 (in development)
+## Changes in 0.11.2
 * Fixed retrieval of time steps of BIOMASS datasets
 
 ## Changes in 0.11.1
