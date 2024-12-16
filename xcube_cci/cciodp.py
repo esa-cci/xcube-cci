@@ -1985,6 +1985,20 @@ class CciOdp:
             var_attrs['orig_data_type'] = data_type
             if '_FillValue' in var_attrs:
                 var_attrs['fill_value'] = var_attrs['_FillValue']
+                if (var_attrs.get("orig_data_type", "").startswith("u")
+                        and var_attrs['fill_value'] < 1):
+                    if var_attrs["orig_data_type"][-2:].isdigit():
+                        factor = int(var_attrs["orig_data_type"][-2:])
+                        var_attrs['fill_value'] += 2 ** factor
+                    elif var_attrs["orig_data_type"][-1].isdigit():
+                        factor = int(var_attrs["orig_data_type"][-1])
+                        var_attrs['fill_value'] += 2 ** factor
+                    else:
+                        warnings.warn(
+                            f'Variable "{fixed_key}" has negative fill value, '
+                            f'but unsigned data type "{var_attrs["orig_data_type"]}"',
+                            category=CciOdpWarning
+                        )
                 var_attrs.pop('_FillValue')
             else:
                 if data_type in _DTYPES_TO_DTYPES_WITH_MORE_BYTES:
