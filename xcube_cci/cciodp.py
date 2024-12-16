@@ -69,6 +69,7 @@ from .constants import DEFAULT_RETRY_BACKOFF_MAX
 from .constants import DEFAULT_RETRY_BACKOFF_BASE
 from .constants import OPENSEARCH_CEDA_URL
 from .constants import COMMON_TIME_COORD_VAR_NAMES
+from .constants import TIFF_VARS
 from .constants import TIMESTAMP_FORMAT
 
 from xcube_cci.timeutil import get_timestrings_from_string
