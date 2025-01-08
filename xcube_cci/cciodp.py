@@ -75,6 +75,7 @@ from .constants import TIMESTAMP_FORMAT
 from xcube_cci.timeutil import get_timestrings_from_string
 
 _LOG = logging.getLogger('xcube')
+_LOG.setLevel(level=logging.DEBUG)
 ODD_NS = {'os': 'http://a9.com/-/spec/opensearch/1.1/',
           'param': 'http://a9.com/-/spec/opensearch/extensions/parameters/1.0/'}
 DESC_NS = {'gmd': 'http://www.isotc211.org/2005/gmd',
@@ -516,6 +517,9 @@ class CciOdp:
     def dataset_names(self) -> List[str]:
         return self._run_with_session(self._fetch_dataset_names)
 
+    def get_kerchunk_files(self) -> List[str]:
+        return self._run_with_session(self._get_kerchunk_files)
+
     def get_dataset_info(
             self, dataset_id: str, dataset_metadata: dict = None
     ) -> dict:
@@ -643,6 +647,30 @@ class CciOdp:
                     )
                 await asyncio.gather(*tasks)
         return list(self._data_sources.keys())
+
+    async def _get_kerchunk_files(self, session):
+        dataset_names = await self._fetch_dataset_names(session)
+        kerchunk_urls = []
+        for i, dataset_name in enumerate(dataset_names):
+            _LOG.debug(
+                f"Attempting to retrieve kerchunk url for dataset {dataset_name} "
+                f"({i + 1}/{len(dataset_names)})"
+            )
+            dataset_id = await self._get_dataset_id(session, dataset_name)
+            feature, _ = \
+                await self._fetch_feature_and_num_nc_files_at(
+                    session,
+                    self._opensearch_url,
+                    dict(parentIdentifier=dataset_id,
+                         drsId=dataset_name),
+                    1
+                )
+            if feature is not None:
+                feature_info = _extract_feature_info(feature)
+                kerchunk_url = f"{feature_info[4].get('Kerchunk')}"
+                if kerchunk_url is not None and kerchunk_url not in kerchunk_urls:
+                    kerchunk_urls.append(kerchunk_url)
+        return kerchunk_urls
 
     async def _create_data_source(
             self, session, json_dict: dict, datasource_id: str
@@ -1958,6 +1986,11 @@ class CciOdp:
             variable_infos[column]["name"] = geodataframe[column].name
             variable_infos[column]["dtype"] = geodataframe[column].dtype
         return variable_infos, geodataframe.attrs
+
+    def _get_kerchunk_url_from_feature(self, feature: dict) -> str:
+        feature_info = _extract_feature_info(feature)
+        kerchunk_url = f"{feature_info[4].get('Kerchunk')}"
+        return kerchunk_url
 
     async def _get_variable_infos_from_feature(self,
                                                feature: dict,
