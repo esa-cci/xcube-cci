@@ -6552,6 +6552,134 @@
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction \u2013 snow on ground (SCFG) from ATSR-2 (1995 \u2013 2003), version 1.0"
     },
+    "esacci.SNOW.day.L3C.SCFG.AVHRR-2.NOAA-11.AVHRR_NOAA11.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFG.AVHRR-2.NOAA-12.AVHRR_NOAA12.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFG.AVHRR-2.NOAA-14.AVHRR_NOAA14.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFG.AVHRR-2.NOAA-7.AVHRR_NOAA7.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFG.AVHRR-2.NOAA-9.AVHRR_NOAA9.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFG.AVHRR-3.Metop-A.AVHRR_METOPA.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFG.AVHRR-3.Metop-B.AVHRR_METOPB.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFG.AVHRR-3.Metop-C.AVHRR_METOPC.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFG.AVHRR-3.NOAA-16.AVHRR_NOAA16.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFG.AVHRR-3.NOAA-17.AVHRR_NOAA17.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFG.AVHRR-3.NOAA-18.AVHRR_NOAA18.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFG.AVHRR-3.NOAA-19.AVHRR_NOAA19.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFG.AVHRR.NOAA-10.AVHRR_NOAA10.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFG.AVHRR.NOAA-6.AVHRR_NOAA6.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFG.AVHRR.NOAA-8.AVHRR_NOAA8.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFG.AVHRR.TIROS-N.AVHRR_TIROSN.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
+    },
     "esacci.SNOW.day.L3C.SCFG.MODIS.Terra.MODIS_TERRA.2-0.r1": {
         "data_type": "dataset",
         "verification_flags": [
@@ -6559,6 +6687,14 @@
             "constrain_time"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from MODIS (2000-2020), version 2.0"
+    },
+    "esacci.SNOW.day.L3C.SCFG.MODIS.Terra.MODIS_TERRA.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from MODIS (2000-2022), version 3.0"
     },
     "esacci.SNOW.day.L3C.SCFG.multi-sensor.multi-platform.AVHRR_MERGED.2-0.r1": {
         "data_type": "dataset",
@@ -6584,6 +6720,134 @@
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction \u2013 viewable snow (SCFV) from ATSR-2 (1995 \u2013 2003), version 1.0"
     },
+    "esacci.SNOW.day.L3C.SCFV.AVHRR-2.NOAA-11.AVHRR_NOAA11.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFV.AVHRR-2.NOAA-12.AVHRR_NOAA12.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFV.AVHRR-2.NOAA-14.AVHRR_NOAA14.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFV.AVHRR-2.NOAA-7.AVHRR_NOAA7.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFV.AVHRR-2.NOAA-9.AVHRR_NOAA9.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFV.AVHRR-3.Metop-A.AVHRR_METOPA.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFV.AVHRR-3.Metop-B.AVHRR_METOPB.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFV.AVHRR-3.Metop-C.AVHRR_METOPC.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFV.AVHRR-3.NOAA-16.AVHRR_NOAA16.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFV.AVHRR-3.NOAA-17.AVHRR_NOAA17.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFV.AVHRR-3.NOAA-18.AVHRR_NOAA18.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFV.AVHRR-3.NOAA-19.AVHRR_NOAA19.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFV.AVHRR.NOAA-10.AVHRR_NOAA10.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFV.AVHRR.NOAA-6.AVHRR_NOAA6.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFV.AVHRR.NOAA-8.AVHRR_NOAA8.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
+    },
+    "esacci.SNOW.day.L3C.SCFV.AVHRR.TIROS-N.AVHRR_TIROSN.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
+    },
     "esacci.SNOW.day.L3C.SCFV.MODIS.Terra.MODIS_TERRA.2-0.r1": {
         "data_type": "dataset",
         "verification_flags": [
@@ -6591,6 +6855,14 @@
             "constrain_time"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable snow (SCFV) from MODIS (2000 - 2020), version 2.0"
+    },
+    "esacci.SNOW.day.L3C.SCFV.MODIS.Terra.MODIS_TERRA.3-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable snow (SCFV) from MODIS (2000 - 2022), version 3.0"
     },
     "esacci.SNOW.day.L3C.SCFV.multi-sensor.multi-platform.AVHRR_MERGED.2-0.r1": {
         "data_type": "dataset",
@@ -6607,6 +6879,14 @@
             "constrain_time"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Snow Water Equivalent (SWE) level 3C daily global climate research data package (CRDP)  (1979 \u2013 2020), version 2.0"
+    },
+    "esacci.SNOW.day.L3C.SWE.multi-sensor.multi-platform.MERGED.3-1.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Snow Climate Change Initiative (Snow_cci): Snow Water Equivalent (SWE) level 3C daily global climate research data package (CRDP) (1979 - 2022), version 3.1"
     },
     "esacci.SNOW.day.L3S.SCFG.multi-sensor.multi-platform.MERGED.1-0.r1": {
         "data_type": "dataset",
