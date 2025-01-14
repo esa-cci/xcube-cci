@@ -39,7 +39,7 @@ class CciKerchunkDataStoreOpenTest(unittest.TestCase):
     store = CciKerchunkDataStore()
 
     def test_open_data(self):
-        data_id = 'ESACCI-SOILMOISTURE-L3S-SSMS-ACTIVE-19910805-20211231-fv07.1-kr1.1'
+        data_id = "ESACCI-SOILMOISTURE-L3S-SSMS-ACTIVE-19910805-20211231-fv07.1_kr1.0"
         dataset = self.store.open_data(data_id)
         self.assertIsInstance(dataset, xr.Dataset)
         self.assertEqual({'time': 11107, 'lat': 720, 'lon': 1440}, dataset.sizes)
