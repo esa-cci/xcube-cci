@@ -13,6 +13,7 @@ dependencies:
   - pydap >= 3.4
   - rioxarray
   - xvec
+  - zarr <3  # until we can ensure zarr 3 compatibility
   # Test libs
   - pytest
   - pytest-cov

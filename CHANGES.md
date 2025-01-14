@@ -1,4 +1,5 @@
 ## Changes in 0.11.4 (in development)
+* Maintenance release to handle changes from external package
 
 ## Changes in 0.11.3
 * Fixed retrieval of data sets with unsigned data types 
