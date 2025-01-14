@@ -1,4 +1,4 @@
-## Changes in 0.11.3.dev0
+## Changes in 0.11.3
 * Fixed retrieval of data sets with unsigned data types 
   (this affected SNOW datasets)
 * Increased list of supported kerchunk datasets
