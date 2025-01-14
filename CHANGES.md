@@ -1,4 +1,7 @@
 ## Changes in 0.11.3.dev0
+* Fixed retrieval of data sets with unsigned data types 
+  (this affected SNOW datasets)
+* Increased list of supported kerchunk datasets
 
 ## Changes in 0.11.2
 * Fixed retrieval of time steps of BIOMASS datasets
