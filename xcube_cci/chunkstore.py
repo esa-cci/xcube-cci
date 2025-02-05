@@ -990,10 +990,19 @@ class CciChunkStore(RemoteChunkStore):
                        )
         data = self._cci_cdc.get_data_chunk(request, dim_indexes)
         if not data:
-            raise KeyError(f'{key}: cannot fetch chunk for variable '
-                           f'{var_name!r} and time_range {time_range!r}.')
-        if (self._time_chunking > 1 and
-                self._cci_cdc.get_data_type() != "vectordatacube"):
+            warnings.warn(f'{key}: cannot fetch chunk for variable '
+                          f'{var_name!r} and time_range {time_range!r}.')
+            expected_chunk_size, dtype_size = \
+                self._determine_expected_chunk_size(var_name)
+            data_type = self.get_attrs(var_name).get('data_type')
+            dtype = np.dtype(self._SAMPLE_TYPE_TO_DTYPE[data_type])
+            fill_value = self.get_attrs(var_name).get('fill_value')
+            var_array = np.full(
+                shape=int(expected_chunk_size / dtype_size),
+                fill_value=fill_value,
+                dtype=dtype)
+            return var_array.tobytes()
+        if self._time_chunking > 1 and self._cci_cdc.get_data_type() != "vectordatacube":
             expected_chunk_size, dtype_size = \
                 self._determine_expected_chunk_size(var_name)
             data_length = len(data)
