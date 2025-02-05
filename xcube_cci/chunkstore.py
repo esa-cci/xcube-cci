@@ -474,7 +474,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
         if cls._is_of_acceptable_chunk_size(sum_chunks):
             chunks_are_acceptable = True
             for i in range(len(chunks)):
-                if i != time_dimension and chunks[i] > sizes[i]:
+                if i != time_dimension and (chunks[i] > sizes[i] or sizes[i] % chunks[i] > 0):
                     chunks_are_acceptable = False
                     break
             if chunks_are_acceptable:
@@ -482,48 +482,27 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
         # determine valid values for a chunk size.
         # A value is valid if the size can be divided by it without remainder
         valid_chunk_sizes = []
-        best_chunks = chunks.copy()
+        # best_chunks = chunks.copy()
         for i, chunk, size in zip(range(len(chunks)), chunks, sizes):
             # do not rechunk time dimension
             if i == time_dimension:
                 valid_chunk_sizes.append([chunk])
                 continue
-            valid_dim_chunk_sizes = []
-            if sum_chunks > _MAX_CHUNK_SIZE:
-                valid_dim_chunk_sizes = common_divisors(chunk)
-            else:  # sum_chunks < _MIN_CHUNK_SIZE
-                # handle case that the size cannot be
-                # divided evenly by the chunk
-                if size % chunk > 0:
-                    if np.prod(chunks, dtype=np.int64) / chunk * size \
-                            < _MAX_CHUNK_SIZE:
-                        # if the size is small enough to be ingested
-                        # in single chunk, take it
-                        valid_dim_chunk_sizes.append(size)
-                    else:
-                        # otherwise, give in to that we cannot
-                        # chunk the data evenly
-                        valid_dim_chunk_sizes += \
-                            (list(range(chunk, size + 1, chunk)))
-                    valid_chunk_sizes.append(valid_dim_chunk_sizes)
-                    continue
-                for r in range(chunk, size + 1, chunk):
-                    if size % r == 0:
-                        valid_dim_chunk_sizes.append(r)
+            valid_dim_chunk_sizes = common_divisors(size)
             valid_chunk_sizes.append(valid_dim_chunk_sizes)
         # recursively determine the chunking most similar to the original
         # file chunking with an acceptable size
-        orig_indexes = [0] * len(best_chunks)
         initial_best_chunks = [vcs[-1] for vcs in valid_chunk_sizes]
-        best_deviation = math.inf
+        initial_test_chunks = [vcs[0] for vcs in valid_chunk_sizes]
+        best_deviation = 0
         chunks, chunk_size, chunk_deviation = cls._get_best_chunks(
-            chunks, valid_chunk_sizes, initial_best_chunks, orig_indexes, 0, 0,
-            time_dimension, best_deviation
+            initial_test_chunks, valid_chunk_sizes, initial_best_chunks,
+            0, 0, time_dimension, best_deviation
         )
         return chunks
 
     @classmethod
-    def _get_best_chunks(cls, chunks, valid_sizes, best_chunks, orig_indexes,
+    def _get_best_chunks(cls, chunks, valid_sizes, best_chunks,
                          best_chunk_size, index, time_dimension,
                          best_deviation):
         for valid_size in valid_sizes[index]:
@@ -532,16 +511,15 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
             if index < len(chunks) - 1:
                 test_chunks, test_chunk_size, test_deviation = \
                     cls._get_best_chunks(test_chunks, valid_sizes, best_chunks,
-                                         orig_indexes, best_chunk_size,
-                                         index + 1,
+                                         best_chunk_size, index + 1,
                                          time_dimension, best_deviation)
                 if test_chunks == best_chunks:
                     continue
             else:
                 test_chunk_size = np.prod(test_chunks, dtype=np.int64)
-                test_deviation = cls.determine_deviation(test_chunks, time_dimension)
+                test_deviation = cls.determine_deviation(test_chunks, time_dimension, test_chunk_size)
             if cls._is_of_acceptable_chunk_size(test_chunk_size):
-                if test_deviation < best_deviation:
+                if test_deviation > best_deviation:
                     best_chunk_size = test_chunk_size
                     best_chunks = test_chunks.copy()
                     best_deviation = test_deviation
@@ -574,7 +552,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
         return deviation
 
     @classmethod
-    def determine_deviation(cls, list1, time_dimension):
+    def determine_deviation(cls, list1, time_dimension, chunk_size):
         deviation = 0
         for i in range(0, len(list1)):
             if i == time_dimension:
@@ -582,8 +560,8 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
             for j in range(i+1, len(list1)):
                 if j == time_dimension:
                     continue
-                deviation += abs(list1[i] - list1[j])
-        return deviation
+                deviation += abs((list1[i] / list1[j]) - 1)
+        return chunk_size / pow(1 + deviation, 2)
 
     @classmethod
     def _is_of_acceptable_chunk_size(cls, size: int):
@@ -1068,3 +1046,4 @@ def common_divisors(orig_number: int) -> List[int]:
             divisors.append(int(orig_number / factor))
         factor -= 1
     return sorted(divisors, reverse=True)
+    # return sorted(divisors, reverse=False)
