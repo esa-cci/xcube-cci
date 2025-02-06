@@ -2020,7 +2020,7 @@ class CciOdp:
             if '_FillValue' in var_attrs:
                 var_attrs['fill_value'] = var_attrs['_FillValue']
                 if (var_attrs.get("orig_data_type", "").startswith("u")
-                        and var_attrs['fill_value'] < 1):
+                        and var_attrs['fill_value'] < 0):
                     if var_attrs["orig_data_type"][-2:].isdigit():
                         factor = int(var_attrs["orig_data_type"][-2:])
                         var_attrs['fill_value'] += 2 ** factor
