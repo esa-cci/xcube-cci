@@ -1506,7 +1506,7 @@ class CciOdp:
 
     def get_geodataframe_from_shapefile(
             self, request: Dict
-    ) -> Optional[gpd.geodataframe]:
+    ) -> Optional[gpd.GeoDataFrame]:
         gdf = self._run_with_session(
             self._get_geodataframe_from_shapefile, request
         )
@@ -1514,7 +1514,7 @@ class CciOdp:
 
     async def _get_geodataframe_from_shapefile(
             self, session, request: Dict
-    ) -> Optional[gpd.geodataframe]:
+    ) -> Optional[gpd.GeoDataFrame]:
         var_names = request['varNames']
         shapefile_url = await self._get_shapefile_url(session, request)
         if not shapefile_url:
@@ -2020,7 +2020,7 @@ class CciOdp:
             if '_FillValue' in var_attrs:
                 var_attrs['fill_value'] = var_attrs['_FillValue']
                 if (var_attrs.get("orig_data_type", "").startswith("u")
-                        and var_attrs['fill_value'] < 1):
+                        and var_attrs['fill_value'] < 0):
                     if var_attrs["orig_data_type"][-2:].isdigit():
                         factor = int(var_attrs["orig_data_type"][-2:])
                         var_attrs['fill_value'] += 2 ** factor
