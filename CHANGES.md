@@ -1,4 +1,6 @@
 ## Changes in 0.11.5 (in development)
+* Improved support of dataset with unsigned integers
+* Improved determination of chunks (and thereby handling of, e.g., PERMAFROST datasets)
 
 ## Changes in 0.11.4
 * Maintenance release to handle changes from external package
