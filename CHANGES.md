@@ -1,7 +1,6 @@
-## Changes in 0.11.5 (in development)
+## Changes in 0.11.5
 * Improved support of dataset with unsigned integers
 * Improved determination of chunks (and thereby handling of, e.g., PERMAFROST datasets)
-
 * The `get_data_ids()` method in `CciOdpDataStore`, `CciZarrDataStore` 
   and `CciKerchunkDataStore` has an enhanced include_attrs parameter.
   Previously accepting only Container[str], it now also supports a bool value.
