@@ -482,7 +482,6 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
         # determine valid values for a chunk size.
         # A value is valid if the size can be divided by it without remainder
         valid_chunk_sizes = []
-        # best_chunks = chunks.copy()
         for i, chunk, size in zip(range(len(chunks)), chunks, sizes):
             # do not rechunk time dimension
             if i == time_dimension:
@@ -1046,4 +1045,3 @@ def common_divisors(orig_number: int) -> List[int]:
             divisors.append(int(orig_number / factor))
         factor -= 1
     return sorted(divisors, reverse=True)
-    # return sorted(divisors, reverse=False)
