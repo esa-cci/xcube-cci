@@ -61,11 +61,11 @@ class CciZarrDataStore(S3DataStore):
 
     def get_data_ids(self,
                      data_type: DataTypeLike = None,
-                     include_attrs: Container[str] = None) -> \
-            Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
+                     include_attrs: Container[str] | bool = False,) -> \
+            Union[list[str], list[tuple[str, dict[str, Any]]]]:
         # TODO: do not ignore names in include_attrs
         if self.fs.exists(DATA_IDS_FILE_PATH):
-            return_tuples = include_attrs is not None
+            return_tuples = include_attrs and include_attrs is not None
             with self.fs.open(DATA_IDS_FILE_PATH) as f:
                 ids = json.load(f)
                 for id in ids:

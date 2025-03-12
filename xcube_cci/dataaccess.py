@@ -785,21 +785,24 @@ class CciOdpDataStore(DataStore):
 
     def get_data_ids(self,
                      data_type: str = None,
-                     include_attrs: Container[str] = None) -> \
+                     include_attrs: Container[str] | bool = False,) -> \
             Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
         openers = self._get_openers(data_type=data_type)
         data_ids = []
         for opener in openers:
             data_ids.extend(opener.dataset_names)
         for data_id in data_ids:
-            if include_attrs is None:
+            if include_attrs is None or not include_attrs:
                 yield data_id
             else:
                 attrs = {}
-                for attr in include_attrs:
-                    value = self._dataset_states.get(data_id, {}).get(attr)
-                    if value is not None:
-                        attrs[attr] = value
+                if isinstance(include_attrs, Container):
+                    for attr in include_attrs:
+                        value = self._dataset_states.get(data_id, {}).get(attr)
+                        if value is not None:
+                            attrs[attr] = value
+                elif include_attrs:
+                    attrs = self._dataset_states.get(data_id, {})
                 yield data_id, attrs
 
     def has_data(self, data_id: str, data_type: str = None) -> bool:
