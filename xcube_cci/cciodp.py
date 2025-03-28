@@ -2049,7 +2049,7 @@ class CciOdp:
                     data_type = _DTYPES_TO_DTYPES_WITH_MORE_BYTES[data_type]
                     var_attrs['fill_value'] = \
                         _determine_fill_value(np.dtype(data_type))
-                else:
+                elif dataset[key].size > 1:
                     warnings.warn(f'Variable "{fixed_key}" has no fill value, '
                                   f'cannot set one. For parts where no data is '
                                   f'available you will see random values. This '
