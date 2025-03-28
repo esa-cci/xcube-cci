@@ -1242,9 +1242,10 @@ class CciOdp:
                            drsId=dataset_name)
             feature_list = await self._get_feature_list(session, request, '.tif')
         time_chunking = await self.get_time_chunking(session, dataset_name)
-        if time_chunking > 1:
-            ds = self._data_sources[dataset_name]
-            time_dim_name = ds.get("time_dimension", "time")
+        ds = self._data_sources[dataset_name]
+        # TODO find better criterion
+        if time_chunking > 1 and ds["ecv"] == "BIOMASS":
+            time_dim_name = ds.get("time_coord_name", "time")
             request_time_ranges = []
             for feature in feature_list:
                 start_time = datetime.strftime(feature[0], TIMESTAMP_FORMAT)
@@ -1263,8 +1264,8 @@ class CciOdp:
 
     @staticmethod
     def _convert_time_value(data_source, raw_time_value):
-        time_dim_name = data_source.get("time_dimension", "time")
-        time_units = (data_source.get("variable_infos", {}).get(time_dim_name, {}).
+        time_coord_name = data_source.get("time_coord_name", "time")
+        time_units = (data_source.get("variable_infos", {}).get(time_coord_name, {}).
                       get("units"))
         if "since" in time_units:
             time_unit, t_offset = time_units.split("since")
@@ -1710,24 +1711,33 @@ class CciOdp:
                         if dimension not in dimensions:
                             dimensions[dimension] = \
                                 variable_infos[variable_info]['shape'][index]
-                time_name = "time"
+                time_dim_name = "time"
                 if 'AEROSOL.climatology' in dataset_name:
-                    time_name = 'month'
+                    time_dim_name = 'month'
                 if "Time" in dimensions:
-                    time_name = "Time"
+                    time_dim_name = "Time"
                 if "nbmonth" in dimensions:
-                    time_name = "nbmonth"
+                    time_dim_name = "nbmonth"
                     time_dimension_size = 1
-                data_source["time_chunking"] = dimensions.get(time_name, 1)
-                data_source["time_dimension"] = time_name
-                dimensions[time_name] = (
+                data_source["time_chunking"] = dimensions.get(time_dim_name, 1)
+                time_coord_name = time_dim_name
+                if time_coord_name not in variable_infos.keys():
+                    potential_time_names = ["time", "t", "Time", "T"]
+                    for potential_time_name in potential_time_names:
+                        if (potential_time_name in variable_infos.keys() and
+                                variable_infos[potential_time_name].get(
+                                    "dimensions", []) == [time_dim_name]):
+                            time_coord_name = potential_time_name
+                            break
+                data_source["time_coord_name"] = time_coord_name
+                dimensions[time_dim_name] = (
                         time_dimension_size * data_source["time_chunking"])
                 for variable_info in variable_infos.values():
-                    if time_name in variable_info['dimensions']:
-                        time_index = variable_info['dimensions'].index(time_name)
+                    if time_dim_name in variable_info['dimensions']:
+                        time_index = variable_info['dimensions'].index(time_dim_name)
                         if 'shape' in variable_info:
                             variable_info['shape'][time_index] = \
-                                dimensions[time_name]
+                                dimensions[time_dim_name]
                             variable_info['size'] = np.prod(variable_info['shape'])
         data_source['dimensions'] = dimensions
         data_source['variable_infos'] = variable_infos
@@ -1735,7 +1745,7 @@ class CciOdp:
         if self._data_type == "vectordatacube":
             start_time = data_source.get("temporal_coverage_start")
             end_time = data_source.get("temporal_coverage_end")
-            non_time_dimension = [dim for dim in dimensions if not dim == time_name][0]
+            non_time_dimension = [dim for dim in dimensions if not dim == time_dim_name][0]
             num_geometries = await self._count_geometries(
                 session, dataset_id, dataset_name, start_time, end_time,
                 non_time_dimension
