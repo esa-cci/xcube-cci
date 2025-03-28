@@ -500,6 +500,9 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
             initial_test_chunks, valid_chunk_sizes, initial_best_chunks,
             0, 0, time_dimension, best_deviation
         )
+        if not cls._is_of_acceptable_chunk_size(np.prod(chunks, dtype=np.int64)):
+            # return original chunks
+            return [vcs[0] for vcs in valid_chunk_sizes]
         return chunks
 
     @classmethod
