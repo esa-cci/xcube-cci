@@ -465,6 +465,10 @@ class CciOdpDataFrameOpener(CciOdpDataOpener):
         descriptor.open_params_schema = data_schema
         return descriptor
 
+    def get_title(self, data_id: str) -> str:
+        ds_metadata = self._cci_cdc.get_dataset_metadata(data_id)
+        return ds_metadata.get("title", data_id)
+
     @staticmethod
     def _get_feature_schema(metadata: dict):
         int_data_types = ['uint8', 'uint16', 'uint32', 'int8', 'int16', 'int32']
