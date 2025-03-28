@@ -349,6 +349,8 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
                     chunk_sizes[i] = self._time_chunking
                 if chunk_sizes[i] == -1:
                     chunk_sizes[i] = sizes[i]
+            if len(sizes) == 0:
+                chunk_sizes = []
             var_attrs['shape'] = sizes
             var_attrs['size'] = math.prod(sizes)
             if var_encoding.get('dtype', '') == 'bytes1024':
