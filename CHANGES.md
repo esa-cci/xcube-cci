@@ -1,4 +1,10 @@
 ## Changes in 0.11.6 (in development)
+* Fixed bug causing some ICESHEETS datasets where the time dimension is named
+  differently than the time coordinate to not be opened
+* Improved chunking behaviour which cause some datasets to take very long 
+  to open and others to not open at all
+* updated dataset states (supporting more datasets from the odp)
+
 
 ## Changes in 0.11.5
 * Improved support of dataset with unsigned integers
