@@ -41,6 +41,7 @@ from xcube.util.jsonschema import JsonObjectSchema
 
 class VectorDataCube(xarray.Dataset):
     """A wrapper class around an xarray Dataset to keep it separate."""
+    __slots__ = ()
 
 VECTOR_DATA_CUBE_TYPE = DataType(
     VectorDataCube,
