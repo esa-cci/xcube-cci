@@ -1,3 +1,5 @@
+## Changes in 0.11.7 (in development)
+
 ## Changes in 0.11.6
 * Fixed bug causing some ICESHEETS datasets where the time dimension is named
   differently than the time coordinate to not be opened
