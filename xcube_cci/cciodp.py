@@ -23,6 +23,7 @@ import tarfile
 import aiohttp
 import asyncio
 import bisect
+import codecs
 import copy
 import geopandas as gpd
 import io
@@ -582,7 +583,7 @@ class CciOdp:
                     return var_attrs["grid_mapping_name"]
         if crs:
             if crs.name != 'undefined':
-                return crs.name
+                return crs.name.strip('\\\"')
             crs_authority = crs.to_authority()
             if crs_authority:
                 return f'{crs_authority[0]}:{crs_authority[1]}'
