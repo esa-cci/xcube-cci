@@ -9,7 +9,7 @@ dependencies:
   - lxml >= 4.5
   - nest-asyncio >= 1.3
   - numpy >= 2.0
-  - pydap >= 3.4
+  - pydap >= 3.4,<=3.5.3
   - rioxarray
   - xcube >= 1.8.0
   - xvec
