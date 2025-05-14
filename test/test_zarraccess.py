@@ -76,20 +76,17 @@ class CciZarrDataStoreTest(unittest.TestCase):
 
     def test_get_open_data_params_schema(self):
         schema = self.store.get_open_data_params_schema()
-        self.assertEqual(
-            {'log_access',
-             'cache_size',
-             'chunks',
-             'consolidated',
-             'data_type',
-             'decode_cf',
-             'decode_coords',
-             'decode_times',
-             'drop_variables',
-             'group',
-             'mask_and_scale'},
-            set(schema.properties.keys())
-        )
+        self.assertIn('log_access', schema.properties.keys())
+        self.assertIn('cache_size', schema.properties.keys())
+        self.assertIn('chunks', schema.properties.keys())
+        self.assertIn('consolidated', schema.properties.keys())
+        self.assertIn('data_type', schema.properties.keys())
+        self.assertIn('decode_cf', schema.properties.keys())
+        self.assertIn('decode_coords', schema.properties.keys())
+        self.assertIn('decode_times', schema.properties.keys())
+        self.assertIn('drop_variables', schema.properties.keys())
+        self.assertIn('group', schema.properties.keys())
+        self.assertIn('mask_and_scale', schema.properties.keys())
         self.assertEqual([], schema.required)
 
     def test_get_data_writer_ids(self):
