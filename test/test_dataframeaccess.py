@@ -1,3 +1,4 @@
+import os
 import unittest
 
 from xcube_cci.cciodp import CciOdp
@@ -5,7 +6,8 @@ from xcube_cci.dataframeaccess import DataFrameAccessor
 
 GHG_DS_ID = "esacci.GHG.satellite-orbit-frequency.L2.CH4.SCIAMACHY.Envisat.IMAP.v7-2.r1"
 
-
+@unittest.skipIf(os.environ.get('XCUBE_DISABLE_WEB_TESTS', None) == '1',
+                 'XCUBE_DISABLE_WEB_TESTS = 1')
 class DataFrameAccessTest(unittest.TestCase):
 
     def setUp(self) -> None:
