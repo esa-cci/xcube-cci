@@ -1,4 +1,6 @@
 ## Changes in 0.11.7 (in development)
+* Improved determination of coordinate reference systems
+* Restricted version of external pydap package to avoid unstable environments
 
 ## Changes in 0.11.6
 * Fixed bug causing some ICESHEETS datasets where the time dimension is named
