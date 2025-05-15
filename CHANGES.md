@@ -1,4 +1,4 @@
-## Changes in 0.11.7 (in development)
+## Changes in 0.11.7
 * Improved determination of coordinate reference systems
 * Restricted version of external pydap package to avoid unstable environments
 
