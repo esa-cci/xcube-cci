@@ -1628,10 +1628,9 @@ class CciOdp:
         num_reattempts = start_page * 2
         attempt = 0
         while attempt < num_reattempts:
-            resp = await self.get_response(session, url)
-            if resp:
-                json_text = await resp.read()
-                json_dict = json.loads(json_text.decode('utf-8'))
+            resp_content = await self.get_response_content(session, url)
+            if resp_content:
+                json_dict = json.loads(resp_content.decode('utf-8'))
                 if extender:
                     feature_list = json_dict.get("features", [])
                     extender(extension, feature_list, name_filter)
@@ -1655,10 +1654,10 @@ class CciOdp:
         dimensions = {}
         variable_infos = {}
         if data_source.get('variable_manifest'):
-            resp = await self.get_response(session,
-                                           data_source.get('variable_manifest'))
-            if resp:
-                json_dict = await resp.json(encoding='utf-8')
+            resp_content = await self.get_response_content(session,
+                                                   data_source.get('variable_manifest'))
+            if resp_content:
+                json_dict = json.loads(resp_content.decode('utf-8'))
                 data_source['variables'] = json_dict.get(dataset_name, [])
 
         feature, num_shapefiles = \
@@ -1856,10 +1855,9 @@ class CciOdp:
             name_filter = sdrsid[1]
             paging_query_args["maximumRecords"] = 10000
         url = base_url + '?' + urllib.parse.urlencode(paging_query_args)
-        resp = await self.get_response(session, url)
-        if resp:
-            json_text = await resp.read()
-            json_dict = json.loads(json_text.decode('utf-8'))
+        resp_content = await self.get_response_content(session, url)
+        if resp_content:
+            json_dict = json.loads(resp_content.decode('utf-8'))
             feature_list = json_dict.get("features", [])
             if len(feature_list) > 0:
                 len_before = len(feature_list)
@@ -1887,10 +1885,9 @@ class CciOdp:
                                  httpAccept='application/geo+json',
                                  fileFormat='.shp')
         url = base_url + '?' + urllib.parse.urlencode(paging_query_args)
-        resp = await self.get_response(session, url)
-        if resp:
-            json_text = await resp.read()
-            json_dict = json.loads(json_text.decode('utf-8'))
+        resp_content = await self.get_response_content(session, url)
+        if resp_content:
+            json_dict = json.loads(resp_content.decode('utf-8'))
             feature_list = json_dict.get("features", [])
             # we try not to take the first feature,
             # as the last and the first one may have different time chunkings
@@ -1961,9 +1958,9 @@ class CciOdp:
     ) -> dict:
         if not descxml_url:
             return {}
-        resp = await self.get_response(session, descxml_url)
-        if resp:
-            descxml = etree.XML(await resp.read())
+        resp_content = await self.get_response_content(session, descxml_url)
+        if resp_content:
+            descxml = etree.XML(resp_content)
             try:
                 return _extract_metadata_from_descxml(descxml)
             except etree.ParseError:
@@ -1976,11 +1973,10 @@ class CciOdp:
     ) -> dict:
         if not odd_url:
             return {}
-        resp = await self.get_response(session, odd_url)
-        if not resp:
+        resp_content = await self.get_response_content(session, odd_url)
+        if not resp_content:
             return {}
-        xml_text = await resp.read()
-        return _extract_metadata_from_odd(etree.XML(xml_text))
+        return _extract_metadata_from_odd(etree.XML(resp_content))
 
     async def _get_variable_infos_from_shapefile_feature(
             self, feature: dict
@@ -2091,9 +2087,9 @@ class CciOdp:
         return variable_infos, dataset.attributes
 
     async def _get_tif_files_from_tar_url(self, tar_url: str, session) -> List[str]:
-        resp = await self.get_response(session, tar_url)
-        if resp:
-            tar_file = io.BytesIO(await resp.read())
+        resp_content = await self.get_response_content(session, tar_url)
+        if resp_content:
+            tar_file = io.BytesIO(resp_content)
             tar = tarfile.open(fileobj=tar_file, mode="r:gz")
             content = tar.getnames()
             return [c for c in content if c.endswith(".tif")]
@@ -2297,10 +2293,9 @@ class CciOdp:
     ):
         scheme, netloc, path, query, fragment = urlsplit(url)
         url = urlunsplit((scheme, netloc, path + f'.{part}', query, fragment))
-        resp = await self.get_response(session, url)
-        if resp:
-            res_dict[part] = await resp.read()
-            res_dict[part] = str(res_dict[part], 'utf-8')
+        resp_content = await self.get_response_content(session, url)
+        if resp_content:
+            res_dict[part] = str(resp_content, 'utf-8')
 
     async def _get_data_from_opendap_dataset(
             self, dataset, session, variable_name, slices
@@ -2316,12 +2311,11 @@ class CciOdp:
             quote(proxy.id) + hyperslab(index) + '&' + query,
             fragment)).rstrip('&')
         # download and unpack data
-        resp = await self.get_response(session, url)
-        if not resp:
+        resp_content = await self.get_response_content(session, url)
+        if not resp_content:
             _LOG.warning(f'Could not read response from "{url}"')
             return None
-        content = await resp.read()
-        dds, data = content.split(b'\nData:\n', 1)
+        dds, data = resp_content.split(b'\nData:\n', 1)
         dds = str(dds, 'utf-8')
         # Parse received dataset:
         dataset = dds_to_dataset(dds)
@@ -2332,34 +2326,38 @@ class CciOdp:
             return None
         return dataset[proxy.id].data
 
-    async def get_response(self, session: aiohttp.ClientSession, url: str) -> \
-            Optional[aiohttp.ClientResponse]:
+    async def get_response_content(self, session: aiohttp.ClientSession, url: str) -> Optional[bytes]:
         num_retries = self._num_retries
         retry_backoff_max = self._retry_backoff_max  # ms
         retry_backoff_base = self._retry_backoff_base
         for i in range(num_retries):
             resp = await session.request(method='GET', url=url)
             if resp.status == 200:
-                return resp
+                try:
+                    content = await resp.read()
+                    return content
+                except aiohttp.client_exceptions.ClientPayloadError as cpe:
+                    error_message =str(cpe)
             elif 500 <= resp.status < 600:
                 if self._enable_warnings:
                     error_message = f'Error {resp.status}: Cannot access url.'
                     warnings.warn(error_message)
                 return None
             elif resp.status == 429:
-                # Retry after 'Retry-After' with exponential backoff
-                retry_min = int(resp.headers.get('Retry-After', '100'))
-                retry_backoff = random.random() * retry_backoff_max
-                retry_total = retry_min + retry_backoff
-                if self._enable_warnings:
-                    retry_message = \
-                        f'Error 429: Too Many Requests. ' \
-                        f'Attempt {i + 1} of {num_retries} to retry after ' \
-                        f'{"%.2f" % retry_min} + {"%.2f" % retry_backoff} = ' \
-                        f'{"%.2f" % retry_total} ms ...'
-                    warnings.warn(retry_message)
-                time.sleep(retry_total / 1000.0)
-                retry_backoff_max *= retry_backoff_base
+                error_message = "Error 429: Too Many Requests."
             else:
                 break
+            # Retry after 'Retry-After' with exponential backoff
+            retry_min = int(resp.headers.get('Retry-After', '100'))
+            retry_backoff = random.random() * retry_backoff_max
+            retry_total = retry_min + retry_backoff
+            if self._enable_warnings:
+                retry_message = \
+                    f'{error_message} ' \
+                    f'Attempt {i + 1} of {num_retries} to retry after ' \
+                    f'{"%.2f" % retry_min} + {"%.2f" % retry_backoff} = ' \
+                    f'{"%.2f" % retry_total} ms ...'
+                warnings.warn(retry_message)
+            time.sleep(retry_total / 1000.0)
+            retry_backoff_max *= retry_backoff_base
         return None
