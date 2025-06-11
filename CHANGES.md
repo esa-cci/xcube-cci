@@ -1,4 +1,5 @@
 ## Changes in 0.11.8 (in development)
+* Read RIVER DISCHARGE data as geodataframes
 
 ## Changes in 0.11.7
 * Improved determination of coordinate reference systems

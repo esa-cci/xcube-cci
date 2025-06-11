@@ -6107,8 +6107,424 @@
         ],
         "title": "ESA Permafrost Climate Change Initiative (Permafrost_cci): Permafrost extent for the Northern Hemisphere, v4.0"
     },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1": {
-        "data_type": "dataset",
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~AMAZON_SOLIMOES_MANACAPURU": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~PO_PO_PONTELAGOSCURO": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~INDUS_INDUS_KOTRI": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~MARONI_MARONI_LANGA-TABIKI": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~INDUS_INDUS_GUDDU": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GANGES-BRAHMAPUTRA_GANGES_HARDINGE-BRIDGE": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~IRRAWADDY_IRRAWADDY_PYAY": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~AMAZON_AMAZONA_OBIDOS": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GANGES-BRAHMAPUTRA_BRAHMAPUTRA_BAHADURABAD": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~CHAD_LOGONE_LAI": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~CHAD_BAHR_AM-TIMAN": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~AMAZON_NEGRO_SAO-FELIPE": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~MISSISSIPPI_BIG_VALLEY-CITY": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~Ob_Ob_SALEKHARD": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~NIGER_NIGER_ANSONGO": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~INDUS_INDUS_CHASHMA": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~PO_PO_PIACENZA": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~MARONI_TAMPOK_DEGRAD-ROCHE": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~NIGER_NIGER_KOULIKORO": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~NIGER_NIGER_MALANVILLE": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GARONNE_GARONNE_TONNEINS": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~DANUBE_DANUBE_CEATAL": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~MARONI_TAPANAHONI_TAPA": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GARONNE_GARONNE_MARMANDE": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~ZAMBEZI_KAFUE_KASAKA": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~PO_PO_BORGOFORTE": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~DANUBE_DANUBE_MOHACS": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~MISSISSIPPI_BIG_NEAR-BROOKINGS": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~NIGER_BENOUE_IBI": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~DANUBE_SIRET_LUNGOCI": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~CONGO_UBANGUI_BANGUI": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~IRRAWADDY_IRRAWADDY_SAGAING": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~DANUBE_DANUBE_BOGOJEVO": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~CONGO_LUAPULA_CHEMBE-FERRY": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~LIMPOPO_LIMPOPO_SICACATE": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~NIGER_NIGER_NIAMEY": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~CHAD_CHARI_MAILAO": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~ZAMBEZI_KABOMPO_KABOMPO-PONTOON": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~IRRAWADDY_CHINDWIN_HKAMTI": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~MISSISSIPPI_MISSISSIPPI_VICKSBURG": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~CONGO_CONGO_KINSHASA": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GARONNE_GARONNE_LAMAGISTERE": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~INDUS_INDUS_TARBELA": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GARONNE_GARONNE_LA-REOLE": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~Mackenzie_Mackenzie_ARCTIC-RED": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~Mackenzie_Mackenzie_NORMAN-WELLS": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~Colville_Colville_UMIAT": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~Lena_Lena_KYUSYUR": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~ZAMBEZI_ZAMBEZE_MATUNDO-CAIS": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GANGES-BRAHMAPUTRA_BRAHMAPUTRA_YANGCUN": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~NIGER_NIGER_LOKOJA": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~LIMPOPO_OLIFANTS_FINALE": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~LIMPOPO_LIMPOPO_BEITBRUG": {
+        "data_type": "geodataframe",
         "verification_flags": [
             "open",
             "constrain_time"
