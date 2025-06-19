@@ -854,15 +854,12 @@ class CciChunkStore(RemoteChunkStore):
     """
 
     _SAMPLE_TYPE_TO_DTYPE = {
-        # Note: Sentinel Hub currently only supports unsigned
-        # integer values therefore requesting INT8 or INT16
-        # will return the same as UINT8 or UINT16 respectively.
         'uint8': '|u1',
         'uint16': '<u2',
         'uint32': '<u4',
-        'int8': '|u1',
-        'int16': '<u2',
-        'int32': '<u4',
+        'int8': '|i1',
+        'int16': '<i2',
+        'int32': '<i4',
         'float32': '<f4',
         'float64': '<f8',
     }
