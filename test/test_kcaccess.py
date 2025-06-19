@@ -30,8 +30,6 @@ from xcube.core.store import DatasetDescriptor
 from xcube.core.store import DataType
 from xcube_cci.kcaccess import CciKerchunkDataStore
 
-# os.environ['XCUBE_CCI_DISABLE_WEB_TESTS'] = '0'
-
 
 @unittest.skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
                  'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
@@ -39,10 +37,10 @@ class CciKerchunkDataStoreOpenTest(unittest.TestCase):
     store = CciKerchunkDataStore()
 
     def test_open_data(self):
-        data_id = "ESACCI-SOILMOISTURE-L3S-SSMS-ACTIVE-19910805-20211231-fv07.1_kr1.0"
+        data_id = "ESACCI-LST-L3C-LST-SSMI13-0.25deg_1YEARLY_ASC-1996-2020-fv2.33_kr1.0"
         dataset = self.store.open_data(data_id)
         self.assertIsInstance(dataset, xr.Dataset)
-        self.assertEqual({'time': 11107, 'lat': 720, 'lon': 1440}, dataset.sizes)
+        self.assertEqual({'time': 25, 'lat': 720, 'lon': 1440, 'length_scale': 1}, dataset.sizes)
 
 
 class CciKerchunkDataStoreTest(unittest.TestCase):

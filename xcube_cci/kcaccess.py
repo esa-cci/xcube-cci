@@ -21,8 +21,30 @@
 
 import json
 import os.path
+import requests
+import time
 
 from xcube.core.store import get_data_store_class
+
+from.constants import KERCHUNK_LOCATION
+
+def get_kc_refs():
+    if os.environ.get(KERCHUNK_LOCATION, 'CEDA') == "OTC":
+        kc_refs_path = "https://cci-zarr-backup.obs.eu-nl.otc.t-systems.com/kc_otc_refs.json"
+        status_code = 400
+        while not status_code == 200:
+            r = requests.get(kc_refs_path)
+            status_code = r.status_code
+            time.sleep(1)
+        return r.json()
+    else:
+        kc_refs_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            f'data/kc_refs.json'
+        )
+        with open(kc_refs_path, 'r') as fp:
+            kc_refs = json.load(fp)
+        return kc_refs
 
 ReferenceDataStore = get_data_store_class('reference')
 
@@ -32,10 +54,5 @@ class CciKerchunkDataStore(ReferenceDataStore):
 
     def __init__(self):
         if self._kc_refs is None:
-            kc_refs_path = os.path.join(
-                os.path.dirname(os.path.abspath(__file__)),
-                'data/kc_refs.json'
-            )
-            with open(kc_refs_path, 'r') as fp:
-                self._kc_refs = json.load(fp)
+            self._kc_refs = get_kc_refs()
         super().__init__(self._kc_refs, target_options=dict(compression=None))

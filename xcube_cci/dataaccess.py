@@ -50,12 +50,17 @@ from xcube.util.jsonschema import JsonStringSchema
 from .cciodp import CciOdp
 from .chunkstore import CciChunkStore
 from .constants import CCI_ODD_URL
+from .constants import CCI_ODD_TEST_URL
+from .constants import OTC_ODD_URL
 from .constants import DATAFRAME_OPENER_ID
 from .constants import DATASET_OPENER_ID
 from .constants import DEFAULT_NUM_RETRIES
 from .constants import DEFAULT_RETRY_BACKOFF_BASE
 from .constants import DEFAULT_RETRY_BACKOFF_MAX
+from .constants import ODP_LOCATION
 from .constants import OPENSEARCH_CEDA_URL
+from .constants import OPENSEARCH_CEDA_TEST_URL
+from .constants import OPENSEARCH_OTC_URL
 from .constants import VECTORDATACUBE_OPENER_ID
 from .dataframeaccess import DataFrameAccessor
 from .normalize import normalize_coord_names
@@ -99,6 +104,14 @@ def get_temporal_resolution_from_id(data_id: str) -> Optional[str]:
                 if i == 0:
                     return f'{data_time_res.split("-")[0]}{time_res_pandas_id}'
                 return f'1{time_res_pandas_id}'
+
+
+def get_endpoint_urls() -> (str, str):
+    if os.environ.get(ODP_LOCATION, 'CEDA') == "OTC":
+        return OPENSEARCH_OTC_URL, OTC_ODD_URL
+    elif os.environ.get(ODP_LOCATION, 'CEDA') == "test":
+        return OPENSEARCH_CEDA_TEST_URL, CCI_ODD_TEST_URL
+    return OPENSEARCH_CEDA_URL, CCI_ODD_URL
 
 
 class CciOdpDataOpener(DataOpener):
@@ -691,6 +704,11 @@ class CciOdpDataStore(DataStore):
     def __init__(self, normalize_data=True, **store_params):
         cci_schema = self.get_data_store_params_schema()
         cci_schema.validate_instance(store_params)
+        endpoint_url, endpoint_description_url = get_endpoint_urls()
+        if "endpoint_url" not in store_params:
+            store_params["endpoint_url"] = endpoint_url
+        if "endpoint_description_url" not in store_params:
+            store_params["endpoint_description_url"] = endpoint_description_url
         cdc_kwargs, store_params = cci_schema.process_kwargs_subset(
             store_params, ('endpoint_url', 'endpoint_description_url',
                            'enable_warnings', 'num_retries',

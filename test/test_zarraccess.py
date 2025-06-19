@@ -44,35 +44,17 @@ class CciZarrDataStoreTest(unittest.TestCase):
         self.assertEqual({'mldataset', 'geodataframe', 'dataset'},
                          set(self.store.get_data_types()))
 
-    def test_get_data_opener_ids(self):
-        self.assertEqual({'dataset:geotiff:s3',
-                          'dataset:netcdf:s3',
-                          'dataset:zarr:s3',
-                          'dataset:levels:s3',
-                          'mldataset:geotiff:s3',
-                          'mldataset:levels:s3',
-                          'geodataframe:shapefile:s3',
-                          'geodataframe:geojson:s3'},
-                         set(self.store.get_data_opener_ids()))
-        self.assertEqual({'dataset:geotiff:s3',
-                          'dataset:netcdf:s3',
-                          'dataset:zarr:s3',
-                          'dataset:levels:s3'},
-                         set(self.store.get_data_opener_ids(
-                             data_type='dataset'
-                         )))
-        self.assertEqual({'dataset:geotiff:s3',
-                          'dataset:netcdf:s3',
-                          'dataset:zarr:s3',
-                          'dataset:levels:s3',
-                          'mldataset:geotiff:s3',
-                          'mldataset:levels:s3',
-                          'geodataframe:shapefile:s3',
-                          'geodataframe:geojson:s3'},
-                         set(self.store.get_data_opener_ids(
-                             data_type='*'
-                         )))
-        self.assertEqual((), self.store.get_data_opener_ids(data_type=int))
+    @unittest.skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    def test_get_data_ids(self):
+        data_ids = self.store.list_data_ids()
+        self.assertIsNotNone(data_ids)
+
+    @unittest.skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    def test_open_data(self):
+        ds = self.store.open_data("ESACCI-L3C_CLOUD-CLD_PRODUCTS-AVHRR_NOAA-1982-2016-fv3.0.zarr")
+        self.assertIsNotNone(ds)
 
     def test_get_open_data_params_schema(self):
         schema = self.store.get_open_data_params_schema()

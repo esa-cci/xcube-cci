@@ -21,39 +21,55 @@
 
 from typing import Any
 from typing import Container
-from typing import Dict
-from typing import Iterator
 from typing import Tuple
 from typing import Union
 
 import json
+import os
 
 from xcube.core.store import DataStoreError
 from xcube.core.store import DataTypeLike
 from xcube.core.store import get_data_store_class
 from xcube.util.jsonschema import JsonObjectSchema
 
-CCI_ZARR_STORE_BUCKET_NAME = 'esacci'
-CCI_ZARR_STORE_ENDPOINT = 'https://cci-ke-o.s3-ext.jc.rl.ac.uk:443/'
-DATA_IDS_FILE_PATH = f'{CCI_ZARR_STORE_BUCKET_NAME}/data_ids.json'
+from.constants import ZARR_LOCATION
 
-CCI_ZARR_STORE_PARAMS = dict(
-    root=CCI_ZARR_STORE_BUCKET_NAME,
-    storage_options=dict(
-        anon=True,
-        client_kwargs=dict(
-            endpoint_url=CCI_ZARR_STORE_ENDPOINT,
+if os.environ.get(ZARR_LOCATION, 'CEDA') == "OTC":
+    CCI_ZARR_STORE_BUCKET_NAME = 'cci-zarr-backup'
+    CCI_ZARR_STORE_ENDPOINT = 'https://cci-zarr-backup.obs.eu-nl.otc.t-systems.com'
+    DATA_IDS_FILE_PATH = f'{CCI_ZARR_STORE_ENDPOINT}/data_ids.json'
+    CCI_ZARR_STORE_PARAMS = dict(
+        root=CCI_ZARR_STORE_ENDPOINT
+    )
+    DataStore = get_data_store_class('https')
+else:
+    CCI_ZARR_STORE_BUCKET_NAME = 'esacci'
+    CCI_ZARR_STORE_ENDPOINT = 'https://cci-ke-o.s3-ext.jc.rl.ac.uk:443/'
+    DATA_IDS_FILE_PATH = f'{CCI_ZARR_STORE_BUCKET_NAME}/data_ids.json'
+    CCI_ZARR_STORE_PARAMS = dict(
+        root=CCI_ZARR_STORE_BUCKET_NAME,
+        storage_options=dict(
+            anon=True,
+            client_kwargs=dict(
+                endpoint_url=CCI_ZARR_STORE_ENDPOINT,
+            )
         )
     )
-)
-
-S3DataStore = get_data_store_class('s3')
+    DataStore = get_data_store_class('s3')
 
 
-class CciZarrDataStore(S3DataStore):
+class CciZarrDataStore(DataStore):
 
     def __init__(self):
         super().__init__(**CCI_ZARR_STORE_PARAMS)
+
+    @property
+    def root(self) -> str:
+        if self._root is None:
+            with self._lock:
+                root = self._raw_root
+                self._root = root
+        return self._root
 
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:

@@ -38,15 +38,17 @@ CDC_DATASET_OPENER_ID = f'dataset:zarr:{CDC_SHORT_DATA_STORE_ID}'
 DATASET_OPENER_ID = f'dataset:zarr:{DATA_STORE_ID}'
 VECTORDATACUBE_OPENER_ID = f'vectordatacube::{CDC_SHORT_DATA_STORE_ID}'
 DATA_ARRAY_NAME = 'var_data'
-OPENSEARCH_CEDA_URL = 'https://archive.opensearch.ceda.ac.uk/opensearch/request'
-CCI_ODD_URL = 'https://archive.opensearch.ceda.ac.uk/' \
-              'opensearch/description.xml?parentIdentifier=cci'
+ODP_LOCATION = "ODP_LOCATION"
+KERCHUNK_LOCATION = "KERCHUNK_LOCATION"
+ZARR_LOCATION = "ZARR_LOCATION"
 
-# to test with opensearch test, use the following two lines
-# instead of the upper two
-# OPENSEARCH_CEDA_URL = "http://opensearch-test.ceda.ac.uk/opensearch/request"
-# CCI_ODD_URL = 'http://opensearch-test.ceda.ac.uk/' \
-#               'opensearch/description.xml?parentIdentifier=cci'
+OPENSEARCH_CEDA_URL = "https://archive.opensearch.ceda.ac.uk/opensearch/request"
+OPENSEARCH_OTC_URL = "http://opensearch-lps.164.30.69.113.nip.io/opensearch/request"
+CCI_ODD_URL = "https://archive.opensearch.ceda.ac.uk/opensearch/description.xml?parentIdentifier=cci"
+OTC_ODD_URL = "http://opensearch-lps.164.30.69.113.nip.io/opensearch/description.xml?parentIdentifier=cci"
+OPENSEARCH_CEDA_TEST_URL = "http://opensearch-test.ceda.ac.uk/opensearch/request"
+CCI_ODD_TEST_URL = 'http://opensearch-test.ceda.ac.uk/' \
+              'opensearch/description.xml?parentIdentifier=cci'
 
 DEFAULT_TILE_SIZE = 1000
 DEFAULT_RETRY_BACKOFF_MAX = 40  # milliseconds
