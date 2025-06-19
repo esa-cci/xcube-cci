@@ -1,6 +1,8 @@
-## Changes in 0.11.8 (in development)
+## Changes in 0.11.8
 * Read RIVER DISCHARGE data as geodataframes
 * Avoid ClientPayloadResponseErrors
+* Avoid warning about duplicate fill values
+* Do not convert integer values to unsigned integer values
 * Allow use of environment variables to set data location
 
 ## Changes in 0.11.7
