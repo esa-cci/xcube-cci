@@ -1,4 +1,4 @@
-## Changes in 0.11.8
+## Changes in 0.11.9 (in development)
 * Read RIVER DISCHARGE data as geodataframes
 * Avoid ClientPayloadResponseErrors
 * Avoid warning about duplicate fill values
