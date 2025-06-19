@@ -2041,6 +2041,8 @@ class CciOdp:
                             category=CciOdpWarning
                         )
                 var_attrs.pop('_FillValue')
+                if "missing_value" in var_attrs:
+                    var_attrs.pop('missing_value')
             else:
                 if data_type in _DTYPES_TO_DTYPES_WITH_MORE_BYTES:
                     data_type = _DTYPES_TO_DTYPES_WITH_MORE_BYTES[data_type]
