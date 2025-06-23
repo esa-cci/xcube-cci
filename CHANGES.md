@@ -1,4 +1,7 @@
 ## Changes in 0.11.9 (in development)
+* Enabled support for BIOMASS change data v6.0
+
+## Changes in 0.11.8
 * Read RIVER DISCHARGE data as geodataframes
 * Avoid ClientPayloadResponseErrors
 * Avoid warning about duplicate fill values

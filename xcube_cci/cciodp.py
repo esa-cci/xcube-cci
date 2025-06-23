@@ -1016,10 +1016,13 @@ class CciOdp:
             return var_data
         for var_name in variable_dict:
             if var_name in dataset:
-                var_data[var_name] = dict(size=dataset[var_name].size,
-                                          shape=dataset[var_name].shape,
-                                          chunkSize=dataset[var_name].
-                                          attributes.get('_ChunkSizes'))
+                var_data[var_name] = dict(
+                    size=dataset[var_name].size,
+                    shape=dataset[var_name].shape,
+                    chunkSize=dataset[var_name].attributes.get(
+                        '_ChunkSizes', list(dataset[var_name].shape)
+                    )
+                )
                 if dataset[var_name].size < 512 * 512:
                     data = await self._get_data_from_opendap_dataset(
                         dataset,
