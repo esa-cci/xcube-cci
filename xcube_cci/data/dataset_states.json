@@ -431,6 +431,437 @@
         ],
         "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2010, 2015, 2016, 2017, 2018, 2019, 2020 and 2021, v5.01"
     },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.CHANGE.6-0.100m-2010-2007": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.CHANGE.6-0.100m-2016-2015": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.CHANGE.6-0.100m-2017-2016": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.CHANGE.6-0.100m-2018-2017": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.CHANGE.6-0.100m-2019-2018": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.CHANGE.6-0.100m-2020-2010": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.CHANGE.6-0.100m-2020-2019": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.CHANGE.6-0.100m-2021-2020": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.CHANGE.6-0.100m-2022-2021": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.10000m-2010-2007": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.10000m-2016-2015": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.10000m-2017-2016": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.10000m-2018-2017": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.10000m-2019-2018": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.10000m-2020-2010": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.10000m-2020-2019": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.10000m-2021-2020": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.10000m-2022-2021": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.1000m-2016-2015": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.1000m-2017-2016": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.1000m-2018-2017": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.1000m-2019-2018": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.1000m-2020-2010": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.1000m-2020-2019": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.1000m-2021-2020": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.1000m-2022-2021": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.25000m-2010-2007": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.25000m-2016-2015": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.25000m-2017-2016": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.25000m-2018-2017": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.25000m-2019-2018": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.25000m-2020-2010": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.25000m-2020-2019": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.25000m-2021-2020": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.25000m-2022-2021": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.50000m-2010-2007": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.50000m-2016-2015": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.50000m-2017-2016": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.50000m-2018-2017": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.50000m-2019-2018": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.50000m-2020-2010": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.50000m-2020-2019": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.50000m-2021-2020": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.50000m-2022-2021": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
     "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.MERGED.2-0.r1": {
         "data_type": "dataset",
         "verification_flags": [
@@ -459,7 +890,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2010, 2015, 2016, 2017, 2018, 2019, 2020 and 2021, v5.01"
     },
@@ -467,7 +900,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2010, 2015, 2016, 2017, 2018, 2019, 2020 and 2021, v5.01"
     },
@@ -483,7 +918,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2010, 2015, 2016, 2017, 2018, 2019, 2020 and 2021, v5.01"
     },
@@ -491,9 +928,59 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2010, 2015, 2016, 2017, 2018, 2019, 2020 and 2021, v5.01"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.MERGED.6-0.10000m": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.MERGED.6-0.1000m": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.MERGED.6-0.100m": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.MERGED.6-0.25000m": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.MERGED.6-0.50000m": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
     },
     "esacci.CLOUD.mon.L3C.CLD_PRODUCTS.MODIS.Aqua.MODIS_AQUA.2-0.r1": {
         "data_type": "dataset",
@@ -4484,6 +4971,15 @@
         ],
         "title": "ESA Greenhouse Gases Climate Change Initiative (GHG_cci): Column-averaged CH4 from GOSAT generated with the SRPR (RemoTeC) Proxy Retrieval algorithm (CH4_GOS_SRPR), version 2.3.8"
     },
+    "esacci.GHG.satellite-orbit-frequency.L2.CH4.TROPOMI.Sentinel-5P.WFMD.v1-8.201711-202406": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region"
+        ],
+        "title": "ESA Greenhouse Gases Climate Change Initiative (GHG_cci): Column-averaged methane from Sentinel-5P, generated with the WFM-DOAS algorithm, version 1.8,  November 2017 - June 2024"
+    },
     "esacci.GHG.satellite-orbit-frequency.L2.CH4.TROPOMI.Sentinel-5P.WFMD.v1-8.r1": {
         "data_type": "geodataframe",
         "verification_flags": [
@@ -4997,6 +5493,21 @@
         "verification_flags": [],
         "title": "ESA Greenland Ice Sheet Climate Change Initiative (Greenland_Ice_Sheet_cci): Greenland Gravimetric Mass Balance from GRACE data (CSR RL06), derived by DTU Space, v1.5"
     },
+    "esacci.ICESHEETS.yr.Unspecified.GMB.GRACE-instrument.GRACE.UNSPECIFIED.3-0.greenland_gmb_mass_trends": {
+        "data_type": "dataset",
+        "verification_flags": [],
+        "title": "esacci.ICESHEETS.yr.Unspecified.GMB.GRACE-instrument.GRACE.UNSPECIFIED.3-0.greenland_gmb_mass_trends"
+    },
+    "esacci.ICESHEETS.yr.Unspecified.GMB.GRACE-instrument.GRACE.UNSPECIFIED.3-0.greenland_gmb_time_series": {
+        "data_type": "dataset",
+        "verification_flags": [],
+        "title": "esacci.ICESHEETS.yr.Unspecified.GMB.GRACE-instrument.GRACE.UNSPECIFIED.3-0.greenland_gmb_time_series"
+    },
+    "esacci.ICESHEETS.yr.Unspecified.GMB.GRACE-instrument.GRACE.UNSPECIFIED.v2-2.r1": {
+        "data_type": "dataset",
+        "verification_flags": [],
+        "title": "esacci.ICESHEETS.yr.Unspecified.GMB.GRACE-instrument.GRACE.UNSPECIFIED.v2-2.r1"
+    },
     "esacci.ICESHEETS.yr.Unspecified.IV.PALSAR.ALOS.UNSPECIFIED.1-1.greenland_margin_2006_2011": {
         "data_type": "dataset",
         "verification_flags": [
@@ -5029,24 +5540,41 @@
     },
     "esacci.LAKES.day.L3S.LK_PRODUCTS.multi-sensor.multi-platform.MERGED.v1-0.r1": {
         "data_type": "dataset",
-        "verification_flags": [],
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
         "title": "ESA Lakes Climate Change Initiative (Lakes_cci):  Lake products, Version 1.0"
     },
     "esacci.LAKES.day.L3S.LK_PRODUCTS.multi-sensor.multi-platform.MERGED.v1-1.r1": {
         "data_type": "dataset",
-        "verification_flags": [],
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
         "title": "ESA Lakes Climate Change Initiative (Lakes_cci):  Lake products, Version 1.1"
     },
     "esacci.LAKES.day.L3S.LK_PRODUCTS.multi-sensor.multi-platform.MERGED.v2-0-2.r1": {
         "data_type": "dataset",
-        "verification_flags": [],
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
         "title": "ESA Lakes Climate Change Initiative (Lakes_cci):  Lake products, Version 2.0.2"
     },
     "esacci.LAKES.day.L3S.LK_PRODUCTS.multi-sensor.multi-platform.MERGED.v2-1-0.r1": {
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Lakes Climate Change Initiative (Lakes_cci):  Lake products, Version 2.1"
     },
@@ -5075,6 +5603,22 @@
             "constrain_time"
         ],
         "title": "ESA High Resolution Land Cover Climate Change Initiative (High_Resolution_Land_Cover_cci): High Resolution Land Cover and Land Cover Change Maps in Amazonia (Eastern Amazonas region) at 30m spatial resolution in GeoTiff format, 1990-2019, v1.2"
+    },
+    "esacci.LC.5-yrs.L4.CHANGE.multi-sensor.multi-platform.HRLCC30-A03.v1-2.Siberia": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA High Resolution Land Cover Climate Change Initiative (High_Resolution_Land_Cover_cci): High Resolution Land Cover and Land Cover Change Maps in Siberia (Norther Siberia region) at 30m spatial resolution in GeoTiff format, 1990-2019, v1.2"
+    },
+    "esacci.LC.5-yrs.L4.Map.multi-sensor.multi-platform.HRLC30-A01.v1-2.Africa": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA High Resolution Land Cover Climate Change Initiative (High_Resolution_Land_Cover_cci): High Resolution Land Cover and Land Cover Change Maps in Africa (Eastern Sahel region) at 30m spatial resolution in GeoTiff format, 1990-2019, v1.2"
     },
     "esacci.LC.5-yrs.L4.Map.multi-sensor.multi-platform.HRLC30-A02.v1-2.Amazonia": {
         "data_type": "dataset",
@@ -6023,7 +6567,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Permafrost Climate Change Initiative (Permafrost_cci): Permafrost active layer thickness for the Northern Hemisphere, v4.0"
     },
@@ -6039,7 +6585,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Permafrost Climate Change Initiative (Permafrost_cci): Permafrost active layer thickness for the Northern Hemisphere, v4.0"
     },
@@ -6055,7 +6603,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Permafrost Climate Change Initiative (Permafrost_cci): Permafrost Ground Temperature for the Northern Hemisphere, v4.0"
     },
@@ -6071,7 +6621,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Permafrost Climate Change Initiative (Permafrost_cci): Permafrost Ground Temperature for the Northern Hemisphere, v4.0"
     },
@@ -6087,7 +6639,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Permafrost Climate Change Initiative (Permafrost_cci): Permafrost extent for the Northern Hemisphere, v4.0"
     },
@@ -6103,95 +6657,18 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Permafrost Climate Change Initiative (Permafrost_cci): Permafrost extent for the Northern Hemisphere, v4.0"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~AMAZON_SOLIMOES_MANACAPURU": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~PO_PO_PONTELAGOSCURO": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~INDUS_INDUS_KOTRI": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~MARONI_MARONI_LANGA-TABIKI": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~INDUS_INDUS_GUDDU": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GANGES-BRAHMAPUTRA_GANGES_HARDINGE-BRIDGE": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~IRRAWADDY_IRRAWADDY_PYAY": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
     },
     "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~AMAZON_AMAZONA_OBIDOS": {
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GANGES-BRAHMAPUTRA_BRAHMAPUTRA_BAHADURABAD": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~CHAD_LOGONE_LAI": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~CHAD_BAHR_AM-TIMAN": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
+            "constrain_region",
+            "write_geojson"
         ],
         "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
     },
@@ -6199,199 +6676,28 @@
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_geojson"
         ],
         "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
     },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~MISSISSIPPI_BIG_VALLEY-CITY": {
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~AMAZON_SOLIMOES_MANACAPURU": {
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_geojson"
         ],
         "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
     },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~Ob_Ob_SALEKHARD": {
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~CHAD_BAHR_AM-TIMAN": {
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~NIGER_NIGER_ANSONGO": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~INDUS_INDUS_CHASHMA": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~PO_PO_PIACENZA": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~MARONI_TAMPOK_DEGRAD-ROCHE": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~NIGER_NIGER_KOULIKORO": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~NIGER_NIGER_MALANVILLE": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GARONNE_GARONNE_TONNEINS": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~DANUBE_DANUBE_CEATAL": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~MARONI_TAPANAHONI_TAPA": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GARONNE_GARONNE_MARMANDE": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~ZAMBEZI_KAFUE_KASAKA": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~PO_PO_BORGOFORTE": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~DANUBE_DANUBE_MOHACS": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~MISSISSIPPI_BIG_NEAR-BROOKINGS": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~NIGER_BENOUE_IBI": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~DANUBE_SIRET_LUNGOCI": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~CONGO_UBANGUI_BANGUI": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~IRRAWADDY_IRRAWADDY_SAGAING": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~DANUBE_DANUBE_BOGOJEVO": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~CONGO_LUAPULA_CHEMBE-FERRY": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~LIMPOPO_LIMPOPO_SICACATE": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~NIGER_NIGER_NIAMEY": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
+            "constrain_region",
+            "write_geojson"
         ],
         "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
     },
@@ -6399,31 +6705,17 @@
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_region",
+            "write_geojson"
         ],
         "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
     },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~ZAMBEZI_KABOMPO_KABOMPO-PONTOON": {
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~CHAD_LOGONE_LAI": {
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~IRRAWADDY_CHINDWIN_HKAMTI": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~MISSISSIPPI_MISSISSIPPI_VICKSBURG": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
+            "constrain_region",
+            "write_geojson"
         ],
         "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
     },
@@ -6431,47 +6723,26 @@
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_region",
+            "write_geojson"
         ],
         "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
     },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GARONNE_GARONNE_LAMAGISTERE": {
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~CONGO_LUAPULA_CHEMBE-FERRY": {
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_region",
+            "write_geojson"
         ],
         "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
     },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~INDUS_INDUS_TARBELA": {
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~CONGO_UBANGUI_BANGUI": {
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GARONNE_GARONNE_LA-REOLE": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~Mackenzie_Mackenzie_ARCTIC-RED": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
-    },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~Mackenzie_Mackenzie_NORMAN-WELLS": {
-        "data_type": "geodataframe",
-        "verification_flags": [
-            "open",
-            "constrain_time"
+            "constrain_region",
+            "write_geojson"
         ],
         "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
     },
@@ -6479,23 +6750,53 @@
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_region",
+            "write_geojson"
         ],
         "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
     },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~Lena_Lena_KYUSYUR": {
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~DANUBE_DANUBE_BOGOJEVO": {
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_region",
+            "write_geojson"
         ],
         "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
     },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~ZAMBEZI_ZAMBEZE_MATUNDO-CAIS": {
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~DANUBE_DANUBE_CEATAL": {
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~DANUBE_DANUBE_MOHACS": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~DANUBE_SIRET_LUNGOCI": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GANGES-BRAHMAPUTRA_BRAHMAPUTRA_BAHADURABAD": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
         ],
         "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
     },
@@ -6503,23 +6804,116 @@
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_region",
+            "write_geojson"
         ],
         "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
     },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~NIGER_NIGER_LOKOJA": {
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GANGES-BRAHMAPUTRA_GANGES_HARDINGE-BRIDGE": {
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_region",
+            "write_geojson"
         ],
         "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
     },
-    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~LIMPOPO_OLIFANTS_FINALE": {
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GARONNE_GARONNE_LA-REOLE": {
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GARONNE_GARONNE_LAMAGISTERE": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GARONNE_GARONNE_MARMANDE": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~GARONNE_GARONNE_TONNEINS": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~INDUS_INDUS_CHASHMA": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~INDUS_INDUS_GUDDU": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~INDUS_INDUS_KOTRI": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~INDUS_INDUS_TARBELA": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~IRRAWADDY_CHINDWIN_HKAMTI": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~IRRAWADDY_IRRAWADDY_PYAY": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~IRRAWADDY_IRRAWADDY_SAGAING": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
         ],
         "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
     },
@@ -6527,7 +6921,225 @@
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~LIMPOPO_LIMPOPO_SICACATE": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~LIMPOPO_OLIFANTS_FINALE": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~Lena_Lena_KYUSYUR": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~MARONI_MARONI_LANGA-TABIKI": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~MARONI_TAMPOK_DEGRAD-ROCHE": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~MARONI_TAPANAHONI_TAPA": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~MISSISSIPPI_BIG_NEAR-BROOKINGS": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~MISSISSIPPI_BIG_VALLEY-CITY": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~MISSISSIPPI_MISSISSIPPI_VICKSBURG": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~Mackenzie_Mackenzie_ARCTIC-RED": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~Mackenzie_Mackenzie_NORMAN-WELLS": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~NIGER_BENOUE_IBI": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~NIGER_NIGER_ANSONGO": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~NIGER_NIGER_KOULIKORO": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~NIGER_NIGER_LOKOJA": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~NIGER_NIGER_MALANVILLE": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~NIGER_NIGER_NIAMEY": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~Ob_Ob_SALEKHARD": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~PO_PO_BORGOFORTE": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~PO_PO_PIACENZA": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~PO_PO_PONTELAGOSCURO": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~ZAMBEZI_KABOMPO_KABOMPO-PONTOON": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~ZAMBEZI_KAFUE_KASAKA": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
+        ],
+        "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
+    },
+    "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~ZAMBEZI_ZAMBEZE_MATUNDO-CAIS": {
+        "data_type": "geodataframe",
+        "verification_flags": [
+            "open",
+            "constrain_region",
+            "write_geojson"
         ],
         "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1"
     },
@@ -6546,6 +7158,22 @@
             "constrain_time"
         ],
         "title": "ESA Sea Ice Climate Change Initiative (Sea_Ice_cci): Nimbus-5 ESMR Sea Ice Concentration, version 1.0"
+    },
+    "esacci.SEAICE.day.L3C.SICONC.ESMR-(Nimbus-5).Nimbus-5.NIMBUS5_ESMR_EASE2_LDTPcorrected_NH.1-1.NH": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Sea Ice Climate Change Initiative (Sea_Ice_cci): Nimbus-5 ESMR Sea Ice Concentration, version 1.1"
+    },
+    "esacci.SEAICE.day.L3C.SICONC.ESMR-(Nimbus-5).Nimbus-5.NIMBUS5_ESMR_EASE2_LDTPcorrected_SH.1-1.SH": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Sea Ice Climate Change Initiative (Sea_Ice_cci): Nimbus-5 ESMR Sea Ice Concentration, version 1.1"
     },
     "esacci.SEAICE.day.L4.SICONC.multi-sensor.multi-platform.AMSR_25kmEASE2.2-1.NH": {
         "data_type": "dataset",
@@ -7103,7 +7731,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction \u2013 snow on ground (SCFG) from AATSR (2002 \u2013 2012), version 1.0"
     },
@@ -7111,7 +7741,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction \u2013 snow on ground (SCFG) from ATSR-2 (1995 \u2013 2003), version 1.0"
     },
@@ -7119,7 +7751,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7127,7 +7761,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7135,7 +7771,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7143,7 +7781,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7151,7 +7791,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7159,7 +7801,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7167,7 +7811,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7175,7 +7821,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7183,7 +7831,8 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7191,7 +7840,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7199,7 +7850,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7207,7 +7860,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7215,7 +7870,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7223,7 +7880,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7231,7 +7890,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7239,7 +7900,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7247,7 +7910,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from MODIS (2000-2020), version 2.0"
     },
@@ -7255,7 +7920,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from MODIS (2000-2022), version 3.0"
     },
@@ -7263,7 +7930,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - snow on ground (SCFG) from AVHRR (1982 - 2018), version 2.0"
     },
@@ -7271,7 +7940,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction \u2013 viewable snow (SCFV) from AATSR (2002 \u2013 2012), version 1.0"
     },
@@ -7279,7 +7950,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction \u2013 viewable snow (SCFV) from ATSR-2 (1995 \u2013 2003), version 1.0"
     },
@@ -7287,7 +7960,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7295,7 +7970,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7303,7 +7980,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7311,7 +7990,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7319,7 +8000,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7327,7 +8010,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7335,7 +8020,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7343,7 +8030,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7351,7 +8040,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7359,7 +8050,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7367,7 +8060,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7375,7 +8070,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7383,7 +8080,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7391,7 +8090,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7399,7 +8100,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7407,7 +8110,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1979 - 2022), version 3.0"
     },
@@ -7415,7 +8120,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable snow (SCFV) from MODIS (2000 - 2020), version 2.0"
     },
@@ -7423,7 +8130,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable snow (SCFV) from MODIS (2000 - 2022), version 3.0"
     },
@@ -7431,7 +8140,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Daily global Snow Cover Fraction - viewable (SCFV) from AVHRR (1982 - 2018), version 2.0"
     },
@@ -7439,7 +8150,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Snow Water Equivalent (SWE) level 3C daily global climate research data package (CRDP)  (1979 \u2013 2020), version 2.0"
     },
@@ -7447,7 +8160,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Snow Water Equivalent (SWE) level 3C daily global climate research data package (CRDP) (1979 - 2022), version 3.1"
     },
@@ -7455,7 +8170,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Snow Climate Change Initiative (Snow_cci): Fractional Snow Cover in CryoClim, v1.0"
     },
@@ -7679,7 +8396,8 @@
         "verification_flags": [
             "open",
             "constrain_time",
-            "constrain_region"
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Sea Surface Temperature Climate Change Initiative (SST_cci): Along-Track Scanning Radiometer (ATSR) Level 3 Collated (L3C) Climate Data Record, version 2.1"
     },
@@ -7688,7 +8406,8 @@
         "verification_flags": [
             "open",
             "constrain_time",
-            "constrain_region"
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Sea Surface Temperature Climate Change Initiative (SST_cci): Along-Track Scanning Radiometer (ATSR) Level 3 Collated (L3C) Climate Data Record, version 2.1"
     },
@@ -7766,7 +8485,9 @@
         "data_type": "dataset",
         "verification_flags": [
             "open",
-            "constrain_time"
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Sea Surface Temperature Climate Change Initiative (SST_cci): Advanced Very High Resolution Radiometer (AVHRR) Level 3 Collated (L3C) Climate Data Record, version 2.1"
     },
@@ -7845,7 +8566,8 @@
         "verification_flags": [
             "open",
             "constrain_time",
-            "constrain_region"
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Sea Surface Temperature Climate Change Initiative (SST_cci): Advanced Very High Resolution Radiometer (AVHRR) Level 3 Collated (L3C) Climate Data Record, version 2.1"
     },
@@ -7904,7 +8626,8 @@
         "verification_flags": [
             "open",
             "constrain_time",
-            "constrain_region"
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Sea Surface Temperature Climate Change Initiative (SST_cci): Advanced Very High Resolution Radiometer (AVHRR) Level 3 Collated (L3C) Climate Data Record, version 2.1"
     },
@@ -7923,8 +8646,7 @@
         "verification_flags": [
             "open",
             "constrain_time",
-            "constrain_region",
-            "write_zarr"
+            "constrain_region"
         ],
         "title": "ESA Sea Surface Temperature Climate Change Initiative (SST_cci): Advanced Very High Resolution Radiometer (AVHRR) Level 3 Collated (L3C) Climate Data Record, version 2.1"
     },
@@ -8018,7 +8740,8 @@
         "verification_flags": [
             "open",
             "constrain_time",
-            "constrain_region"
+            "constrain_region",
+            "write_zarr"
         ],
         "title": "ESA Sea Surface Temperature Climate Change Initiative (SST_cci): Advanced Very High Resolution Radiometer (AVHRR) Level 2 Preprocessed (L2P) Climate Data Record, version 2.1"
     },
