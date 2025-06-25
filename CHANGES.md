@@ -1,5 +1,6 @@
-## Changes in 0.11.9 (in development)
+## Changes in 0.11.9
 * Enabled support for BIOMASS change data v6.0
+* Updated list of dataset states
 
 ## Changes in 0.11.8
 * Read RIVER DISCHARGE data as geodataframes
