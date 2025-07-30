@@ -23,12 +23,10 @@ import tarfile
 import aiohttp
 import asyncio
 import bisect
-import codecs
 import copy
 import geopandas as gpd
 import io
 import json
-import logging
 import lxml.etree as etree
 import math
 import nest_asyncio
@@ -42,7 +40,6 @@ import pyproj
 import rioxarray
 import time
 import urllib.parse
-import warnings
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from shapely import Point
@@ -65,18 +62,17 @@ from pydap.parsers.das import parse_das, add_attributes
 from six.moves.urllib.parse import urlsplit, urlunsplit
 
 from .constants import CCI_ODD_URL
+from .constants import COMMON_TIME_COORD_VAR_NAMES
 from .constants import DEFAULT_NUM_RETRIES
 from .constants import DEFAULT_RETRY_BACKOFF_MAX
 from .constants import DEFAULT_RETRY_BACKOFF_BASE
+from .constants import LOG
 from .constants import OPENSEARCH_CEDA_URL
-from .constants import COMMON_TIME_COORD_VAR_NAMES
 from .constants import TIFF_VARS
 from .constants import TIMESTAMP_FORMAT
 
 from xcube_cci.timeutil import get_timestrings_from_string
 
-_LOG = logging.getLogger('xcube')
-_LOG.setLevel(level=logging.DEBUG)
 ODD_NS = {'os': 'http://a9.com/-/spec/opensearch/1.1/',
           'param': 'http://a9.com/-/spec/opensearch/extensions/parameters/1.0/'}
 DESC_NS = {'gmd': 'http://www.isotc211.org/2005/gmd',
@@ -577,7 +573,7 @@ class CciOdp:
                     crs = pyproj.crs.CRS.from_cf(var_attrs)
                     break
                 except pyproj.crs.CRSError:
-                    warnings.warn(f'Could not convert grid mapping '
+                    LOG.info(f'Could not convert grid mapping '
                                   f'"{var_attrs["grid_mapping_name"]}" '
                                   f'into CRS')
                     return var_attrs["grid_mapping_name"]
@@ -653,7 +649,7 @@ class CciOdp:
         dataset_names = await self._fetch_dataset_names(session)
         kerchunk_urls = []
         for i, dataset_name in enumerate(dataset_names):
-            _LOG.debug(
+            LOG.debug(
                 f"Attempting to retrieve kerchunk url for dataset {dataset_name} "
                 f"({i + 1}/{len(dataset_names)})"
             )
@@ -1641,12 +1637,12 @@ class CciOdp:
             attempt += 1
             if 'startDate' in paging_query_args and \
                     'endDate' in paging_query_args:
-                _LOG.debug(f'Did not read page {start_page} with start date '
+                LOG.debug(f'Did not read page {start_page} with start date '
                            f'{paging_query_args["startDate"]} and '
                            f'end date {paging_query_args["endDate"]} at '
                            f'attempt # {attempt}')
             else:
-                _LOG.debug(f'Did not read page {start_page} '
+                LOG.debug(f'Did not read page {start_page} '
                            f'at attempt {attempt}')
             time.sleep(4)
         return 0
@@ -1967,7 +1963,7 @@ class CciOdp:
             try:
                 return _extract_metadata_from_descxml(descxml)
             except etree.ParseError:
-                _LOG.info(f'Cannot read metadata from {descxml_url} '
+                LOG.info(f'Cannot read metadata from {descxml_url} '
                           f'due to parsing error.')
         return {}
 
@@ -1987,7 +1983,7 @@ class CciOdp:
         feature_info = _extract_feature_info(feature)
         shapefile_url = f"{feature_info[4].get('Download')}"
         if shapefile_url == 'None':
-            _LOG.warning(f'Shapefile is not accessible')
+            LOG.info(f'Shapefile is not accessible')
             return {}, {}
         geodataframe = gpd.read_file(shapefile_url)
         variable_infos = {}
@@ -2013,11 +2009,11 @@ class CciOdp:
                 return await self._get_variable_infos_from_tar_feature(feature, session)
             elif download_url.endswith(".tif"):
                 return await self._get_variable_infos_from_tif_feature(feature, session)
-            _LOG.warning(f'Dataset is not accessible via Opendap or Download')
+            LOG.warning(f'Dataset is not accessible via Opendap or Download')
             return {}, {}
         dataset = await self._get_opendap_dataset(session, opendap_url)
         if not dataset:
-            _LOG.warning(f'Could not extract information about variables '
+            LOG.info(f'Could not extract information about variables '
                          f'and attributes from {opendap_url}')
             return {}, {}
         variable_infos = {}
@@ -2038,7 +2034,7 @@ class CciOdp:
                         factor = int(var_attrs["orig_data_type"][-1])
                         var_attrs['fill_value'] += 2 ** factor
                     else:
-                        warnings.warn(
+                        LOG.info(
                             f'Variable "{fixed_key}" has negative fill value, '
                             f'but unsigned data type "{var_attrs["orig_data_type"]}"',
                             category=CciOdpWarning
@@ -2052,12 +2048,12 @@ class CciOdp:
                     var_attrs['fill_value'] = \
                         _determine_fill_value(np.dtype(data_type))
                 elif dataset[key].size > 1:
-                    warnings.warn(f'Variable "{fixed_key}" has no fill value, '
-                                  f'cannot set one. For parts where no data is '
-                                  f'available you will see random values. This '
-                                  f'is usually the case when data is missing '
-                                  f'for a time step.',
-                                  category=CciOdpWarning)
+                    LOG.info(f'Variable "{fixed_key}" has no fill value, '
+                             f'cannot set one. For parts where no data is '
+                             f'available you will see random values. This '
+                             f'is usually the case when data is missing '
+                             f'for a time step.',
+                             category=CciOdpWarning)
             var_attrs['size'] = dataset[key].size
             var_attrs['shape'] = list(dataset[key].shape)
             if len(var_attrs['shape']) == 0:
@@ -2106,7 +2102,7 @@ class CciOdp:
         feature_info = _extract_feature_info(feature)
         download_url = f"{feature_info[4].get('Download')}"
         if download_url == 'None':
-            _LOG.warning(f'Dataset is not accessible via Download')
+            LOG.warning(f'Dataset is not accessible via Download')
             return {}, {}
         tif_files = await self._get_tif_files_from_tar_url(download_url, session)
         var_dict = {}
@@ -2128,7 +2124,7 @@ class CciOdp:
         feature_info = _extract_feature_info(feature)
         download_url = f"{feature_info[4].get('Download')}"
         if download_url == 'None':
-            _LOG.warning(f'Dataset is not accessible via Download')
+            LOG.warning(f'Dataset is not accessible via Download')
             return {}, {}
         var_infos = {}
         attributes = {}
@@ -2249,12 +2245,12 @@ class CciOdp:
     async def _get_opendap_dataset(self, session, url: str):
         res_dict = await self._get_result_dict(session, url)
         if 'dds' not in res_dict or 'das' not in res_dict:
-            _LOG.warning(
+            LOG.warning(
                 'Could not open opendap url. No dds or das file provided.'
             )
             return
         if res_dict['dds'] == '':
-            _LOG.warning('Could not open opendap url. dds file is empty.')
+            LOG.warning('Could not open opendap url. dds file is empty.')
             return
         dataset = dds_to_dataset(res_dict['dds'])
         add_attributes(dataset, parse_das(res_dict['das']))
@@ -2318,7 +2314,7 @@ class CciOdp:
         # download and unpack data
         resp_content = await self.get_response_content(session, url)
         if not resp_content:
-            _LOG.warning(f'Could not read response from "{url}"')
+            LOG.warning(f'Could not read response from "{url}"')
             return None
         dds, data = resp_content.split(b'\nData:\n', 1)
         dds = str(dds, 'utf-8')
@@ -2327,7 +2323,7 @@ class CciOdp:
         try:
             dataset.data = unpack_dap2_data(BytesReader(data), dataset)
         except ValueError:
-            _LOG.warning(f'Could not read data from "{url}"')
+            LOG.warning(f'Could not read data from "{url}"')
             return None
         return dataset[proxy.id].data
 
@@ -2346,7 +2342,7 @@ class CciOdp:
             elif 500 <= resp.status < 600:
                 if self._enable_warnings:
                     error_message = f'Error {resp.status}: Cannot access url.'
-                    warnings.warn(error_message)
+                    LOG.warning(error_message)
                 return None
             elif resp.status == 429:
                 error_message = "Error 429: Too Many Requests."
@@ -2362,7 +2358,7 @@ class CciOdp:
                     f'Attempt {i + 1} of {num_retries} to retry after ' \
                     f'{"%.2f" % retry_min} + {"%.2f" % retry_backoff} = ' \
                     f'{"%.2f" % retry_total} ms ...'
-                warnings.warn(retry_message)
+                LOG.info(retry_message)
             time.sleep(retry_total / 1000.0)
             retry_backoff_max *= retry_backoff_base
         return None

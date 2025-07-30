@@ -23,11 +23,9 @@ import bisect
 import copy
 import itertools
 import json
-import logging
 import math
 import numcodecs
 import time
-import warnings
 from abc import abstractmethod, ABCMeta
 from collections.abc import MutableMapping
 from numcodecs import Blosc
@@ -39,6 +37,7 @@ import pandas as pd
 
 from .cciodp import CciOdp
 from .constants import COMMON_COORD_VAR_NAMES
+from .constants import LOG
 from .constants import TIMESTAMP_FORMAT
 from .timerangegetter import extract_time_range_as_strings
 from .timerangegetter import TimeRangeGetter
@@ -53,8 +52,6 @@ _STATIC_ARRAY_COMPRESSOR_CONFIG = dict(
     id='blosc', **_STATIC_ARRAY_COMPRESSOR_PARAMS
 )
 _STATIC_ARRAY_COMPRESSOR = Blosc(**_STATIC_ARRAY_COMPRESSOR_PARAMS)
-
-_LOG = logging.getLogger()
 
 
 def _dict_to_bytes(d: Dict):
@@ -94,7 +91,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
         self._dataset_name = data_id
         self._time_ranges = self.get_time_ranges(data_id, cube_params)
         is_climatology = 'AEROSOL.climatology' in data_id
-        logging.debug('Determined time ranges')
+        LOG.debug('Determined time ranges')
         if not self._time_ranges:
             raise ValueError('Could not determine any valid time stamps')
         self._time_chunking = self.get_time_chunking()
@@ -146,7 +143,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
 
         coords_data = self.get_coords_data(data_id)
 
-        logging.debug('Determined coordinates')
+        LOG.debug('Determined coordinates')
 
         if is_climatology:
             coords_data['month'] = {}
@@ -313,7 +310,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
             if coord_name == time_dim_name or coord_name == time_bounds_name:
                 self._time_indexes[coord_name] = 0
         remove = []
-        logging.debug('Adding variables to dataset ...')
+        LOG.debug('Adding variables to dataset ...')
         for variable_name in self._variable_names:
             var_attrs = self.get_attrs(variable_name)
             grid_mapping_name = var_attrs.get('grid_mapping', variable_name)
@@ -357,8 +354,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
                 if 'grid_mapping_name' in var_attrs:
                     var_encoding['dtype'] = 'U'
                 elif len(dimensions) == 1 and sizes[0] < 512 * 512:
-                    _LOG.info(f"Variable '{variable_name}' is encoded as "
-                              f"string. Will convert it to metadata.")
+                    LOG.info(f"Variable '{variable_name}' is encoded as string. Will convert it to metadata.")
                     variable = {variable_name: sizes[0]}
                     var_data = self.get_variable_data(data_id, variable)
                     global_attrs[variable_name] = \
@@ -367,8 +363,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
                     remove.append(variable_name)
                     continue
                 else:
-                    warnings.warn(f"Variable '{variable_name}' is encoded as "
-                                  f"string. Will omit it from the dataset.")
+                    LOG.info(f"Variable '{variable_name}' is encoded as string. Will omit it from the dataset.")
                     remove.append(variable_name)
                     continue
             if self._optimise_chunking():
@@ -387,8 +382,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
                                    chunk_sizes,
                                    var_encoding,
                                    var_attrs)
-        logging.debug(f"Added a total of {len(self._variable_names)} variables "
-                      f"to the data set")
+        LOG.debug(f"Added a total of {len(self._variable_names)} variables to the data set")
         for r in remove:
             self._variable_names.remove(r)
         cube_params['variable_names'] = self._variable_names
@@ -969,8 +963,7 @@ class CciChunkStore(RemoteChunkStore):
                        )
         data = self._cci_cdc.get_data_chunk(request, dim_indexes)
         if not data:
-            warnings.warn(f'{key}: cannot fetch chunk for variable '
-                          f'{var_name!r} and time_range {time_range!r}.')
+            LOG.info(f'{key}: cannot fetch chunk for variable {var_name!r} and time_range {time_range!r}.')
             expected_chunk_size, dtype_size = \
                 self._determine_expected_chunk_size(var_name)
             data_type = self.get_attrs(var_name).get('data_type')
@@ -998,7 +991,7 @@ class CciChunkStore(RemoteChunkStore):
                     return var_array.tobytes() + data
                 else:
                     return data + var_array.tobytes()
-        _LOG.info(f'Fetched chunk for ({chunk_index})"{var_name}"')
+        LOG.info(f'Fetched chunk for ({chunk_index})"{var_name}"')
         return data
 
     def _determine_expected_chunk_size(self, var_name: str):

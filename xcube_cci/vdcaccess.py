@@ -28,7 +28,6 @@ from typing import Tuple
 import dask.array as da
 import numpy as np
 import xarray
-import warnings
 
 from xcube.core.store import DataDescriptor
 from xcube.core.store import DataType
@@ -38,6 +37,7 @@ from xcube.util.assertions import assert_true
 from xcube.util.jsonschema import JsonIntegerSchema
 from xcube.util.jsonschema import JsonObjectSchema
 
+from .constants import LOG
 
 class VectorDataCube(xarray.Dataset):
     """A wrapper class around an xarray Dataset to keep it separate."""
@@ -119,8 +119,8 @@ class VectorDataCubeDescriptor(DataDescriptor):
                     f'illegal data_type,'
                     f' must be compatible with {VECTOR_DATA_CUBE_TYPE!r}')
         if additional_properties:
-            warnings.warn(f'Additional properties received;'
-                          f' will be ignored: {additional_properties}')
+            LOG.info(f'Additional properties received;'
+                     f' will be ignored: {additional_properties}')
         self.dims = dict(dims) if dims else None
         self.spatial_res = spatial_res
         self.coords = coords if coords else None

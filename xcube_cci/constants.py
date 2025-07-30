@@ -19,7 +19,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import logging
 import numpy as np
+import os
 
 CCI_DATA_STORE_ID = 'esa-cci'
 CDC_SHORT_DATA_STORE_ID = 'esa-cdc'
@@ -63,6 +65,13 @@ COMMON_SPATIAL_COORD_VAR_NAMES = [
 ]
 COMMON_TIME_COORD_VAR_NAMES = ['time', 't', 'start_time', 'end_time']
 COMMON_COORD_VAR_NAMES = COMMON_SPATIAL_COORD_VAR_NAMES + COMMON_TIME_COORD_VAR_NAMES
+
+DEFAULT_LOG_LEVEL = "WARNING"
+GENERAL_LOG_FORMAT = "[%(levelname).1s %(asctime)s %(name)s] %(message)s"
+formatter = logging.Formatter(GENERAL_LOG_FORMAT)
+
+LOG = logging.getLogger("xcube-cci")
+LOG.setLevel(os.getenv("XCUBE_CCI_LOG_LEVEL", DEFAULT_LOG_LEVEL).upper())
 
 MONTHS = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY',
           'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']

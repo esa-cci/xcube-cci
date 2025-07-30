@@ -1,4 +1,5 @@
 ## Changes in 0.11.10 (in development)
+* Revised warnings
 
 ## Changes in 0.11.9
 * Enabled support for BIOMASS change data v6.0
