@@ -1624,27 +1624,13 @@ class CciOdp:
         if end_date:
             paging_query_args.update(endDate=end_date)
         url = base_url + '?' + urllib.parse.urlencode(paging_query_args)
-        num_reattempts = start_page * 2
-        attempt = 0
-        while attempt < num_reattempts:
-            resp_content = await self.get_response_content(session, url)
-            if resp_content:
-                json_dict = json.loads(resp_content.decode('utf-8'))
-                if extender:
-                    feature_list = json_dict.get("features", [])
-                    extender(extension, feature_list, name_filter)
-                return json_dict['totalResults']
-            attempt += 1
-            if 'startDate' in paging_query_args and \
-                    'endDate' in paging_query_args:
-                LOG.debug(f'Did not read page {start_page} with start date '
-                           f'{paging_query_args["startDate"]} and '
-                           f'end date {paging_query_args["endDate"]} at '
-                           f'attempt # {attempt}')
-            else:
-                LOG.debug(f'Did not read page {start_page} '
-                           f'at attempt {attempt}')
-            time.sleep(4)
+        resp_content = await self.get_response_content(session, url)
+        if resp_content:
+            json_dict = json.loads(resp_content.decode('utf-8'))
+            if extender:
+                feature_list = json_dict.get("features", [])
+                extender(extension, feature_list, name_filter)
+            return json_dict['totalResults']
         return 0
 
     async def _set_variable_infos(self, opensearch_url: str, dataset_id: str,
