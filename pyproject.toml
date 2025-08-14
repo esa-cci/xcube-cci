@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xcube_cci"
-version = "0.11.10.dev0"
+version = "0.11.10"
 authors = [
   { name="ESA CCI Toolbox Development Team" },
 ]
@@ -31,10 +31,11 @@ dependencies = [
     "lxml>=4.5",
     "nest-asyncio>=1.3",
     "numpy>=2",
-    "pydap>=3.4",
+    "pydap>=3.4,<=3.5.3",
     "rioxarray",
     "xcube-core>=1.8.0",
-    "xvec"
+    "xvec",
+    "zarr<3"
 ]
 
 [project.optional-dependencies]
