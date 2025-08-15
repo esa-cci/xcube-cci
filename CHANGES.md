@@ -1,3 +1,5 @@
+## Changes in 0.11.11 (in development)
+
 ## Changes in 0.11.10
 * Revised warnings
 * Removed redundant attempt loops, resulting in faster opening of some datasets (e.g., FIRE)
