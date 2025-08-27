@@ -20,7 +20,7 @@
 # SOFTWARE.
 import tarfile
 
-import aiohttp
+# import aiohttp
 import asyncio
 import bisect
 import copy
@@ -33,12 +33,10 @@ import nest_asyncio
 import numcodecs
 import numpy as np
 import os
-import random
 import re
 import pandas as pd
 import pyproj
 import rioxarray
-import time
 import urllib.parse
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
@@ -70,11 +68,11 @@ from .constants import LOG
 from .constants import OPENSEARCH_CEDA_URL
 from .constants import TIFF_VARS
 from .constants import TIMESTAMP_FORMAT
+from .odpconnector import OdpConnector
+from .sessionexecutor import SessionExecutor
 
 from xcube_cci.timeutil import get_timestrings_from_string
 
-ODD_NS = {'os': 'http://a9.com/-/spec/opensearch/1.1/',
-          'param': 'http://a9.com/-/spec/opensearch/extensions/parameters/1.0/'}
 DESC_NS = {'gmd': 'http://www.isotc211.org/2005/gmd',
            'gml': 'http://www.opengis.net/gml/3.2',
            'gco': 'http://www.isotc211.org/2005/gco',
@@ -127,24 +125,14 @@ def _convert_time_from_drs_id(time_value: str) -> str:
         return '13 years'
     return time_value
 
-
-async def _run_with_session_executor(async_function, *params, headers):
-    async with aiohttp.ClientSession(
-            connector=aiohttp.TCPConnector(limit=50),
-            headers=headers,
-            trust_env=True
-    ) as session:
-        return await async_function(session, *params)
-
-
 def _get_feature_dict_from_feature(feature: dict) -> Optional[dict]:
     fc_props = feature.get("properties", {})
     feature_dict = {'uuid': feature.get("id", "").split("=")[-1],
                     'title': fc_props.get("title", "")}
     variables = _get_variables_from_feature(feature)
     feature_dict['variables'] = variables
-    fc_props_links = fc_props.get("links", None)
-    if fc_props_links:
+    fc_props_links = fc_props.get("links")
+    if fc_props_links is not None:
         search = fc_props_links.get("search")
         if search:
             odd_url = search[0].get('href')
@@ -323,61 +311,13 @@ def find_datetime_format(
     return None, -1, -1, relativedelta()
 
 
-def _extract_metadata_from_odd(odd_xml: etree.XML) -> dict:
-    metadata = {'num_files': {}}
-    metadata_names = {
-        'ecv': (['ecv', 'ecvs'], False),
-        'frequency': (['time_frequency', 'time_frequencies'], False),
-        'institute': (['institute', 'institutes'], False),
-        'processingLevel': (['processing_level', 'processing_levels'], False),
-        'productString': (['product_string', 'product_strings'], False),
-        'productVersion': (['product_version', 'product_versions'], False),
-        'dataType': (['data_type', 'data_types'], False),
-        'sensor': (['sensor_id', 'sensor_ids'], False),
-        'platform': (['platform_id', 'platform_ids'], False),
-        'fileFormat': (['file_format', 'file_formats'], False),
-        'drsId': (['drs_id', 'drs_ids'], True)
-    }
-    for param_elem in odd_xml.findall('os:Url/param:Parameter',
-                                      namespaces=ODD_NS):
-        if param_elem.attrib['name'] in metadata_names:
-            element_names, add_to_num_files = \
-                metadata_names[param_elem.attrib['name']]
-            param_content = _get_from_param_elem(param_elem)
-            if param_content:
-                if type(param_content) == tuple:
-                    metadata[element_names[0]] = param_content[0]
-                    if add_to_num_files:
-                        metadata['num_files'][param_content[0]] = \
-                            param_content[1]
-                else:
-                    names = []
-                    for name, num_files in param_content:
-                        names.append(name)
-                        if add_to_num_files:
-                            metadata['num_files'][name] = num_files
-                    metadata[element_names[1]] = names
-    return metadata
-
-
-def _get_from_param_elem(param_elem: etree.Element):
-    options = param_elem.findall('param:Option', namespaces=ODD_NS)
-    if not options:
-        return None
-    if len(options) == 1:
-        return options[0].get('value'), \
-               int(options[0].get('label').split('(')[-1][:-1])
-    return [(option.get('value'), int(option.get('label').split('(')[-1][:-1]))
-            for option in options]
-
-
 def _extract_feature_info(feature: dict) -> List:
     feature_props = feature.get("properties", {})
     filename = feature_props.get("title", "")
-    date = feature_props.get("date", None)
+    date = feature_props.get("date")
     start_time = ""
     end_time = ""
-    if date and "/" in date:
+    if date is not None and "/" in date:
         start_time, end_time = date.split("/")
     elif filename:
         time_format, p1, p2, timedelta = find_datetime_format(filename)
@@ -449,7 +389,8 @@ class CciOdp:
                  retry_backoff_max: int = DEFAULT_RETRY_BACKOFF_MAX,
                  retry_backoff_base: float = DEFAULT_RETRY_BACKOFF_BASE,
                  user_agent: str = None,
-                 data_type: str = 'dataset'
+                 data_type: str = 'dataset',
+                 drs_ids: List[str] = None
                  ):
         self._opensearch_url = endpoint_url
         self._opensearch_description_url = endpoint_description_url
@@ -457,25 +398,24 @@ class CciOdp:
         self._num_retries = num_retries
         self._retry_backoff_max = retry_backoff_max
         self._retry_backoff_base = retry_backoff_base
-        self._headers = {'User-Agent': user_agent} if user_agent else None
         self._data_type = data_type
-        self._drs_ids = None
         self._data_sources = {}
         self._features = {}
         self._result_dicts = {}
+        self._session_executor = SessionExecutor(user_agent)
+        self._odp_connector = OdpConnector(user_agent, endpoint_description_url)
         self._vector_offsets = {}
         self._tar_to_tif = {}
         self._tif_to_array = {}
-        eds_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                'data/excluded_data_sources')
-        with open(eds_file, 'r') as eds:
-            self._excluded_data_sources = eds.read().split('\n')
         dataset_states_file = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
             'data/dataset_states.json'
         )
         with open(dataset_states_file, 'r') as fp:
             self._dataset_states = json.load(fp)
+        if not drs_ids:
+            drs_ids = self._odp_connector.get_drs_ids()
+        self._drs_ids = self.adjust_drs_ids(drs_ids)
 
     def _is_valid_dataset(self, data_id: str):
         valid = self._dataset_states.get(data_id, {}).get('data_type', 'dataset') \
@@ -497,25 +437,12 @@ class CciOdp:
     def close(self):
         pass
 
-    def _run_with_session(self, async_function, *params):
-        # See https://github.com/aio-libs/aiohttp/blob/master/docs/
-        # client_advanced.rst#graceful-shutdown
-        loop = asyncio.new_event_loop()
-        coro = _run_with_session_executor(
-            async_function, *params, headers=self._headers
-        )
-        result = loop.run_until_complete(coro)
-        # Short sleep to allow underlying connections to close
-        loop.run_until_complete(asyncio.sleep(1.))
-        loop.close()
-        return result
-
     @property
     def dataset_names(self) -> List[str]:
-        return self._run_with_session(self._fetch_dataset_names)
+        return self._drs_ids
 
     def get_kerchunk_files(self) -> List[str]:
-        return self._run_with_session(self._get_kerchunk_files)
+        return self._session_executor.run_with_session(self._get_kerchunk_files)
 
     def get_dataset_info(
             self, dataset_id: str, dataset_metadata: dict = None
@@ -532,6 +459,7 @@ class CciOdp:
         data_info['x_res'] = get_res(nc_attrs, 'lon')
         if data_info['x_res'] == -1:
             data_info['x_res'] = get_res(dataset_metadata.get('attributes', {}), 'lon')
+        float(dataset_metadata.get('attributes', {}).get('bbox_minx', dataset_metadata.get('bbox_minx', np.nan)))
         data_info['bbox'] = \
             (float(dataset_metadata.get('attributes', {}).get(
                 'bbox_minx', dataset_metadata.get('bbox_minx', np.nan))
@@ -557,9 +485,9 @@ class CciOdp:
             time_ranges = self.get_time_ranges_from_data(dataset_id)
             if len(time_ranges) > 0:
                 data_info['temporal_coverage_start'] = \
-                    time_ranges[0][0].tz_localize(None).isoformat()
+                    time_ranges[0][0].isoformat()
                 data_info['temporal_coverage_end'] = \
-                    time_ranges[-1][1].tz_localize(None).isoformat()
+                    time_ranges[-1][1].isoformat()
         data_info['var_names'], data_info['coord_names'] = \
             self.var_and_coord_names(dataset_id)
         return data_info
@@ -597,7 +525,7 @@ class CciOdp:
 
     def get_datasets_metadata(self, dataset_ids: List[str]) -> List[dict]:
         assert isinstance(dataset_ids, list)
-        self._run_with_session(
+        self._session_executor.run_with_session(
             self._ensure_all_info_in_data_sources, dataset_ids
         )
         metadata = []
@@ -605,48 +533,22 @@ class CciOdp:
             metadata.append(self._data_sources[dataset_id])
         return metadata
 
-    async def _fetch_dataset_names(self, session):
-        if self._drs_ids:
-            return self._drs_ids
-        meta_info_dict = await self._extract_metadata_from_odd_url(
-            session, self._opensearch_description_url
-        )
-        if 'drs_ids' in meta_info_dict:
-            self._drs_ids = meta_info_dict['drs_ids']
-            if '_all' in self._drs_ids:
-                self._drs_ids.remove('_all')
-            for excluded_data_source in self._excluded_data_sources:
-                if excluded_data_source in self._drs_ids:
-                    self._drs_ids.remove(excluded_data_source)
-            to_be_removed = []
-            for drs_id in self._drs_ids:
-                replacements = self._get_replacements(drs_id)
-                if len(replacements) > 0:
-                    to_be_removed.append(drs_id)
-                    self._drs_ids += replacements
-            for drs_id in self._drs_ids:
-                if drs_id in self._excluded_data_sources or \
-                        not self._is_valid_dataset(drs_id):
-                    to_be_removed.append(drs_id)
-            self._drs_ids = [drs_id for drs_id in self._drs_ids
-                             if drs_id not in to_be_removed]
-            return self._drs_ids
-        if not self._data_sources:
-            self._data_sources = {}
-            catalogue = await self._fetch_data_source_list_json(
-                session, self._opensearch_url, dict(parentIdentifier='cci')
-            )
-            if catalogue:
-                tasks = []
-                for catalogue_item in catalogue:
-                    tasks.append(self._create_data_source(
-                        session, catalogue[catalogue_item], catalogue_item)
-                    )
-                await asyncio.gather(*tasks)
-        return list(self._data_sources.keys())
+    def adjust_drs_ids(self, drs_ids: List[str]):
+        if '_all' in drs_ids:
+            drs_ids.remove('_all')
+        to_be_removed = []
+        for drs_id in drs_ids:
+            replacements = self._get_replacements(drs_id)
+            if len(replacements) > 0:
+                to_be_removed.append(drs_id)
+                drs_ids += replacements
+        for drs_id in drs_ids:
+            if not self._is_valid_dataset(drs_id):
+                to_be_removed.append(drs_id)
+        return [drs_id for drs_id in drs_ids if drs_id not in to_be_removed]
 
     async def _get_kerchunk_files(self, session):
-        dataset_names = await self._fetch_dataset_names(session)
+        dataset_names = self._drs_ids
         kerchunk_urls = []
         for i, dataset_name in enumerate(dataset_names):
             LOG.debug(
@@ -673,14 +575,15 @@ class CciOdp:
             self, session, json_dict: dict, datasource_id: str
     ):
         meta_info = await self._fetch_meta_info(
-            session, datasource_id, json_dict.get('odd_url', None),
-            json_dict.get('metadata_url', None)
+            session,
+            datasource_id,
+            json_dict.get('odd_url'),
+            json_dict.get('metadata_url')
         )
         drs_ids = self._get_as_list(meta_info, 'drs_id', 'drs_ids')
         to_be_removed = []
         for drs_id in drs_ids:
-            if drs_id in self._excluded_data_sources or not self._is_valid_dataset(
-                    drs_id):
+            if not self._is_valid_dataset(drs_id):
                 to_be_removed.append(drs_id)
         drs_ids = [drs_id for drs_id in drs_ids if drs_id not in to_be_removed]
         for drs_id in drs_ids:
@@ -749,7 +652,7 @@ class CciOdp:
     def var_and_coord_names(
             self, dataset_name: str
     ) -> Tuple[List[str], List[str]]:
-        self._run_with_session(
+        self._session_executor.run_with_session(
             self._ensure_all_info_in_data_sources, [dataset_name]
         )
         return self._get_data_var_and_coord_names(
@@ -817,7 +720,7 @@ class CciOdp:
                 and 'data_type' not in cci_attrs \
                 and 'product_string' not in cci_attrs \
                 and 'product_version' not in cci_attrs:
-            self._run_with_session(self._read_all_data_sources)
+            self._session_executor.run_with_session(self._read_all_data_sources)
             candidate_names = self.dataset_names
         else:
             for dataset_name in self.dataset_names:
@@ -854,9 +757,9 @@ class CciOdp:
             converted_start_date = self._get_datetime_from_string(start_date)
         if end_date:
             converted_end_date = self._get_datetime_from_string(end_date)
-        self._run_with_session(self._ensure_in_data_sources, candidate_names)
+        self._session_executor.run_with_session(self._ensure_in_data_sources, candidate_names)
         for candidate_name in candidate_names:
-            data_source_info = self._data_sources.get(candidate_name, None)
+            data_source_info = self._data_sources.get(candidate_name)
             if data_source_info is None:
                 continue
             institute = cci_attrs.get('institute')
@@ -865,10 +768,10 @@ class CciOdp:
                      institute != data_source_info['institute']):
                 continue
             if cci_attrs.get('sensor', data_source_info['sensor_id']) \
-                    != data_source_info['sensor_id']:
+                    != data_source_info.get('sensor_id'):
                 continue
             if cci_attrs.get('platform', data_source_info['platform_id']) \
-                    != data_source_info['platform_id']:
+                    != data_source_info.get('platform_id'):
                 continue
             if bbox:
                 if float(data_source_info.get('bbox_minx', np.inf)) > bbox[2]:
@@ -952,7 +855,7 @@ class CciOdp:
                           variable_dict: Dict[str, int],
                           start_time: str = '1900-01-01T00:00:00',
                           end_time: str = '3001-12-31T00:00:00'):
-        dimension_data = self._run_with_session(
+        dimension_data = self._session_executor.run_with_session(
             self._get_var_data, dataset_name, variable_dict,
             start_time, end_time
         )
@@ -1159,8 +1062,8 @@ class CciOdp:
                     url = url if name_filter in url else None
             if not url:
                 continue
-            date_property = properties.get('date', None)
-            if date_property:
+            date_property = properties.get('date')
+            if date_property is not None:
                 split_date = date_property.split('/')
                 # remove trailing symbols from times
                 start_time = datetime.strptime(
@@ -1170,8 +1073,8 @@ class CciOdp:
                     split_date[1].split('.')[0].split('+')[0], TIMESTAMP_FORMAT
                 )
             else:
-                title = properties.get('title', None)
-                if title:
+                title = properties.get('title')
+                if title is not None:
                     start_time, end_time = get_timestrings_from_string(title)
                     if start_time:
                         try:
@@ -1212,7 +1115,7 @@ class CciOdp:
                                   start_time: str = _EARLY_START_TIME,
                                   end_time: str = _LATE_END_TIME
                                   ) -> List[Tuple[datetime, datetime]]:
-        return self._run_with_session(self._get_time_ranges_from_data,
+        return self._session_executor.run_with_session(self._get_time_ranges_from_data,
                                       dataset_name,
                                       start_time,
                                       end_time)
@@ -1276,7 +1179,7 @@ class CciOdp:
             return pd.Timestamp(raw_time_value)
 
     def get_dataset_id(self, dataset_name: str) -> str:
-        return self._run_with_session(self._get_dataset_id, dataset_name)
+        return self._session_executor.run_with_session(self._get_dataset_id, dataset_name)
 
     async def _get_dataset_id(self, session, dataset_name: str) -> str:
         await self._ensure_in_data_sources(session, [dataset_name])
@@ -1312,7 +1215,7 @@ class CciOdp:
     def get_data_chunk(
             self, request: Dict, dim_indexes: Tuple, to_bytes: bool = True
     ) -> Optional[Union[bytes, np.array]]:
-        data_chunk = self._run_with_session(
+        data_chunk = self._session_executor.run_with_session(
             self._get_data_chunk, request, dim_indexes, to_bytes
         )
         return data_chunk
@@ -1508,7 +1411,7 @@ class CciOdp:
     def get_geodataframe_from_shapefile(
             self, request: Dict
     ) -> Optional[gpd.GeoDataFrame]:
-        gdf = self._run_with_session(
+        gdf = self._session_executor.run_with_session(
             self._get_geodataframe_from_shapefile, request
         )
         return gdf
@@ -1566,7 +1469,6 @@ class CciOdp:
         )
         if total_results < initial_maximum_records or max_wanted_results < 1000:
             return
-        # num_results = maximum_records
         num_results = 0
         extension.clear()
         while num_results < total_results:
@@ -1624,7 +1526,9 @@ class CciOdp:
         if end_date:
             paging_query_args.update(endDate=end_date)
         url = base_url + '?' + urllib.parse.urlencode(paging_query_args)
-        resp_content = await self.get_response_content(session, url)
+        resp_content = await self._session_executor.get_response_content_from_session(
+            session, url
+        )
         if resp_content:
             json_dict = json.loads(resp_content.decode('utf-8'))
             if extender:
@@ -1639,8 +1543,9 @@ class CciOdp:
         dimensions = {}
         variable_infos = {}
         if data_source.get('variable_manifest'):
-            resp_content = await self.get_response_content(session,
-                                                   data_source.get('variable_manifest'))
+            resp_content = await self._session_executor.get_response_content_from_session(
+                session, data_source.get('variable_manifest')
+            )
             if resp_content:
                 json_dict = json.loads(resp_content.decode('utf-8'))
                 data_source['variables'] = json_dict.get(dataset_name, [])
@@ -1840,7 +1745,9 @@ class CciOdp:
             name_filter = sdrsid[1]
             paging_query_args["maximumRecords"] = 10000
         url = base_url + '?' + urllib.parse.urlencode(paging_query_args)
-        resp_content = await self.get_response_content(session, url)
+        resp_content = await self._session_executor.get_response_content_from_session(
+            session, url
+        )
         if resp_content:
             json_dict = json.loads(resp_content.decode('utf-8'))
             feature_list = json_dict.get("features", [])
@@ -1870,7 +1777,9 @@ class CciOdp:
                                  httpAccept='application/geo+json',
                                  fileFormat='.shp')
         url = base_url + '?' + urllib.parse.urlencode(paging_query_args)
-        resp_content = await self.get_response_content(session, url)
+        resp_content = await self._session_executor.get_response_content_from_session(
+            session, url
+        )
         if resp_content:
             json_dict = json.loads(resp_content.decode('utf-8'))
             feature_list = json_dict.get("features", [])
@@ -1888,9 +1797,7 @@ class CciOdp:
                                metadata_url: str) -> Dict:
         meta_info_dict = {}
         if odd_url:
-            meta_info_dict = await self._extract_metadata_from_odd_url(
-                session, odd_url
-            )
+            meta_info_dict = self._odp_connector.extract_metadata_from_odd_url(odd_url)
         read_ceda_catalogue = os.environ.get("READ_CEDA_CATALOGUE", "1")
         if metadata_url and read_ceda_catalogue != '0':
             desc_metadata = await self._extract_metadata_from_descxml_url(
@@ -1943,7 +1850,9 @@ class CciOdp:
     ) -> dict:
         if not descxml_url:
             return {}
-        resp_content = await self.get_response_content(session, descxml_url)
+        resp_content = await self._session_executor.get_response_content_from_session(
+            session, descxml_url
+        )
         if resp_content:
             descxml = etree.XML(resp_content)
             try:
@@ -1953,18 +1862,9 @@ class CciOdp:
                           f'due to parsing error.')
         return {}
 
-    async def _extract_metadata_from_odd_url(
-            self, session: aiohttp.ClientSession, odd_url: str = None
-    ) -> dict:
-        if not odd_url:
-            return {}
-        resp_content = await self.get_response_content(session, odd_url)
-        if not resp_content:
-            return {}
-        return _extract_metadata_from_odd(etree.XML(resp_content))
-
+    @staticmethod
     async def _get_variable_infos_from_shapefile_feature(
-            self, feature: dict
+            feature: dict
     ) -> (dict, dict):
         feature_info = _extract_feature_info(feature)
         shapefile_url = f"{feature_info[4].get('Download')}"
@@ -1979,7 +1879,8 @@ class CciOdp:
             variable_infos[column]["dtype"] = geodataframe[column].dtype
         return variable_infos, geodataframe.attrs
 
-    def _get_kerchunk_url_from_feature(self, feature: dict) -> str:
+    @staticmethod
+    def _get_kerchunk_url_from_feature(feature: dict) -> str:
         feature_info = _extract_feature_info(feature)
         kerchunk_url = f"{feature_info[4].get('Kerchunk')}"
         return kerchunk_url
@@ -2074,7 +1975,9 @@ class CciOdp:
         return variable_infos, dataset.attributes
 
     async def _get_tif_files_from_tar_url(self, tar_url: str, session) -> List[str]:
-        resp_content = await self.get_response_content(session, tar_url)
+        resp_content = await self._session_executor.get_response_content_from_session(
+            session, tar_url
+        )
         if resp_content:
             tar_file = io.BytesIO(resp_content)
             tar = tarfile.open(fileobj=tar_file, mode="r:gz")
@@ -2122,7 +2025,8 @@ class CciOdp:
             )
         return var_infos, attributes
 
-    def _get_var_names_from_download_url(self, download_url: str) -> Dict[str, Dict]:
+    @staticmethod
+    def _get_var_names_from_download_url(download_url: str) -> Dict[str, Dict]:
         file_name = download_url.split("/")[-1].split(".tif")[0]
         for var_name, var_dict in TIFF_VARS.items():
             if var_name in file_name:
@@ -2204,7 +2108,7 @@ class CciOdp:
                           attributes["geospatial_lat_resolution"])
 
     def get_opendap_dataset(self, url: str):
-        return self._run_with_session(self._get_opendap_dataset, url)
+        return self._session_executor.run_with_session(self._get_opendap_dataset, url)
 
     async def _get_result_dict(self, session, url: str):
         if url in self._result_dicts:
@@ -2280,7 +2184,9 @@ class CciOdp:
     ):
         scheme, netloc, path, query, fragment = urlsplit(url)
         url = urlunsplit((scheme, netloc, path + f'.{part}', query, fragment))
-        resp_content = await self.get_response_content(session, url)
+        resp_content = await self._session_executor.get_response_content_from_session(
+            session, url
+        )
         if resp_content:
             res_dict[part] = str(resp_content, 'utf-8')
 
@@ -2298,7 +2204,9 @@ class CciOdp:
             quote(proxy.id) + hyperslab(index) + '&' + query,
             fragment)).rstrip('&')
         # download and unpack data
-        resp_content = await self.get_response_content(session, url)
+        resp_content = await self._session_executor.get_response_content_from_session(
+            session, url
+        )
         if not resp_content:
             LOG.warning(f'Could not read response from "{url}"')
             return None
@@ -2312,39 +2220,3 @@ class CciOdp:
             LOG.warning(f'Could not read data from "{url}"')
             return None
         return dataset[proxy.id].data
-
-    async def get_response_content(self, session: aiohttp.ClientSession, url: str) -> Optional[bytes]:
-        num_retries = self._num_retries
-        retry_backoff_max = self._retry_backoff_max  # ms
-        retry_backoff_base = self._retry_backoff_base
-        for i in range(num_retries):
-            resp = await session.request(method='GET', url=url)
-            if resp.status == 200:
-                try:
-                    content = await resp.read()
-                    return content
-                except aiohttp.client_exceptions.ClientPayloadError as cpe:
-                    error_message =str(cpe)
-            elif 500 <= resp.status < 600:
-                if self._enable_warnings:
-                    error_message = f'Error {resp.status}: Cannot access url.'
-                    LOG.warning(error_message)
-                return None
-            elif resp.status == 429:
-                error_message = "Error 429: Too Many Requests."
-            else:
-                break
-            # Retry after 'Retry-After' with exponential backoff
-            retry_min = int(resp.headers.get('Retry-After', '100'))
-            retry_backoff = random.random() * retry_backoff_max
-            retry_total = retry_min + retry_backoff
-            if self._enable_warnings:
-                retry_message = \
-                    f'{error_message} ' \
-                    f'Attempt {i + 1} of {num_retries} to retry after ' \
-                    f'{"%.2f" % retry_min} + {"%.2f" % retry_backoff} = ' \
-                    f'{"%.2f" % retry_total} ms ...'
-                LOG.info(retry_message)
-            time.sleep(retry_total / 1000.0)
-            retry_backoff_max *= retry_backoff_base
-        return None

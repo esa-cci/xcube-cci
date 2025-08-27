@@ -171,7 +171,7 @@ class CciCdcTest(unittest.TestCase):
                     'drsId': OC_5DAYS_SIN_ID}
             )
 
-        data_source_list = cci_cdc._run_with_session(
+        data_source_list = cci_cdc._session_executor.run_with_session(
             fetch_data_source_list_json
         )
         self.assertIsNotNone(data_source_list)

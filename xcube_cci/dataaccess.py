@@ -67,6 +67,8 @@ from .normalize import normalize_coord_names
 from .normalize import normalize_dims_description
 from .normalize import normalize_variable_dims_description
 from .normalize import normalize_var_infos
+from .odpconnector import OdpConnector
+from .sessionexecutor import SessionExecutor
 from .vdcaccess import VectorDataCubeDescriptor
 from .vdcaccess import VECTOR_DATA_CUBE_TYPE
 
@@ -263,12 +265,18 @@ class CciOdpDataOpener(DataOpener):
 
 class CciOdpDatasetOpener(CciOdpDataOpener):
 
-    def __init__(self, normalize_data: bool = True, **cdc_params):
+    def __init__(
+            self,
+            normalize_data: bool = True,
+            drs_ids: List[str] = None,
+            **cdc_params
+    ):
         super().__init__(
-            CciOdp(**cdc_params, data_type='dataset'),
+            CciOdp(**cdc_params, data_type='dataset', drs_ids=drs_ids),
             DATASET_OPENER_ID,
             DATASET_TYPE,
-            normalize_data=normalize_data,
+            normalize_data=normalize_data
+            # drs_ids=drs_ids
         )
 
     @classmethod
@@ -441,9 +449,9 @@ class CciOdpDatasetOpener(CciOdpDataOpener):
 
 class CciOdpDataFrameOpener(CciOdpDataOpener):
 
-    def __init__(self, **cdc_params):
+    def __init__(self, drs_ids: List[str] = None, **cdc_params):
         super().__init__(
-            CciOdp(**cdc_params, data_type='geodataframe'),
+            CciOdp(**cdc_params, data_type='geodataframe', drs_ids=drs_ids),
             DATAFRAME_OPENER_ID,
             GEO_DATA_FRAME_TYPE
         )
@@ -567,12 +575,12 @@ class CciOdpDataFrameOpener(CciOdpDataOpener):
 
 class CciOdpVectorDataCubeOpener(CciOdpDataOpener):
 
-    def __init__(self, normalize_data: bool = True, **cdc_params):
+    def __init__(self, normalize_data: bool = True, drs_ids: List[str] = None, **cdc_params):
         super().__init__(
-            CciOdp(**cdc_params, data_type='vectordatacube'),
+            CciOdp(**cdc_params, data_type='vectordatacube', drs_ids=drs_ids),
             VECTORDATACUBE_OPENER_ID,
             VECTOR_DATA_CUBE_TYPE,
-            normalize_data=normalize_data,
+            normalize_data=normalize_data
         )
 
     @classmethod
@@ -715,14 +723,21 @@ class CciOdpDataStore(DataStore):
                            'retry_backoff_max', 'retry_backoff_base',
                            'user_agent')
         )
+        user_agent = cdc_kwargs.get("user_agent")
+        endpoint_description_url = cdc_kwargs.get("endpoint_description_url")
+        odp_connector = OdpConnector(user_agent, endpoint_description_url)
+        drs_ids = odp_connector.get_drs_ids()
         dataset_opener = CciOdpDatasetOpener(
             normalize_data=normalize_data,
+            drs_ids = drs_ids.copy(),
             **cdc_kwargs
         )
         dataframe_opener = CciOdpDataFrameOpener(
+            drs_ids=drs_ids.copy(),
             **cdc_kwargs
         )
         vectordatacube_opener = CciOdpVectorDataCubeOpener(
+            drs_ids=drs_ids.copy(),
             **cdc_kwargs
         )
         self._openers = {
