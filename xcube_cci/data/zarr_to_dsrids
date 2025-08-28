@@ -8,6 +8,7 @@ ESACCI-ICESHEETS_Greenland_GMB-2003-2016-v1.1.zarr, esacci.ICESHEETS.yr.Unspecif
 ESACCI-L3C_CLOUD-CLD_PRODUCTS-AVHRR_NOAA-1982-2016-fv3.0.zarr, esacci.CLOUD.mon.L3C.CLD_PRODUCTS.multi-sensor.multi-platform.AVHRR-PM.3-0.r1
 ESACCI-L3C_SNOW-SWE-1979-2018-fv1.0.zarr
 ESACCI-L3C_SNOW-SWE-1979-2020-fv2.0.zarr, esacci.SNOW.day.L3C.SWE.multi-sensor.multi-platform.MERGED.2-0.r1
+ESACCI-L4_FIRE-BA-MODIS-2001-2022-fv5.1.zarr, esacci.FIRE.mon.L4.BA.MODIS.Terra.MODIS_TERRA.v5-1.grid
 ESACCI-L4_GHRSST-SST-GMPE-GLOB_CDR2.0-1981-2016-v02.0-fv01.0.zarr, esacci.SST.day.L4.SSTskin.Unspecified.Unspecified.GMPE.2-0.r1
 ESACCI-LC-L4-LCCS-Map-300m-P1Y-1992-2015-v2.0.7b.zarr, esacci.LC.yr.L4.LCCS.multi-sensor.multi-platform.Map.2-0-7.r1
 ESACCI-LST-L3C-LST-MODISA-0.01deg_1DAILY_DAY-2002-2018-fv3.00.zarr, esacci.LST.day.L3C.LST.MODIS.Aqua.MODISA.3-00.DAY
@@ -39,3 +40,4 @@ ESACCI-SEALEVEL-IND-MSLTR-MERGED-1993-2016-fv02.zarr, esacci.SEALEVEL.mon.IND.MS
 ESACCI-SEALEVEL-L4-MSLA-MERGED-1993-2015-fv02.zarr, esacci.SEALEVEL.mon.L4.MSLA.multi-sensor.multi-platform.MERGED.2-0.r1
 ESACCI-SOILMOISTURE-L3S-SSMV-COMBINED-1978-2020-fv05.3.zarr, esacci.SOILMOISTURE.day.L3S.SSMV.multi-sensor.multi-platform.COMBINED.05-2.r1
 ESACCI-SOILMOISTURE-L3S-SSMV-COMBINED-1978-2021-fv07.1.zarr, esacci.SOILMOISTURE.day.L3S.SSMV.multi-sensor.multi-platform.COMBINED.v07-1.r1
+ESACCI-WATERVAPOUR-L3C-TCWV-meris-005deg-2002-2017-fv3.2.zarr, esacci.WATERVAPOUR.mon.L3S.TCWV.multi-sensor.multi-platform.TCWV_land_005deg.3-2.r1
