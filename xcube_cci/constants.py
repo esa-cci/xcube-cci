@@ -38,11 +38,17 @@ ZARR_DATA_STORE_ID = 'ccizarr'
 DATAFRAME_OPENER_ID = f'dataframe:geojson:{CDC_SHORT_DATA_STORE_ID}'
 CDC_DATASET_OPENER_ID = f'dataset:zarr:{CDC_SHORT_DATA_STORE_ID}'
 DATASET_OPENER_ID = f'dataset:zarr:{DATA_STORE_ID}'
+DATATREE_OPENER_ID = f'datatree:zarr:{CDC_SHORT_DATA_STORE_ID}'
 VECTORDATACUBE_OPENER_ID = f'vectordatacube::{CDC_SHORT_DATA_STORE_ID}'
 DATA_ARRAY_NAME = 'var_data'
 ODP_LOCATION = "ODP_LOCATION"
 KERCHUNK_LOCATION = "KERCHUNK_LOCATION"
 ZARR_LOCATION = "ZARR_LOCATION"
+
+DATASET_STATES_FILE = "dataset_states.json"
+DATATREE_STATES_FILE = "datatree_states.json"
+GEODATAFRAME_STATES_FILE = "geodataframe_states.json"
+VECTORDATACUBE_STATES_FILE = "vectordatacube_states.json"
 
 OPENSEARCH_CEDA_URL = "https://archive.opensearch.ceda.ac.uk/opensearch/request"
 OPENSEARCH_OTC_URL = "http://opensearch-lps.164.30.69.113.nip.io/opensearch/request"

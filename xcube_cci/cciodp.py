@@ -20,7 +20,6 @@
 # SOFTWARE.
 import tarfile
 
-# import aiohttp
 import asyncio
 import bisect
 import copy
@@ -59,19 +58,32 @@ from pydap.parsers.dds import dds_to_dataset
 from pydap.parsers.das import parse_das, add_attributes
 from six.moves.urllib.parse import urlsplit, urlunsplit
 
+from xcube.core.store import GEO_DATA_FRAME_TYPE
+from xcube.core.store import DATASET_TYPE
+
 from .constants import CCI_ODD_URL
 from .constants import COMMON_TIME_COORD_VAR_NAMES
+from .constants import DATASET_STATES_FILE
 from .constants import DEFAULT_NUM_RETRIES
 from .constants import DEFAULT_RETRY_BACKOFF_MAX
 from .constants import DEFAULT_RETRY_BACKOFF_BASE
+from .constants import GEODATAFRAME_STATES_FILE
 from .constants import LOG
 from .constants import OPENSEARCH_CEDA_URL
 from .constants import TIFF_VARS
 from .constants import TIMESTAMP_FORMAT
+from .constants import VECTORDATACUBE_STATES_FILE
 from .odpconnector import OdpConnector
 from .sessionexecutor import SessionExecutor
+from .vdcaccess import VECTOR_DATA_CUBE_TYPE
 
 from xcube_cci.timeutil import get_timestrings_from_string
+
+DATA_TYPE_TO_FILE_NAME = {
+    DATASET_TYPE.alias: DATASET_STATES_FILE,
+    GEO_DATA_FRAME_TYPE.alias: GEODATAFRAME_STATES_FILE,
+    VECTOR_DATA_CUBE_TYPE.alias: VECTORDATACUBE_STATES_FILE
+}
 
 DESC_NS = {'gmd': 'http://www.isotc211.org/2005/gmd',
            'gml': 'http://www.opengis.net/gml/3.2',
@@ -407,29 +419,17 @@ class CciOdp:
         self._vector_offsets = {}
         self._tar_to_tif = {}
         self._tif_to_array = {}
-        dataset_states_file = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)),
-            'data/dataset_states.json'
-        )
-        with open(dataset_states_file, 'r') as fp:
-            self._dataset_states = json.load(fp)
+        self._drs_ids = drs_ids
         if not drs_ids:
-            drs_ids = self._odp_connector.get_drs_ids()
-        self._drs_ids = self.adjust_drs_ids(drs_ids)
+            filename = DATA_TYPE_TO_FILE_NAME.get(self._data_type)
+            states_file = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                f'data/{filename}'
+            )
+            with open(states_file, 'r') as fp:
+                states = json.load(fp)
+            self._drs_ids = list(states.keys())
 
-    def _is_valid_dataset(self, data_id: str):
-        valid = self._dataset_states.get(data_id, {}).get('data_type', 'dataset') \
-                == self._data_type
-        if not valid:
-            replacements = self._get_replacements(data_id)
-            for r in replacements:
-                valid |= self._dataset_states.get(r, {}).get('data_type', 'dataset') \
-                        == self._data_type
-        return valid
-
-    def _get_replacements(self, data_id: str):
-        return [k for k, v in self._dataset_states.items()
-                if data_id in k and data_id != k]
 
     def get_data_type(self) -> str:
         return self._data_type
@@ -533,20 +533,6 @@ class CciOdp:
             metadata.append(self._data_sources[dataset_id])
         return metadata
 
-    def adjust_drs_ids(self, drs_ids: List[str]):
-        if '_all' in drs_ids:
-            drs_ids.remove('_all')
-        to_be_removed = []
-        for drs_id in drs_ids:
-            replacements = self._get_replacements(drs_id)
-            if len(replacements) > 0:
-                to_be_removed.append(drs_id)
-                drs_ids += replacements
-        for drs_id in drs_ids:
-            if not self._is_valid_dataset(drs_id):
-                to_be_removed.append(drs_id)
-        return [drs_id for drs_id in drs_ids if drs_id not in to_be_removed]
-
     async def _get_kerchunk_files(self, session):
         dataset_names = self._drs_ids
         kerchunk_urls = []
@@ -581,12 +567,12 @@ class CciOdp:
             json_dict.get('metadata_url')
         )
         drs_ids = self._get_as_list(meta_info, 'drs_id', 'drs_ids')
-        to_be_removed = []
         for drs_id in drs_ids:
-            if not self._is_valid_dataset(drs_id):
-                to_be_removed.append(drs_id)
-        drs_ids = [drs_id for drs_id in drs_ids if drs_id not in to_be_removed]
-        for drs_id in drs_ids:
+            # create list of entries in self._drs_ids starting with drs_id
+            self_drs_ids = [e for e in self._drs_ids if e.startswith(drs_id)]
+            if len(self_drs_ids) == 0:
+                continue
+
             drs_meta_info = copy.deepcopy(meta_info)
             drs_variables = drs_meta_info.get('variables', {}).get(drs_id, None)
             drs_meta_info.update(json_dict)
@@ -601,12 +587,8 @@ class CciOdp:
             drs_meta_info['cci_project'] = drs_meta_info['ecv']
             drs_meta_info['fid'] = datasource_id
             drs_meta_info['num_files'] = drs_meta_info['num_files'][drs_id]
-            replacements = self._get_replacements(drs_id)
-            if len(replacements) > 0:
-                for r in replacements:
-                    self._data_sources[r] = copy.deepcopy(drs_meta_info)
-            else:
-                self._data_sources[drs_id] = drs_meta_info
+            for sdi in self_drs_ids:
+                self._data_sources[sdi] = copy.deepcopy(drs_meta_info)
 
     def _adjust_json_dict(self, json_dict: dict, drs_id: str):
         values = drs_id.split('.')
@@ -720,7 +702,8 @@ class CciOdp:
                 and 'data_type' not in cci_attrs \
                 and 'product_string' not in cci_attrs \
                 and 'product_version' not in cci_attrs:
-            self._session_executor.run_with_session(self._read_all_data_sources)
+            if self._data_type == "dataset":
+                self._session_executor.run_with_session(self._read_all_data_sources)
             candidate_names = self.dataset_names
         else:
             for dataset_name in self.dataset_names:
@@ -1349,10 +1332,7 @@ class CciOdp:
                     di = dim_indexes[offset + i]
                     chunks[dims[i]] = di.stop - di.start
                     sel_chunks[dims[i]] = di
-                if tar_url not in self._tar_to_tif:
-                    tif_files = await self._get_tif_files_from_tar_url(tar_url, session)
-                    self._tar_to_tif[tar_url] = tif_files
-                tif_files = self._tar_to_tif[tar_url]
+                tif_files = await self._get_tif_files_from_tar_url(tar_url, session)
                 tif_files = [tf for tf in tif_files if var_name in tf]
                 if len(tif_files) > 0:
                     file_path = f"tar+{tar_url}!{tif_files[0]}"
@@ -1975,15 +1955,18 @@ class CciOdp:
         return variable_infos, dataset.attributes
 
     async def _get_tif_files_from_tar_url(self, tar_url: str, session) -> List[str]:
-        resp_content = await self._session_executor.get_response_content_from_session(
-            session, tar_url
-        )
-        if resp_content:
-            tar_file = io.BytesIO(resp_content)
-            tar = tarfile.open(fileobj=tar_file, mode="r:gz")
-            content = tar.getnames()
-            return [c for c in content if c.endswith(".tif")]
-        return []
+        if tar_url not in self._tar_to_tif:
+            resp_content = await self._session_executor.get_response_content_from_session(
+                session, tar_url
+            )
+            tif_files = []
+            if resp_content:
+                tar_file = io.BytesIO(resp_content)
+                tar = tarfile.open(fileobj=tar_file, mode="r:gz")
+                content = tar.getnames()
+                tif_files = [c for c in content if c.endswith(".tif")]
+            self._tar_to_tif[tar_url] = tif_files
+        return self._tar_to_tif[tar_url]
 
     async def _get_variable_infos_from_tar_feature(
             self, feature: dict, session

@@ -32,10 +32,10 @@ from xcube_cci.timerangegetter import TimeRangeGetter
 
 class DataFrameAccessor:
 
-    def __init__(self, cci_cdc: CciOdp, df_id: str, gdf_params: Mapping[str, Any]):
+    def __init__(self, cci_cdc: CciOdp, df_id: str, gdf_params: Mapping[str, Any], specifier_mappings: dict=None):
         self._cci_cdc = cci_cdc
-        self._df_id = df_id
-        self._metadata = cci_cdc.get_dataset_metadata(df_id)
+        m_df_id = f"{df_id}~{list(specifier_mappings.values())[0]}" if specifier_mappings is not None else df_id
+        self._metadata = cci_cdc.get_dataset_metadata(m_df_id)
         self._var_names = gdf_params.get("variable_names", {}).copy()
         if len(self._var_names) == 0:
             self._var_names = list(self._metadata.get("variable_infos").keys())
@@ -51,14 +51,14 @@ class DataFrameAccessor:
         # we use a time chunking of 1 as we do not know the actual content of a nc file
         self._time_chunking = 1
         tr = TimeRangeGetter(self._cci_cdc, self._metadata)
-        self._time_ranges = tr.get_time_ranges(self._df_id, gdf_params)
-
-    def request_time_range(self, time_index: int) -> Tuple:
-        start_index = time_index * self._time_chunking
-        end_index = ((time_index + 1) * self._time_chunking) - 1
-        start_time = self._time_ranges[start_index][0]
-        end_time = self._time_ranges[end_index][1]
-        return start_time, end_time
+        self._time_ranges = {}
+        time_ranges = tr.get_time_ranges(df_id, gdf_params)
+        if specifier_mappings is not None:
+            for i, specifier in specifier_mappings.items():
+                sid = f"{df_id}~{specifier}"
+                self._time_ranges[sid] = [time_ranges[i]]
+        else:
+            self._time_ranges[df_id] = time_ranges
 
     def get_geodataframe(self) -> gpd.GeoDataFrame:
         features = self._get_features()
@@ -66,12 +66,16 @@ class DataFrameAccessor:
         return gdf
 
     def _get_features(self):
-        for i in range(len(self._time_ranges)):
-            return self._get_features_from_cci_cdc(i)
+        for sid, time_ranges in self._time_ranges.items():
+            print(sid)
+            for time_range in time_ranges:
+                gdf = self._get_features_from_cci_cdc(sid, time_range)
+                for feature in gdf.iterfeatures():
+                    yield feature
 
-    def _get_features_from_cci_cdc(self, index: int = 0) -> gpd.GeoDataFrame:
-        identifier = self._cci_cdc.get_dataset_id(self._df_id)
-        start_time, end_time = self.request_time_range(time_index=index)
+    def _get_features_from_cci_cdc(self, data_id: str, time_range: Tuple):
+        identifier = self._cci_cdc.get_dataset_id(data_id)
+        start_time, end_time = time_range
         try:
             start_time = start_time.tz_localize(None).isoformat()
             end_time = end_time.tz_localize(None).isoformat()
@@ -93,7 +97,7 @@ class DataFrameAccessor:
                            varNames=var_names,
                            startDate=start_time,
                            endDate=end_time,
-                           drsId=self._df_id,
+                           drsId=data_id,
                            fileFormat='.shp')
             gdf = self._cci_cdc.get_geodataframe_from_shapefile(request)
         else:
@@ -105,7 +109,7 @@ class DataFrameAccessor:
                                varNames=[var_name],
                                startDate=start_time,
                                endDate=end_time,
-                               drsId=self._df_id,
+                               drsId=data_id,
                                fileFormat='.nc')
                 gdf_data[var_name] = list(self._cci_cdc.get_data_chunk(
                     request, dim_indexes=(), to_bytes=False
@@ -150,8 +154,7 @@ class DataFrameAccessor:
             gdf['time'] = gdf['time'].astype(str)
         else:
             gdf = gdf.assign(time=start_time)
-        for feature in gdf.iterfeatures():
-            yield feature
+        return gdf
 
 
 class GeoDataFrame:

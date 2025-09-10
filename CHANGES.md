@@ -1,4 +1,21 @@
-## Changes in 0.11.11 (in development)
+## Changes in 0.12.0
+* Added xarray Data Trees as fourth data model. Data Trees provide a tree-like 
+  hierarchical structure of datasets, where single nodes can be accessed by an
+  identifier. This is a preferable approach to splitting datasets into sub-datasets, 
+  as. e.g., "esacci.FIRE.mon.L3S.BA.MSI-(Sentinel-2).Sentinel-2A.MSI.2-0.pixel~h41v14-fv2.0-JD"
+  The solution has been made available for FIRE, LC, and VEGETATION datasets. 
+  A full list of available datasets can be retrieved with the store method
+  `get_data_ids(data_type="datatree")`.
+  To open a data tree with a subset of datasets, pass `place_names` as parameter 
+  to the store method `open_params()`. You can get a list of available place names 
+  from `get_open_data_params_schema()`.
+* In concordance with the change above, the support for the dataset 
+  "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1" 
+  has been modified so it is no longer split up into single datasets as, e.g. 
+  "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~AMAZON_NEGRO_SAO-FELIPE".
+  To open the dataset with a subset of places, pass `place_names` as parameter 
+  to the store method `open_params()`. You can get a list of available place names 
+  from `get_open_data_params_schema()`.  
 
 ## Changes in 0.11.10
 * Revised warnings

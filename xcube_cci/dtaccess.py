@@ -19,19 +19,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from collections.abc import Hashable, Mapping, Sequence
+from collections.abc import Hashable, Mapping, MutableMapping
 import dask
 import numpy as np
-from typing import Any, Optional
+from typing import Any, List, Optional
 import warnings
-import xarray
+import xarray as xr
 
+from xcube.core.normalize import normalize_dataset
 from xcube.core.store import DataType, DataTypeLike
 from xcube.core.store import DataDescriptor, DatasetDescriptor, VariableDescriptor
 from xcube.util.assertions import assert_true
 from xcube.util.jsonschema import JsonIntegerSchema, JsonNumberSchema, JsonObjectSchema
 
-DATATREE_TYPE = DataType(xarray.DataTree, ["datatree", "xarray.DataTree"])
+from .cciodp import CciOdp
+from .chunkstore import CciChunkStore
+
+DATATREE_TYPE = DataType(xr.DataTree, ["datatree", "xarray.DataTree"])
 DataType.register_data_type(DATATREE_TYPE)
 
 class DataTreeDescriptor(DataDescriptor):
@@ -149,3 +153,73 @@ def _attrs_to_json(attrs: Mapping[Hashable, Any]) -> Optional[dict[str, Any]]:
             v = None
         new_attrs[str(k)] = v
     return new_attrs
+
+
+class LazyDataTree(xr.DataTree):
+    def __init__(self, name=None, dataset=None, children=None):
+        super().__init__(name=name, dataset=None, children={})
+        self._children = children or {}
+
+
+class DataTreeMapping(MutableMapping):
+    def __init__(
+            self,
+            base_id: str,
+            specifiers: List[str],
+            cci_odp: CciOdp,
+            normalize_data: True,
+            var_names: List[str] = None,
+            pattern: str = None,
+            **cci_kwargs
+    ):
+        self._base_id = base_id
+        self._specifiers = specifiers
+        self._cci_odp = cci_odp
+        self._normalize_data = normalize_data
+        self._var_names = var_names
+        self._pattern = pattern
+        self._cci_kwargs = cci_kwargs
+        self._loaded = {}
+
+    def __getitem__(self, key):
+        if key not in self._loaded:
+            if key not in self._specifiers:
+                raise ValueError(f"Unsupported key {key}")
+            if self._var_names is None or self._pattern is None:
+                data_id = f"{self._base_id}~{key}"
+                chunk_store = CciChunkStore(self._cci_odp, data_id, self._cci_kwargs)
+                ds = xr.open_zarr(chunk_store, consolidated=False)
+                ds.zarr_store.set(chunk_store)
+            else:
+                var_datasets = []
+                for var_name in self._var_names:
+                    var_key = self._pattern.format(var_name=var_name, specifier=key)
+                    data_id = f"{self._base_id}~{var_key}"
+                    chunk_store = CciChunkStore(self._cci_odp, data_id, self._cci_kwargs)
+                    ds = xr.open_zarr(chunk_store, consolidated=False)
+                    ds.zarr_store.set(chunk_store)
+                    var_datasets.append(ds)
+                ds = xr.merge(var_datasets)
+            if self._normalize_data:
+                ds = normalize_dataset(ds)
+            self._loaded[key] = xr.DataTree(name=key, dataset=ds)
+        return self._loaded[key]
+
+    def __setitem__(self, key, value):
+        if isinstance(value, xr.DataTree):
+            self._loaded[key] = value
+        else:
+            raise ValueError("Value must be DataTree")
+
+    def __delitem__(self, key):
+        self._specifiers.pop(key)
+        self._loaded.pop(key, None)
+
+    def __iter__(self):
+        return iter(self._specifiers)
+
+    def __len__(self):
+        return len(self._specifiers)
+
+    def __repr__(self):
+        return f"<LazyMapping: keys={self._specifiers} loaded={list(self._loaded)}>"
