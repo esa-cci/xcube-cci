@@ -1,4 +1,4 @@
-## Changes in 0.12.0
+## Changes in 0.12.0 (in development)
 * Added xarray Data Trees as fourth data model. Data Trees provide a tree-like 
   hierarchical structure of datasets, where single nodes can be accessed by an
   identifier. This is a preferable approach to splitting datasets into sub-datasets, 
