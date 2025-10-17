@@ -35,8 +35,7 @@ from xcube.util.jsonschema import JsonObjectSchema
 from.constants import ZARR_LOCATION
 
 if os.environ.get(ZARR_LOCATION, 'CEDA') == "OTC":
-    CCI_ZARR_STORE_BUCKET_NAME = 'cci-zarr-backup'
-    CCI_ZARR_STORE_ENDPOINT = 'https://cci-zarr-backup.obs.eu-nl.otc.t-systems.com'
+    CCI_ZARR_STORE_ENDPOINT = 'https://ceda-backup-data.obs.eu-nl.otc.t-systems.com/zarr'
     DATA_IDS_FILE_PATH = f'{CCI_ZARR_STORE_ENDPOINT}/data_ids.json'
     CCI_ZARR_STORE_PARAMS = dict(
         root=CCI_ZARR_STORE_ENDPOINT
