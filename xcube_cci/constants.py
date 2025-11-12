@@ -79,6 +79,10 @@ formatter = logging.Formatter(GENERAL_LOG_FORMAT)
 LOG = logging.getLogger("xcube-cci")
 LOG.setLevel(os.getenv("XCUBE_CCI_LOG_LEVEL", DEFAULT_LOG_LEVEL).upper())
 
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
+LOG.addHandler(handler)
+
 MONTHS = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY',
           'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
 
