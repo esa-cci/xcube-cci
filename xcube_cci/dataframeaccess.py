@@ -67,7 +67,6 @@ class DataFrameAccessor:
 
     def _get_features(self):
         for sid, time_ranges in self._time_ranges.items():
-            print(sid)
             for time_range in time_ranges:
                 gdf = self._get_features_from_cci_cdc(sid, time_range)
                 for feature in gdf.iterfeatures():
