@@ -1,4 +1,5 @@
 ## Changes in 0.11.11 (in development)
+* Updated list of kerchunk datasets
 
 ## Changes in 0.11.10
 * Revised warnings
