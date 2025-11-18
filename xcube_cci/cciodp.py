@@ -835,7 +835,7 @@ class CciOdp:
         return datetime.strptime(time_as_string[start:end], time_format)
 
     def get_variable_data(self, dataset_name: str,
-                          variable_dict: Dict[str, int],
+                          variable_dict: Dict[str, List[int]],
                           start_time: str = '1900-01-01T00:00:00',
                           end_time: str = '3001-12-31T00:00:00'):
         dimension_data = self._session_executor.run_with_session(
@@ -847,7 +847,7 @@ class CciOdp:
     async def _get_var_data(self,
                             session,
                             dataset_name: str,
-                            variable_dict: Dict[str, int],
+                            variable_dict: Dict[str, List[int]],
                             start_time: str,
                             end_time: str):
         dataset_id = await self._get_dataset_id(session, dataset_name)
@@ -918,16 +918,22 @@ class CciOdp:
                 else:
                     var_data[var_name]['data'] = []
             elif var_name == "geometry" and self._data_type == "vectordatacube":
+                size = 1
+                for dim_size in variable_dict[var_name]:
+                    size *= dim_size
                 var_data[var_name] = dict(
-                    size=variable_dict[var_name],
+                    size=size,
                     chunkSize=_VECTOR_DATACUBE_CHUNKING,
                     data=[]
                 )
             else:
+                size = 1
+                for dim_size in variable_dict[var_name]:
+                    size *= dim_size
                 var_data[var_name] = dict(
-                    size=variable_dict[var_name],
+                    size=size,
                     chunkSize=variable_dict[var_name],
-                    data=list(range(variable_dict[var_name]))
+                    data=list(range(size))
                 )
         return var_data
 
@@ -1130,20 +1136,33 @@ class CciOdp:
         time_chunking = await self.get_time_chunking(session, dataset_name)
         ds = self._data_sources[dataset_name]
         # TODO find better criterion
-        if time_chunking > 1 and ds["ecv"] == "BIOMASS":
+        if time_chunking > 1 and (ds["ecv"] == "BIOMASS" or ds["ecv"] == "ICESHEETS"):
+            time_bnds_dim_name = "time_bnds"
             time_dim_name = ds.get("time_coord_name", "time")
             request_time_ranges = []
             for feature in feature_list:
                 start_time = datetime.strftime(feature[0], TIMESTAMP_FORMAT)
                 end_time = datetime.strftime(feature[1], TIMESTAMP_FORMAT)
-                time_data = await self._get_var_data(
-                    session, dataset_name, {time_dim_name: time_chunking},
-                    start_time, end_time
-                )
-                for raw_time_value in time_data[time_dim_name]["data"]:
-                    time_value = self._convert_time_value(ds, raw_time_value)
-                    time_step_range = time_value, time_value
-                    request_time_ranges.append(time_step_range)
+                time_bnds_size = ds.get("variable_infos", {}).get(time_bnds_dim_name, {}).get(
+                    "shape", ds.get("variable_infos", {}).get(time_bnds_dim_name, {}).get("chunk_sizes"))
+                if time_bnds_size is not None:
+                    time_bnds_data = await self._get_var_data(
+                        session, dataset_name, {time_bnds_dim_name: time_bnds_size},
+                        start_time, end_time
+                    )
+                    for time_bound in time_bnds_data[time_bnds_dim_name]["data"]:
+                        start_time_value = self._convert_time_value(ds, time_bound[0])
+                        end_time_value = self._convert_time_value(ds, time_bound[1])
+                        request_time_ranges.append((start_time_value, end_time_value))
+                else:
+                    time_data = await self._get_var_data(
+                        session, dataset_name, {time_dim_name: [time_chunking]},
+                        start_time, end_time
+                    )
+                    for raw_time_value in time_data[time_dim_name]["data"]:
+                        time_value = self._convert_time_value(ds, raw_time_value)
+                        time_step_range = time_value, time_value
+                        request_time_ranges.append(time_step_range)
         else:
             request_time_ranges = [feature[0:2] for feature in feature_list]
         return request_time_ranges

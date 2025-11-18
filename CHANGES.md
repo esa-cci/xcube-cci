@@ -16,6 +16,8 @@
   To open the dataset with a subset of places, pass `place_names` as parameter 
   to the store method `open_params()`. You can get a list of available place names 
   from `get_open_data_params_schema()`.  
+* Fixed issues that data could not be accessed from ICESHEETS datasets with multiple time steps in base files.
+  Solves [#69](https://github.com/dcs4cop/xcube-cci/issues/69)
 
 ## Changes in 0.11.10
 * Revised warnings

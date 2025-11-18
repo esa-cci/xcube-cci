@@ -355,7 +355,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
                     var_encoding['dtype'] = 'U'
                 elif len(dimensions) == 1 and sizes[0] < 512 * 512:
                     LOG.info(f"Variable '{variable_name}' is encoded as string. Will convert it to metadata.")
-                    variable = {variable_name: sizes[0]}
+                    variable = {variable_name: sizes}
                     var_data = self.get_variable_data(data_id, variable)
                     global_attrs[variable_name] = \
                         [var.decode('utf-8')
@@ -902,7 +902,9 @@ class CciChunkStore(RemoteChunkStore):
         var_names, coord_names = self._cci_cdc.var_and_coord_names(dataset_id)
         coords_dict = {}
         for coord_name in coord_names:
-            coords_dict[coord_name] = self.get_attrs(coord_name).get('size')
+            coords_dict[coord_name] = self.get_attrs(coord_name).get(
+                'shape', [self.get_attrs(coord_name).get('size')]
+            )
         dimension_data = self.get_variable_data(dataset_id, coords_dict)
         if len(dimension_data) == 0:
             # no valid data found in indicated time range,
@@ -911,7 +913,7 @@ class CciChunkStore(RemoteChunkStore):
                                                              coords_dict)
         return dimension_data
 
-    def get_variable_data(self, dataset_id: str, variable_dict: Dict[str, int]):
+    def get_variable_data(self, dataset_id: str, variable_dict: Dict[str, List[int]]):
         try:
             start = self._time_ranges[0][0].strftime(TIMESTAMP_FORMAT)
             end = self._time_ranges[0][1].strftime(TIMESTAMP_FORMAT)
