@@ -133,7 +133,7 @@ class CciChunkStoreTest(unittest.TestCase):
             'O3_vmr', (5, 0, 0, 0)
         )
         self.assertIsNotNone(dim_indexes)
-        self.assertEqual(slice(None, None, None), dim_indexes[0])
+        self.assertEqual(slice(0, 1), dim_indexes[0])
         self.assertEqual(slice(0, 17), dim_indexes[1])
         self.assertEqual(slice(0, 180), dim_indexes[2])
         self.assertEqual(slice(0, 360), dim_indexes[3])

@@ -1477,19 +1477,18 @@ class CciOdp:
                 start_time = datetime.strptime(
                     query_args.pop('startDate'), TIMESTAMP_FORMAT
                 )
+                start_time = datetime(start_time.year, month=1, day=1)
                 end_time = datetime.strptime(
                     query_args.pop('endDate'), TIMESTAMP_FORMAT
                 )
-                num_days_per_delta = \
-                    max(1,
-                        int(np.ceil((end_time - start_time).days /
-                                    (total_results / 1000))))
-                delta = relativedelta(days=num_days_per_delta, seconds=-1)
+                end_time = datetime(end_time.year, month=12, day=31, hour=23, minute=59, second=59)
+                one_year = relativedelta(years=1, seconds=-1)
+                one_second = relativedelta(seconds=1)
                 tasks = []
                 current_time = start_time
                 while current_time < end_time:
                     task_start = current_time.strftime(TIMESTAMP_FORMAT)
-                    current_time += delta
+                    current_time += one_year
                     if current_time > end_time:
                         current_time = end_time
                     task_end = current_time.strftime(TIMESTAMP_FORMAT)
@@ -1498,6 +1497,7 @@ class CciOdp:
                         maximum_records, extension, extender,
                         task_start, task_end, name_filter)
                     )
+                    current_time += one_second
                 await asyncio.gather(*tasks)
                 num_results = total_results
             else:
@@ -1609,6 +1609,8 @@ class CciOdp:
                     time_dim_name = "nbmonth"
                     time_dimension_size = 1
                 data_source["time_chunking"] = dimensions.get(time_dim_name, 1)
+                if data_source["ecv"] == "VEGETATION" and data_source["time_frequency"] == "5days":
+                    data_source["time_chunking"] = 73
                 time_coord_name = time_dim_name
                 if time_coord_name not in variable_infos.keys():
                     potential_time_names = ["time", "t", "Time", "T"]

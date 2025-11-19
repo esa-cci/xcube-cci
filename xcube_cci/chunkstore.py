@@ -1017,7 +1017,7 @@ class CciChunkStore(RemoteChunkStore):
             offset = 1
         for i, var_dimension in enumerate(var_dimensions):
             if var_dimension == 'time':
-                dim_indexes.append(slice(None, None, None))
+                dim_indexes.append(slice(0, self._time_chunking))
                 continue
             dim_size = self._dimensions.get(var_dimension, -1)
             if dim_size < 0:

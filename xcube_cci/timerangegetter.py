@@ -101,6 +101,8 @@ class TimeRangeGetter:
                 return request_time_ranges
         elif time_period == 'climatology':
             return [(i + 1, i + 1) for i, month in enumerate(MONTHS)]
+        elif time_period == "5-days" and ecv == "VEGETATION":
+            return self.extract_5days_vegetation_time_range(dataset_id, iso_start_time, iso_end_time)
         else:
             end_time = end_time.replace(hour=23, minute=59, second=59)
             end_time_str = datetime.strftime(end_time, TIMESTAMP_FORMAT)
@@ -112,7 +114,8 @@ class TimeRangeGetter:
         drs_end = dataset_id.split('.')[9]
         if drs_end == "greenland_gmb_mass_trends":
             return self.extract_greenland_gmb_time_series(
-                dataset_id, iso_start_time, end_time, delta)
+                dataset_id, iso_start_time, end_time, delta
+            )
         request_time_ranges = []
         this = start_time
         while this < end_time:
@@ -122,6 +125,20 @@ class TimeRangeGetter:
             request_time_ranges.append((pd_this, pd_next))
             this = after
         return request_time_ranges
+
+    def extract_5days_vegetation_time_range(self, dataset_id: str, start_time: datetime, end_time: datetime):
+        file_time_ranges = self._cci_cdc.get_time_ranges_from_data(dataset_id, start_time, end_time)
+        five_days = pd.Timedelta(days=5)
+        one_day = pd.Timedelta(days=1, seconds=-1)
+        actual_time_ranges = []
+        for file_time_range in file_time_ranges:
+            start_time = file_time_range[0]
+            time = pd.Timestamp(year=start_time.year, month=1, day=1)
+            end_time = pd.Timestamp(year=start_time.year, month=12, day=30)
+            while time < end_time:
+                actual_time_ranges.append((time, time + one_day))
+                time += five_days
+        return actual_time_ranges
 
     def extract_greenland_gmb_time_series(
             self, dataset_id: str, iso_start_time: str,
