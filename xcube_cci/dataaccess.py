@@ -806,11 +806,11 @@ class CciOdpDataTreeOpener(CciOdpDataOpener):
         ds_dict = ds_descriptor.to_dict()
         ds_dict.pop("bbox")
         ds_dict.pop("open_params_schema")
+        ds_descriptor = DatasetDescriptor.from_dict(ds_dict)
 
         inner_descriptors = {}
         for specifier in specifiers:
-            ds_dict["data_id"] =  specifier
-            ds_descriptor = DatasetDescriptor.from_dict(ds_dict)
+            ds_descriptor.data_id = specifier
             inner_desc = DataTreeDescriptor(
                 data_id=specifier,
                 data_type=DATATREE_TYPE,
