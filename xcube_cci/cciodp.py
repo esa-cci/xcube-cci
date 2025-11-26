@@ -536,17 +536,21 @@ class CciOdp:
     async def _get_kerchunk_files(self, session):
         dataset_names = self._drs_ids
         kerchunk_urls = []
+        await self._read_all_data_sources(session)
         for i, dataset_name in enumerate(dataset_names):
             LOG.debug(
                 f"Attempting to retrieve kerchunk url for dataset {dataset_name} "
                 f"({i + 1}/{len(dataset_names)})"
             )
             dataset_id = await self._get_dataset_id(session, dataset_name)
+            data_source = self._data_sources[dataset_name]
             feature, _ = \
                 await self._fetch_feature_and_num_nc_files_at(
                     session,
                     self._opensearch_url,
                     dict(parentIdentifier=dataset_id,
+                         startDate=data_source.get("temporal_coverage_start"),
+                         endDate = data_source.get("temporal_coverage_end"),
                          drsId=dataset_name),
                     1
                 )
@@ -944,9 +948,10 @@ class CciOdp:
             extender = self._extract_times_and_download_url
         ds_id = request['drsId']
         sdrsid = ds_id.split("~")
+        ds_id = sdrsid[0]
         name_filter = ""
         if len(sdrsid) > 1:
-            request['drsId'] = sdrsid[0]
+            request['drsId'] = ds_id
             name_filter = sdrsid[1]
         start_date_str = request['startDate']
         try:
@@ -965,7 +970,7 @@ class CciOdp:
             self._features[ds_id][file_format] = []
             await self._fetch_opensearch_feature_list(
                 session, self._opensearch_url, feature_list,
-                extender, request, name_filter
+                extender, request, ""
             )
             if len(feature_list) == 0:
                 # try without dates. For some data sets, this works better
@@ -975,7 +980,7 @@ class CciOdp:
                     request.pop('endDate')
                 await self._fetch_opensearch_feature_list(
                     session, self._opensearch_url, feature_list,
-                    extender, request, name_filter
+                    extender, request, ""
                 )
             feature_list.sort(key=lambda x: x[0])
             self._features[ds_id][file_format] = feature_list
@@ -986,7 +991,7 @@ class CciOdp:
                 )
                 await self._fetch_opensearch_feature_list(
                     session, self._opensearch_url, feature_list,
-                    extender, request, name_filter
+                    extender, request, ""
                 )
                 if len(feature_list) > 0:
                     feature_list.sort(key=lambda x: x[0])
@@ -1003,7 +1008,7 @@ class CciOdp:
                 request['endDate'] = end_date_str
                 await self._fetch_opensearch_feature_list(
                     session, self._opensearch_url, feature_list,
-                    extender, request, name_filter
+                    extender, request, ""
                 )
                 if len(feature_list) > 0:
                     feature_list.sort(key=lambda x: x[0])
@@ -1014,13 +1019,14 @@ class CciOdp:
                     if feature_list[end_offset] not in self._features[ds_id][file_format]:
                         self._features[ds_id][file_format] = \
                             self._features[ds_id][file_format] + feature_list[end_offset:]
+        sub_feature_list = [f for f in self._features[ds_id][file_format] if name_filter in f[2]]
         start = bisect.bisect_left(
-            [feature[1] for feature in self._features[ds_id][file_format]], start_date
+            [feature[1] for feature in sub_feature_list], start_date
         )
         end = bisect.bisect_right(
-            [feature[0] for feature in self._features[ds_id][file_format]], end_date
+            [feature[0] for feature in sub_feature_list], end_date
         )
-        return self._features[ds_id][file_format][start:end]
+        return sub_feature_list[start:end]
 
     @staticmethod
     def _extract_times_and_opendap_url(
@@ -1051,6 +1057,7 @@ class CciOdp:
                     url = url if name_filter in url else None
             if not url:
                 continue
+            uuid = properties.get("identifier")
             date_property = properties.get('date')
             if date_property is not None:
                 split_date = date_property.split('/')
@@ -1094,7 +1101,7 @@ class CciOdp:
                 except (TypeError, IndexError, ValueError, KeyError):
                     # just use the previous values
                     pass
-                features.append((start_time, end_time, url))
+                features.append((start_time, end_time, url, uuid))
 
     async def get_time_chunking(self, session, dataset_name: str):
         await self._ensure_all_info_in_data_source(session, dataset_name)
@@ -1549,12 +1556,17 @@ class CciOdp:
                 json_dict = json.loads(resp_content.decode('utf-8'))
                 data_source['variables'] = json_dict.get(dataset_name, [])
 
+        start_time = data_source.get("temporal_coverage_start")
+        end_time = data_source.get("temporal_coverage_end")
+
         feature, num_shapefiles = \
             await self._fetch_feature_from_shapefile(
                 session,
                 opensearch_url,
                 dict(parentIdentifier=dataset_id,
-                        drsId=dataset_name),
+                     startDate=start_time,
+                     endDate=end_time,
+                     drsId=dataset_name),
                 1
             )
         if feature is not None:
@@ -1568,6 +1580,8 @@ class CciOdp:
                     session,
                     opensearch_url,
                     dict(parentIdentifier=dataset_id,
+                         startDate=start_time,
+                         endDate=end_time,
                          drsId=dataset_name),
                     1
                 )
@@ -1577,6 +1591,8 @@ class CciOdp:
                         session,
                         opensearch_url,
                         dict(parentIdentifier=dataset_id,
+                             startDate=start_time,
+                             endDate=end_time,
                              drsId=dataset_name),
                         1
                     )
@@ -1586,6 +1602,8 @@ class CciOdp:
                         session,
                         opensearch_url,
                         dict(parentIdentifier=dataset_id,
+                             startDate=start_time,
+                             endDate=end_time,
                              drsId=dataset_name),
                         1
                     )
@@ -1734,39 +1752,47 @@ class CciOdp:
             self, session, base_url, query_args, index, file_format
     ) -> Tuple[Optional[Dict], int]:
         paging_query_args = dict(query_args or {})
-        paging_query_args.update(startPage=index,
-                                 maximumRecords=5,
-                                 httpAccept='application/geo+json',
-                                 fileFormat=file_format)
         drs_id = paging_query_args.get("drsId", "")
         sdrsid = drs_id.split("~")
-        name_filter = ""
-        if len(sdrsid) == 2:
-            paging_query_args["drsId"] = sdrsid[0]
-            name_filter = sdrsid[1]
-            paging_query_args["maximumRecords"] = 10000
-        url = base_url + '?' + urllib.parse.urlencode(paging_query_args)
-        resp_content = await self._session_executor.get_response_content_from_session(
-            session, url
-        )
-        if resp_content:
-            json_dict = json.loads(resp_content.decode('utf-8'))
-            feature_list = json_dict.get("features", [])
+        if len(sdrsid) == 1:
+            paging_query_args.update(
+                startPage=index, maximumRecords=5, httpAccept='application/geo+json', fileFormat=file_format
+            )
+            url = base_url + '?' + urllib.parse.urlencode(paging_query_args)
+            resp_content = await self._session_executor.get_response_content_from_session(
+                session, url
+            )
+            if resp_content:
+                json_dict = json.loads(resp_content.decode('utf-8'))
+                feature_list = json_dict.get("features", [])
+                if len(feature_list) > 0:
+                    index = math.floor(len(feature_list) / 2)
+                    total_num_files = json_dict.get("totalResults", 0)
+                    return feature_list[index], total_num_files
+        elif len(sdrsid) == 2:
+            await self._ensure_in_data_sources(session, [drs_id])
+            data_source = self._data_sources[drs_id]
+            paging_query_args.update(
+                startDate = data_source.get("temporal_coverage_start"),
+                endDate = data_source.get("temporal_coverage_end")
+            )
+            feature_list = await self._get_feature_list(session, paging_query_args, file_format)
             if len(feature_list) > 0:
-                len_before = len(feature_list)
-                feature_list = [f for f in feature_list if name_filter in
-                                f.get("properties", {}).get("links",{}).
-                                get("related", [{}])[0].get("href", "")
-                                ]
-                len_after = len(feature_list)
-                divisor = int(len_before/len_after)
-                # we try not to take the first feature,
-                # as the last and the first one may have different time chunkings
                 index = math.floor(len(feature_list) / 2)
-                total_num_files = json_dict.get("totalResults", 0)
-                if total_num_files > 0:
-                    total_num_files = int(total_num_files / divisor)
-                return feature_list[index], total_num_files
+                uuid = feature_list[index][3]
+                paging_query_args.update(
+                    httpAccept='application/geo+json', uuid=uuid
+                )
+                url = base_url + '?' + urllib.parse.urlencode(paging_query_args)
+                resp_content = await self._session_executor.get_response_content_from_session(
+                    session, url
+                )
+                if resp_content:
+                    json_dict = json.loads(resp_content.decode('utf-8'))
+                    new_feature_list = json_dict.get("features", [])
+                    if len(new_feature_list) > 0:
+                        return new_feature_list[0], len(feature_list)
+            return None, len(feature_list)
         return None, 0
 
     async def _fetch_feature_from_shapefile(
@@ -1807,7 +1833,6 @@ class CciOdp:
             for item in desc_metadata:
                 if item not in meta_info_dict:
                     meta_info_dict[item] = desc_metadata[item]
-        await self._set_drs_metadata(session, datasource_id, meta_info_dict)
         _harmonize_info_field_names(
             meta_info_dict, 'file_format', 'file_formats'
         )
@@ -1824,27 +1849,6 @@ class CciOdp:
             meta_info_dict, 'time_frequency', 'time_frequencies'
         )
         return meta_info_dict
-
-    async def _set_drs_metadata(self, session, datasource_id, metainfo_dict):
-        data_source_list = \
-            await self._fetch_data_source_list_json(
-                session, OPENSEARCH_CEDA_URL, {
-                    'parentIdentifier': datasource_id
-                }, max_wanted_results=20
-            )
-        for data_source_key, data_source_value in data_source_list.items():
-            drs_id = data_source_value.get('title', 'All Files')
-            variables = data_source_value.get('variables', None)
-            uuid = data_source_value.get('uuid', None)
-            if drs_id != 'All Files':
-                if variables:
-                    if 'variables' not in metainfo_dict:
-                        metainfo_dict['variables'] = {}
-                    metainfo_dict['variables'][drs_id] = variables
-                    if uuid:
-                        if 'uuids' not in metainfo_dict:
-                            metainfo_dict['uuids'] = {}
-                        metainfo_dict['uuids'][drs_id] = uuid
 
     async def _extract_metadata_from_descxml_url(
             self, session, descxml_url: str = None
