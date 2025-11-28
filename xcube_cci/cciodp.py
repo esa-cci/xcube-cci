@@ -1758,6 +1758,10 @@ class CciOdp:
             paging_query_args.update(
                 startPage=index, maximumRecords=5, httpAccept='application/geo+json', fileFormat=file_format
             )
+            if "startDate" in paging_query_args:
+                paging_query_args.pop("startDate")
+            if "endDate" in paging_query_args:
+                paging_query_args.pop("endDate")
             url = base_url + '?' + urllib.parse.urlencode(paging_query_args)
             resp_content = await self._session_executor.get_response_content_from_session(
                 session, url
@@ -1807,6 +1811,10 @@ class CciOdp:
                                  maximumRecords=5,
                                  httpAccept='application/geo+json',
                                  fileFormat='.shp')
+        if "startDate" in paging_query_args:
+            paging_query_args.pop("startDate")
+        if "endDate" in paging_query_args:
+            paging_query_args.pop("endDate")
         url = base_url + '?' + urllib.parse.urlencode(paging_query_args)
         resp_content = await self._session_executor.get_response_content_from_session(
             session, url
