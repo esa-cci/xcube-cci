@@ -295,7 +295,7 @@
             "write_geojson"
         ],
         "title": "ESA River Discharge Climate Change Initiative (RD_cci):  Nadir radar altimeters Water Level product, v1.1",
-        "specifiers": [                      
+        "places": [
             "AMAZON_SOLIMOES_MANACAPURU",
             "AMAZON_AMAZONA_OBIDOS",  
             "AMAZON_NEGRO_SAO",

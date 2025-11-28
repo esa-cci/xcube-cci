@@ -34,7 +34,8 @@ BIOMASS_ID = "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.MERGED.5-0.10
 CLOUD_ID = "esacci.CLOUD.mon.L3C.CLD_PRODUCTS.MODIS.Terra.MODIS_TERRA.2-0.r1"
 ICESHEETS_ID = 'esacci.ICESHEETS.yr.Unspecified.IV.PALSAR.ALOS.UNSPECIFIED.' \
                '1-1.greenland_margin_2006_2011'
-HR_LC_ID = "esacci.FIRE.mon.L3S.BA.MODIS.Terra.MODIS_TERRA.v5-1.pixel"
+FIRE_ID = "esacci.FIRE.mon.L3S.BA.MODIS.Terra.MODIS_TERRA.v5-1.pixel"
+HR_LC_ID = "esacci.LC.yr.L4.Map.multi-sensor.multi-platform.HRLC10-A02.v1-2.Amazonia"
 LAKES_ID = 'esacci.LAKES.day.L3S.LK_PRODUCTS.multi-sensor.multi-platform.' \
            'MERGED.v1-1.r1'
 OZONE_MON_ID = 'esacci.OZONE.mon.L3.NP.multi-sensor.multi-platform.MERGED.' \
@@ -855,15 +856,15 @@ class CciOdpDataTreeOpenerTest(unittest.TestCase):
     @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
             'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_has_data(self):
-        self.assertTrue(self._opener.has_data(HR_LC_ID))
+        self.assertTrue(self._opener.has_data(FIRE_ID))
 
     @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
             'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_data_fire(self):
-        descriptor = self._opener.describe_data([HR_LC_ID])[0]
+        descriptor = self._opener.describe_data([FIRE_ID])[0]
         self.assertIsNotNone(descriptor)
         self.assertIsInstance(descriptor, DataTreeDescriptor)
-        self.assertEqual(HR_LC_ID, descriptor.data_id)
+        self.assertEqual(FIRE_ID, descriptor.data_id)
         self.assertEqual('datatree', str(descriptor.data_type))
         self.assertEqual(["y", "x", "time", "bnds"], list(descriptor.dims.keys()))
         self.assertEqual(2, descriptor.dims['bnds'])
@@ -887,7 +888,7 @@ class CciOdpDataTreeOpenerTest(unittest.TestCase):
     @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
             'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_get_open_data_params_schema(self):
-        schema = self._opener.get_open_data_params_schema(HR_LC_ID).to_dict()
+        schema = self._opener.get_open_data_params_schema(FIRE_ID).to_dict()
         self.assertIsNotNone(schema)
         self.assertTrue('variable_names' in schema['properties'])
         self.assertTrue('place_names' in schema['properties'])
@@ -898,7 +899,7 @@ class CciOdpDataTreeOpenerTest(unittest.TestCase):
             'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_open_data(self):
         data = self._opener.open_data(
-            HR_LC_ID, place_names=["AREA_1", "AREA_2"], variable_names=["JD", "CL"]
+            FIRE_ID, place_names=["AREA_1", "AREA_2"], variable_names=["JD", "CL"]
         )
         self.assertIsNotNone(data)
         self.assertTrue(data.is_root)
@@ -913,6 +914,22 @@ class CciOdpDataTreeOpenerTest(unittest.TestCase):
         self.assertEqual({264, 28499, 57888}, set(area_1_dt.dataset.JD.shape))
         self.assertIsNotNone(area_1_dt.dataset.zarr_store.get())
 
+    def test_open_data_lc(self):
+        place_name = "A02T20KPA"
+        variable_name = "CL01"
+        data = self._opener.open_data(HR_LC_ID, place_names=[place_name], variable_names=[variable_name])
+        ds = data.get(place_name)
+        self.assertIsNotNone(ds)
+        self.assertTrue(data.is_root)
+        self.assertTrue(data.is_empty)
+        self.assertEqual({"A02T20KPA"}, set(data.keys()))
+        sub_dt = data.get("A02T20KPA")
+        self.assertIsNotNone(sub_dt.dataset)
+        self.assertEqual(1, len(sub_dt.dataset.data_vars))
+        self.assertIn("CL01", sub_dt.dataset.data_vars)
+        self.assertEqual({"time", "x", "y", "bnds"}, set(sub_dt.dataset.dims.keys()))
+        self.assertEqual((1, 10980, 10980), sub_dt.dataset.CL01.shape)
+        self.assertIsNotNone(sub_dt.dataset.zarr_store.get())
 
 class CciOdpDataStoreTest(unittest.TestCase):
 

@@ -193,7 +193,7 @@ class DataTreeMapping(MutableMapping):
             else:
                 var_datasets = []
                 for var_name in self._var_names:
-                    var_key = self._pattern.format(var_name=var_name, specifier=key)
+                    var_key = self._pattern.format(var_name=var_name, place=key)
                     data_id = f"{self._base_id}~{var_key}"
                     chunk_store = CciChunkStore(self._cci_odp, data_id, self._cci_kwargs)
                     ds = xr.open_zarr(chunk_store, consolidated=False)
