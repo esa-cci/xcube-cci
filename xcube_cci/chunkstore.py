@@ -24,23 +24,20 @@ import copy
 import itertools
 import json
 import math
-import numcodecs
 import time
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta, abstractmethod
 from collections.abc import MutableMapping
-from numcodecs import Blosc
-from typing import Iterator, Any, List, Dict, Tuple, Callable, Iterable, \
-    KeysView, Mapping
+from typing import (Any, Callable, Dict, Iterable, Iterator, KeysView, List,
+                    Mapping, Tuple)
 
+import numcodecs
 import numpy as np
 import pandas as pd
+from numcodecs import Blosc
 
 from .cciodp import CciOdp
-from .constants import COMMON_COORD_VAR_NAMES
-from .constants import LOG
-from .constants import TIMESTAMP_FORMAT
-from .timerangegetter import extract_time_range_as_strings
-from .timerangegetter import TimeRangeGetter
+from .constants import COMMON_COORD_VAR_NAMES, LOG, TIMESTAMP_FORMAT
+from .timerangegetter import TimeRangeGetter, extract_time_range_as_strings
 
 _MIN_CHUNK_SIZE = 512 * 512
 _MAX_CHUNK_SIZE = 2048 * 2048

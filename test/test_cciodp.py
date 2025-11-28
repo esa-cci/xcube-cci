@@ -1,12 +1,11 @@
-import numpy as np
 import os
-import pandas as pd
 import unittest
 from unittest import skip, skipIf
 
-from xcube_cci.cciodp import get_res
-from xcube_cci.cciodp import CciOdp
-from xcube_cci.cciodp import find_datetime_format
+import numpy as np
+import pandas as pd
+
+from xcube_cci.cciodp import CciOdp, find_datetime_format, get_res
 from xcube_cci.constants import OPENSEARCH_CEDA_URL
 
 AEROSOL_ID = 'esacci.AEROSOL.day.L3C.AER_PRODUCTS.AATSR.Envisat.ORAC.04-01-.r1'

@@ -1,10 +1,11 @@
-import jsonschema
 import unittest
 
+import jsonschema
 from xcube.core.store import DatasetDescriptor
 from xcube.util.jsonschema import JsonObjectSchema
 
 from xcube_cci.dtaccess import DataTreeDescriptor
+
 
 class DataTreeDescriptorTest(unittest.TestCase):
     def test_get_schema(self):
@@ -122,9 +123,9 @@ class DataTreeDescriptorTest(unittest.TestCase):
         self.assertEqual("EPSG:4326", descriptor.crs)
         self.assertEqual(1, len(descriptor.data_nodes))
         self.assertTrue("first_inner_tree" in descriptor.data_nodes)
-        self.assertIsInstance(descriptor.data_nodes.get("firstInnerTree"), DataTreeDescriptor)
+        self.assertIsInstance(descriptor.data_nodes.get("first_inner_tree"), DataTreeDescriptor)
 
-    def test_from_dict_datatree_descriptors_as_dict(self):
+    def test_from_dict_datatree_descriptors_with_inner_trees_as_dict(self):
         descriptor_dict = dict(
             data_id="xyz",
             data_type="datatree",

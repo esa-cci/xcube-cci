@@ -18,66 +18,51 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import tarfile
-
 import asyncio
 import bisect
 import copy
-import geopandas as gpd
 import io
 import json
-import lxml.etree as etree
 import math
+import os
+import re
+import tarfile
+import urllib.parse
+from datetime import datetime
+from typing import Dict, List, Mapping, Optional, Tuple, Union
+from urllib.parse import quote
+
+import geopandas as gpd
+import lxml.etree as etree
 import nest_asyncio
 import numcodecs
 import numpy as np
-import os
-import re
 import pandas as pd
 import pyproj
 import rioxarray
-import urllib.parse
-from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from pydap.handlers.dap import BaseProxyDap2, SequenceProxy, unpack_dap2_data
+from pydap.lib import BytesReader, combine_slices, fix_slice, hyperslab, walk
+from pydap.model import BaseType, GridType, SequenceType
+from pydap.parsers import parse_ce
+from pydap.parsers.das import add_attributes, parse_das
+from pydap.parsers.dds import dds_to_dataset
 from shapely import Point
 from shapely.geometry import mapping
-from typing import List, Dict, Tuple, Optional, Union, Mapping
-from urllib.parse import quote
-
-from pydap.handlers.dap import BaseProxyDap2
-from pydap.handlers.dap import SequenceProxy
-from pydap.handlers.dap import unpack_dap2_data
-from pydap.lib import BytesReader
-from pydap.lib import combine_slices
-from pydap.lib import fix_slice
-from pydap.lib import hyperslab
-from pydap.lib import walk
-from pydap.model import BaseType, SequenceType, GridType
-from pydap.parsers import parse_ce
-from pydap.parsers.dds import dds_to_dataset
-from pydap.parsers.das import parse_das, add_attributes
 from six.moves.urllib.parse import urlsplit, urlunsplit
+from xcube.core.store import DATASET_TYPE, GEO_DATA_FRAME_TYPE
 
-from xcube.core.store import GEO_DATA_FRAME_TYPE
-from xcube.core.store import DATASET_TYPE
+from xcube_cci.timeutil import get_timestrings_from_string
 
-from .constants import CCI_ODD_URL
-from .constants import COMMON_TIME_COORD_VAR_NAMES
-from .constants import DATASET_STATES_FILE
-from .constants import DEFAULT_NUM_RETRIES
-from .constants import DEFAULT_RETRY_BACKOFF_MAX
-from .constants import DEFAULT_RETRY_BACKOFF_BASE
-from .constants import GEODATAFRAME_STATES_FILE
-from .constants import LOG
-from .constants import OPENSEARCH_CEDA_URL
-from .constants import TIFF_VARS
-from .constants import TIMESTAMP_FORMAT
-from .constants import VECTORDATACUBE_STATES_FILE
+from .constants import (CCI_ODD_URL, COMMON_TIME_COORD_VAR_NAMES,
+                        DATASET_STATES_FILE, DEFAULT_NUM_RETRIES,
+                        DEFAULT_RETRY_BACKOFF_BASE, DEFAULT_RETRY_BACKOFF_MAX,
+                        GEODATAFRAME_STATES_FILE, LOG, OPENSEARCH_CEDA_URL,
+                        TIFF_VARS, TIMESTAMP_FORMAT,
+                        VECTORDATACUBE_STATES_FILE)
 from .odpconnector import OdpConnector
 from .sessionexecutor import SessionExecutor
 from .vdcaccess import VECTOR_DATA_CUBE_TYPE
-
-from xcube_cci.timeutil import get_timestrings_from_string
 
 DATA_TYPE_TO_FILE_NAME = {
     DATASET_TYPE.alias: DATASET_STATES_FILE,
@@ -358,9 +343,9 @@ def get_res(nc_attrs: dict, dim: str) -> float:
         if name in nc_attrs:
             res_attr = nc_attrs[name]
             try:
-                if type(res_attr) == float:
+                if type(res_attr) is float:
                     return res_attr
-                elif type(res_attr) == int:
+                elif type(res_attr) is int:
                     return float(res_attr)
                 # as we now expect to deal with a string, we try to parse a
                 # float for that, we remove any trailing units and consider
@@ -1886,7 +1871,7 @@ class CciOdp:
         feature_info = _extract_feature_info(feature)
         shapefile_url = f"{feature_info[4].get('Download')}"
         if shapefile_url == 'None':
-            LOG.info(f'Shapefile is not accessible')
+            LOG.info('Shapefile is not accessible')
             return {}, {}
         geodataframe = gpd.read_file(shapefile_url)
         variable_infos = {}
@@ -1913,12 +1898,11 @@ class CciOdp:
                 return await self._get_variable_infos_from_tar_feature(feature, session)
             elif download_url.endswith(".tif"):
                 return await self._get_variable_infos_from_tif_feature(feature, session)
-            LOG.warning(f'Dataset is not accessible via Opendap or Download')
+            LOG.warning('Dataset is not accessible via Opendap or Download')
             return {}, {}
         dataset = await self._get_opendap_dataset(session, opendap_url)
         if not dataset:
-            LOG.info(f'Could not extract information about variables '
-                         f'and attributes from {opendap_url}')
+            LOG.info(f'Could not extract information about variables and attributes from {opendap_url}')
             return {}, {}
         variable_infos = {}
         time_set_as_dim = False
@@ -1975,7 +1959,7 @@ class CciOdp:
             else:
                 var_attrs['chunk_sizes'] = min(var_attrs['chunk_sizes'],
                                                var_attrs['shape'][0])
-            if type(var_attrs['chunk_sizes']) == int:
+            if type(var_attrs['chunk_sizes']) is int:
                 var_attrs['file_chunk_sizes'] = var_attrs['chunk_sizes']
             else:
                 var_attrs['file_chunk_sizes'] = \
@@ -2011,7 +1995,7 @@ class CciOdp:
         feature_info = _extract_feature_info(feature)
         download_url = f"{feature_info[4].get('Download')}"
         if download_url == 'None':
-            LOG.warning(f'Dataset is not accessible via Download')
+            LOG.warning('Dataset is not accessible via Download')
             return {}, {}
         tif_files = await self._get_tif_files_from_tar_url(download_url, session)
         var_dict = {}
@@ -2033,7 +2017,7 @@ class CciOdp:
         feature_info = _extract_feature_info(feature)
         download_url = f"{feature_info[4].get('Download')}"
         if download_url == 'None':
-            LOG.warning(f'Dataset is not accessible via Download')
+            LOG.warning('Dataset is not accessible via Download')
             return {}, {}
         var_infos = {}
         attributes = {}
@@ -2214,7 +2198,7 @@ class CciOdp:
             self, dataset, session, variable_name, slices
     ):
         proxy = dataset[variable_name].data
-        if type(proxy) == list:
+        if type(proxy) is list:
             proxy = proxy[0]
         # build download url
         index = combine_slices(proxy.slice, fix_slice(slices, proxy.shape))

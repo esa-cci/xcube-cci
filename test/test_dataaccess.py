@@ -1,28 +1,22 @@
 import datetime as dt
 import os
 import unittest
-from unittest import skip
-from unittest import skipIf
+from unittest import skip, skipIf
 
 from xcube.core.gridmapping import GridMapping
 from xcube.core.normalize import normalize_dataset
-from xcube.core.store import DATASET_TYPE
-from xcube.core.store import DataStoreError
-from xcube.core.store import GEO_DATA_FRAME_TYPE
-from xcube.core.store.descriptor import DatasetDescriptor
-from xcube.core.store.descriptor import GeoDataFrameDescriptor
+from xcube.core.store import DATASET_TYPE, GEO_DATA_FRAME_TYPE, DataStoreError
+from xcube.core.store.descriptor import (DatasetDescriptor,
+                                         GeoDataFrameDescriptor)
 from xcube.core.verify import assert_cube
 
-from xcube_cci.dataaccess import CciOdpDataStore
-from xcube_cci.dataaccess import CciOdpDataFrameOpener
-from xcube_cci.dataaccess import CciOdpDatasetOpener
-from xcube_cci.dataaccess import CciOdpDataTreeOpener
-from xcube_cci.dataaccess import get_temporal_resolution_from_id
-from xcube_cci.dataaccess import CciOdpVectorDataCubeOpener
-from xcube_cci.dataaccess import VectorDataCubeDescriptor
-from xcube_cci.dataaccess import VECTOR_DATA_CUBE_TYPE
-from xcube_cci.dtaccess import DataTreeDescriptor
-from xcube_cci.dtaccess import DATATREE_TYPE
+from xcube_cci.dataaccess import (VECTOR_DATA_CUBE_TYPE, CciOdpDataFrameOpener,
+                                  CciOdpDatasetOpener, CciOdpDataStore,
+                                  CciOdpDataTreeOpener,
+                                  CciOdpVectorDataCubeOpener,
+                                  VectorDataCubeDescriptor,
+                                  get_temporal_resolution_from_id)
+from xcube_cci.dtaccess import DATATREE_TYPE, DataTreeDescriptor
 
 AEROSOL_DAY_ID = 'esacci.AEROSOL.day.L3.AAI.multi-sensor.multi-platform.' \
                  'MSAAI.1-7.r1'
@@ -676,8 +670,9 @@ class CciOdpDatasetOpenerNormalizeTest(unittest.TestCase):
 
 
 def user_agent(ext: str = "") -> str:
-    from xcube_cci.version import version
     from platform import machine, python_version, system
+
+    from xcube_cci.version import version
 
     return "xcube-cci-testing/{version} (Python {python};" \
            " {system} {arch}) {ext}".format(
@@ -1011,7 +1006,7 @@ class CciDataNormalizationTest(unittest.TestCase):
         good_datasets = []
         for data in all_data:
             if 'climatology' in data.data_id:
-                print(f'Cannot read data due to unsupported frequency')
+                print('Cannot read data due to unsupported frequency')
                 datasets_with_unsupported_frequencies.append(data.data_id)
                 continue
             if not data.data_vars or len(data.data_vars) < 1:

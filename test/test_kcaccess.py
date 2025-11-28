@@ -23,11 +23,9 @@ import os
 import unittest
 
 import xarray as xr
+from xcube.core.store import (DatasetDescriptor, DataStore, DataType,
+                              MutableDataStore)
 
-from xcube.core.store import DataStore
-from xcube.core.store import MutableDataStore
-from xcube.core.store import DatasetDescriptor
-from xcube.core.store import DataType
 from xcube_cci.kcaccess import CciKerchunkDataStore
 
 

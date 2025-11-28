@@ -21,9 +21,9 @@
 
 import json
 import os.path
-import requests
 import time
 
+import requests
 from xcube.core.store import get_data_store_class
 
 from.constants import KERCHUNK_LOCATION
@@ -40,7 +40,7 @@ def get_kc_refs():
     else:
         kc_refs_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
-            f'data/kc_refs.json'
+            'data/kc_refs.json'
         )
         with open(kc_refs_path, 'r') as fp:
             kc_refs = json.load(fp)

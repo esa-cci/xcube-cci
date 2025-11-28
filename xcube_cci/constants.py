@@ -20,8 +20,9 @@
 # SOFTWARE.
 
 import logging
-import numpy as np
 import os
+
+import numpy as np
 
 CCI_DATA_STORE_ID = 'esa-cci'
 CDC_SHORT_DATA_STORE_ID = 'esa-cdc'

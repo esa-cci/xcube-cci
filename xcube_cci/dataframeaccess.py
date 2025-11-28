@@ -19,9 +19,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any
-from typing import Mapping
-from typing import Tuple
+from typing import Any, Mapping, Tuple
+
 import geopandas as gpd
 import pandas as pd
 import shapely

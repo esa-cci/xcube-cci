@@ -20,17 +20,14 @@
 # SOFTWARE.
 
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
+from typing import Any, List, Mapping, Tuple, Union
+
 import pandas as pd
-from typing import Any
-from typing import List
-from typing import Mapping
-from typing import Tuple
-from typing import Union
+from dateutil.relativedelta import relativedelta
 
 from xcube_cci.cciodp import CciOdp
-
 from xcube_cci.constants import MONTHS
+
 from .constants import TIMESTAMP_FORMAT
 
 

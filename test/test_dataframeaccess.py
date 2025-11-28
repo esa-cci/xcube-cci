@@ -1,5 +1,6 @@
-import pandas as pd
 import unittest
+
+import pandas as pd
 
 from xcube_cci.cciodp import CciOdp
 from xcube_cci.dataframeaccess import DataFrameAccessor

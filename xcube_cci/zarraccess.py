@@ -19,17 +19,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any
-from typing import Container
-from typing import Tuple
-from typing import Union
-
 import json
 import os
+from typing import Any, Container, Tuple, Union
 
-from xcube.core.store import DataStoreError
-from xcube.core.store import DataTypeLike
-from xcube.core.store import get_data_store_class
+from xcube.core.store import DataStoreError, DataTypeLike, get_data_store_class
 from xcube.util.jsonschema import JsonObjectSchema
 
 from.constants import ZARR_LOCATION

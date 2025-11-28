@@ -19,65 +19,43 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from abc import abstractmethod
 import json
 import os
-from typing import Any, Iterator, List, Tuple, Optional, Dict, Union, Container
+from abc import abstractmethod
+from typing import Any, Container, Dict, Iterator, List, Optional, Tuple, Union
+
 import pyproj
-from shapely import Point
 import xarray as xr
 import xvec
-
+from shapely import Point
 from xcube.core.normalize import normalize_dataset
-from xcube.core.store import GEO_DATA_FRAME_TYPE
-from xcube.core.store import DATASET_TYPE
-from xcube.core.store import DataDescriptor
-from xcube.core.store import DataOpener
-from xcube.core.store import DataStore
-from xcube.core.store import DataStoreError
-from xcube.core.store import DataType
-from xcube.core.store import DatasetDescriptor
-from xcube.core.store import GeoDataFrameDescriptor
-from xcube.core.store import VariableDescriptor
-from xcube.util.jsonschema import JsonArraySchema
-from xcube.util.jsonschema import JsonBooleanSchema
-from xcube.util.jsonschema import JsonDateSchema
-from xcube.util.jsonschema import JsonIntegerSchema
-from xcube.util.jsonschema import JsonNumberSchema
-from xcube.util.jsonschema import JsonObjectSchema
-from xcube.util.jsonschema import JsonStringSchema
+from xcube.core.store import (DATASET_TYPE, GEO_DATA_FRAME_TYPE,
+                              DataDescriptor, DataOpener, DatasetDescriptor,
+                              DataStore, DataStoreError, DataType,
+                              GeoDataFrameDescriptor, VariableDescriptor)
+from xcube.util.jsonschema import (JsonArraySchema, JsonBooleanSchema,
+                                   JsonDateSchema, JsonIntegerSchema,
+                                   JsonNumberSchema, JsonObjectSchema,
+                                   JsonStringSchema)
 
 from .cciodp import CciOdp
 from .chunkstore import CciChunkStore
-from .constants import CCI_ODD_URL
-from .constants import CCI_ODD_TEST_URL
-from .constants import OTC_ODD_URL
-from .constants import DATAFRAME_OPENER_ID
-from .constants import DATASET_OPENER_ID
-from .constants import DATASET_STATES_FILE
-from .constants import DATATREE_OPENER_ID
-from .constants import DATATREE_STATES_FILE
-from .constants import DEFAULT_NUM_RETRIES
-from .constants import DEFAULT_RETRY_BACKOFF_BASE
-from .constants import DEFAULT_RETRY_BACKOFF_MAX
-from .constants import GEODATAFRAME_STATES_FILE
-from .constants import ODP_LOCATION
-from .constants import OPENSEARCH_CEDA_URL
-from .constants import OPENSEARCH_CEDA_TEST_URL
-from .constants import OPENSEARCH_OTC_URL
-from .constants import VECTORDATACUBE_OPENER_ID
-from .constants import VECTORDATACUBE_STATES_FILE
+from .constants import (CCI_ODD_TEST_URL, CCI_ODD_URL, DATAFRAME_OPENER_ID,
+                        DATASET_OPENER_ID, DATASET_STATES_FILE,
+                        DATATREE_OPENER_ID, DATATREE_STATES_FILE,
+                        DEFAULT_NUM_RETRIES, DEFAULT_RETRY_BACKOFF_BASE,
+                        DEFAULT_RETRY_BACKOFF_MAX, GEODATAFRAME_STATES_FILE,
+                        ODP_LOCATION, OPENSEARCH_CEDA_TEST_URL,
+                        OPENSEARCH_CEDA_URL, OPENSEARCH_OTC_URL, OTC_ODD_URL,
+                        VECTORDATACUBE_OPENER_ID, VECTORDATACUBE_STATES_FILE)
 from .dataframeaccess import DataFrameAccessor
-from .dtaccess import DataTreeDescriptor, LazyDataTree
-from .dtaccess import DataTreeMapping
-from .dtaccess import DATATREE_TYPE
-from .normalize import normalize_coord_names
-from .normalize import normalize_dims_description
-from .normalize import normalize_variable_dims_description
-from .normalize import normalize_var_infos
+from .dtaccess import (DATATREE_TYPE, DataTreeDescriptor, DataTreeMapping,
+                       LazyDataTree)
+from .normalize import (normalize_coord_names, normalize_dims_description,
+                        normalize_var_infos,
+                        normalize_variable_dims_description)
 from .odpconnector import OdpConnector
-from .vdcaccess import VectorDataCubeDescriptor
-from .vdcaccess import VECTOR_DATA_CUBE_TYPE
+from .vdcaccess import VECTOR_DATA_CUBE_TYPE, VectorDataCubeDescriptor
 
 _DATA_TYPE_TO_FILE_NAME = {
     DATASET_TYPE: DATASET_STATES_FILE,

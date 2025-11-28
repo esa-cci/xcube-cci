@@ -1,10 +1,10 @@
-import numpy
 import os
-import pandas as pd
 import unittest
-import xarray as xr
-
 from unittest import skipIf
+
+import numpy
+import pandas as pd
+import xarray as xr
 
 from xcube_cci.cciodp import CciOdp
 from xcube_cci.chunkstore import CciChunkStore

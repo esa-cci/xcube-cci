@@ -19,16 +19,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import aiohttp
 import asyncio
 import random
 import time
 from typing import Optional
 
-from .constants import DEFAULT_NUM_RETRIES
-from .constants import DEFAULT_RETRY_BACKOFF_MAX
-from .constants import DEFAULT_RETRY_BACKOFF_BASE
-from .constants import LOG
+import aiohttp
+
+from .constants import (DEFAULT_NUM_RETRIES, DEFAULT_RETRY_BACKOFF_BASE,
+                        DEFAULT_RETRY_BACKOFF_MAX, LOG)
+
 
 async def _run_with_session_executor(async_function, *params, headers):
     async with aiohttp.ClientSession(

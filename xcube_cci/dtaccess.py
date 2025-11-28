@@ -19,18 +19,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import warnings
 from collections.abc import Hashable, Mapping, MutableMapping
+from typing import Any, List, Optional
+
 import dask
 import numpy as np
-from typing import Any, List, Optional
-import warnings
 import xarray as xr
-
 from xcube.core.normalize import normalize_dataset
-from xcube.core.store import DataType, DataTypeLike
-from xcube.core.store import DataDescriptor, DatasetDescriptor, VariableDescriptor
+from xcube.core.store import (DataDescriptor, DatasetDescriptor, DataType,
+                              DataTypeLike, VariableDescriptor)
 from xcube.util.assertions import assert_true
-from xcube.util.jsonschema import JsonIntegerSchema, JsonNumberSchema, JsonObjectSchema
+from xcube.util.jsonschema import (JsonIntegerSchema, JsonNumberSchema,
+                                   JsonObjectSchema)
 
 from .cciodp import CciOdp
 from .chunkstore import CciChunkStore

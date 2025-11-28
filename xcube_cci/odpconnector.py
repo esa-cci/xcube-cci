@@ -19,10 +19,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import lxml.etree as etree
 from typing import List
-from .constants import CCI_ODD_URL
 
+import lxml.etree as etree
+
+from .constants import CCI_ODD_URL
 from .sessionexecutor import SessionExecutor
 
 ODD_NS = {
@@ -86,7 +87,7 @@ class OdpConnector:
                     metadata_names[param_elem.attrib['name']]
                 param_content = _get_from_param_elem(param_elem)
                 if param_content:
-                    if type(param_content) == tuple:
+                    if type(param_content) is tuple:
                         metadata[element_names[0]] = param_content[0]
                         if add_to_num_files:
                             metadata['num_files'][param_content[0]] = \
