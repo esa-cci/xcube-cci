@@ -305,7 +305,7 @@
         ],
         "pattern": "{var_name}-{place}",
         "places": [
-            "A03TMOSAIC",
+            "A03MOSAIC",
             "A03T41UPA",
             "A03T41UPB",
             "A03T41UPT",
