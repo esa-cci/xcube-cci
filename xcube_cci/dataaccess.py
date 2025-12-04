@@ -135,8 +135,8 @@ class CciOdpDataOpener(DataOpener):
             for drs_id, attrs in self._states.items():
                 self._dataset_names.append(drs_id)
                 places = attrs.get("places")
+                drs_ids.append(drs_id)
                 if places is None:
-                    drs_ids.append(drs_id)
                     continue
                 var_names = attrs.get("var_names")
                 pattern = attrs.get("pattern")
@@ -624,7 +624,7 @@ class CciOdpDataFrameOpener(CciOdpDataOpener):
                 # do not set bbox then
                 pass
         if gfd:
-            specifiers = self._states.get(gfd.data_id).get("specifiers")
+            specifiers = self._states.get(gfd.data_id).get("places")
             if specifiers:
                 geodataframe_params["place_names"] = JsonArraySchema(
                     items=JsonStringSchema(enum=specifiers)

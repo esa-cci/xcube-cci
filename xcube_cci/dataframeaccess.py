@@ -32,13 +32,14 @@ from xcube_cci.timerangegetter import TimeRangeGetter
 class DataFrameAccessor:
 
     def __init__(self, cci_cdc: CciOdp, df_id: str, gdf_params: Mapping[str, Any], specifier_mappings: dict=None):
+        specifier_mappings = specifier_mappings or {}
         self._cci_cdc = cci_cdc
-        m_df_id = f"{df_id}~{list(specifier_mappings.values())[0]}" if specifier_mappings is not None else df_id
+        self._spatial_subset_area = None
+        m_df_id = f"{df_id}~{list(specifier_mappings.values())[0]}" if len(specifier_mappings) > 0 else df_id
         self._metadata = cci_cdc.get_dataset_metadata(m_df_id)
         self._var_names = gdf_params.get("variable_names", {}).copy()
         if len(self._var_names) == 0:
             self._var_names = list(self._metadata.get("variable_infos").keys())
-        self._spatial_subset_area = None
         if "bbox" in gdf_params:
             min_lon = gdf_params["bbox"][0]
             min_lat = gdf_params["bbox"][1]
@@ -51,12 +52,13 @@ class DataFrameAccessor:
         self._time_chunking = 1
         tr = TimeRangeGetter(self._cci_cdc, self._metadata)
         self._time_ranges = {}
-        time_ranges = tr.get_time_ranges(df_id, gdf_params)
-        if specifier_mappings is not None:
+        if len(specifier_mappings) > 0:
             for i, specifier in specifier_mappings.items():
                 sid = f"{df_id}~{specifier}"
-                self._time_ranges[sid] = [time_ranges[i]]
+                time_ranges = tr.get_time_ranges(sid, gdf_params)
+                self._time_ranges[sid] = time_ranges
         else:
+            time_ranges = tr.get_time_ranges(df_id, gdf_params)
             self._time_ranges[df_id] = time_ranges
 
     def get_geodataframe(self) -> gpd.GeoDataFrame:
@@ -194,7 +196,9 @@ class GeoDataFrame:
         if features is None:
             raise ValueError('features must not be None')
         self._features = features
-        self._lazy_data_frame = None
+        first_element = next(features)
+        crs = features.crs if hasattr(features, 'crs') else None
+        self._lazy_data_frame = gpd.GeoDataFrame.from_features([first_element], crs=crs)
 
     @property
     def features(self):
@@ -238,9 +242,39 @@ class GeoDataFrame:
             return getattr(self.lazy_data_frame, item)
 
     def __getitem__(self, item):
+        if isinstance(item, slice) or isinstance(item, int):
+            num_features = len(self.lazy_data_frame)
+            max_req_item = item
+            if isinstance(item, slice):
+                max_req_item = item.stop
+            new_rows = []
+            try:
+                while num_features < max_req_item:
+                    feature = next(self.features)
+                    new_rows.append(feature)
+                    num_features += 1
+            except StopIteration:
+                pass
+            new_gdf = gpd.GeoDataFrame.from_features(new_rows, crs=self.lazy_data_frame.crs)
+            self._lazy_data_frame = pd.concat([self.lazy_data_frame, new_gdf], ignore_index=True)
         return self.lazy_data_frame.__getitem__(item)
 
     def __setitem__(self, key, value):
+        if isinstance(key, slice) or isinstance(key, int):
+            num_features = len(self.lazy_data_frame)
+            max_req_item = key
+            if isinstance(key, slice):
+                max_req_item = key.stop
+            new_rows = []
+            try:
+                while num_features < max_req_item:
+                    feature = next(self.features)
+                    new_rows.append(feature)
+                    num_features += 1
+            except StopIteration:
+                pass
+            new_gdf = gpd.GeoDataFrame.from_features(new_rows, crs=self.lazy_data_frame.crs)
+            self._lazy_data_frame = pd.concat([self.lazy_data_frame, new_gdf], ignore_index=True)
         return self.lazy_data_frame.__setitem__(key, value)
 
     def __str__(self):
