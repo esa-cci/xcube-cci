@@ -3563,8 +3563,7 @@
     "esacci.VEGETATION.5-days.L3S.VP_PRODUCTS.VEGETATION.SPOT-5.MERGED.v1-0.r1": {
         "data_type": "datatree",
         "verification_flags": [
-            "open",
-            "constrain_time"
+            "open"
         ],
         "title": "ESA Vegetation Parameters Climate Change Initiative (Vegetation_Parameters_cci): LAI and fAPAR, Version 1.0",
         "places": [
@@ -5359,8 +5358,7 @@
     "esacci.VEGETATION.5-days.L3S.VP_PRODUCTS.V\u00e9g\u00e9tation-P.PROBA-V.MERGED.v1-0.r1": {
         "data_type": "datatree",
         "verification_flags": [
-            "open",
-            "constrain_time"
+            "open"
         ],
         "title": "ESA Vegetation Parameters Climate Change Initiative (Vegetation_Parameters_cci): LAI and fAPAR, Version 1.0",
         "places": [
