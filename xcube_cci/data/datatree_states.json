@@ -4465,7 +4465,7 @@
             "constrain_time"
         ],
         "title": "ESA Vegetation Parameters Climate Change Initiative (Vegetation_Parameters_cci): LAI and fAPAR, Version 1.0",
-        "specifications": [
+        "places": [
             "site_00001_ABRACOS_HILL",
             "site_00002_ADAMOWKA",
             "site_00003_AGUASCALIENTES",
