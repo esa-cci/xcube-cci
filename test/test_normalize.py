@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from xcube_cci.normalize import normalize_dims_description
-from xcube_cci.normalize import normalize_variable_dims_description
+from xcube_cci.normalize import (normalize_dims_description,
+                                 normalize_variable_dims_description)
 
 
 class TestNormalize(TestCase):

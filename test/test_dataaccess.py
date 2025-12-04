@@ -1,25 +1,22 @@
 import datetime as dt
 import os
 import unittest
-from unittest import skip
-from unittest import skipIf
+from unittest import skip, skipIf
 
 from xcube.core.gridmapping import GridMapping
 from xcube.core.normalize import normalize_dataset
-from xcube.core.store import DATASET_TYPE
-from xcube.core.store import DataStoreError
-from xcube.core.store import GEO_DATA_FRAME_TYPE
-from xcube.core.store.descriptor import DatasetDescriptor
-from xcube.core.store.descriptor import GeoDataFrameDescriptor
+from xcube.core.store import DATASET_TYPE, GEO_DATA_FRAME_TYPE, DataStoreError
+from xcube.core.store.descriptor import (DatasetDescriptor,
+                                         GeoDataFrameDescriptor)
 from xcube.core.verify import assert_cube
 
-from xcube_cci.dataaccess import CciOdpDataStore
-from xcube_cci.dataaccess import CciOdpDataFrameOpener
-from xcube_cci.dataaccess import CciOdpDatasetOpener
-from xcube_cci.dataaccess import get_temporal_resolution_from_id
-from xcube_cci.dataaccess import CciOdpVectorDataCubeOpener
-from xcube_cci.dataaccess import VectorDataCubeDescriptor
-from xcube_cci.dataaccess import VECTOR_DATA_CUBE_TYPE
+from xcube_cci.dataaccess import (VECTOR_DATA_CUBE_TYPE, CciOdpDataFrameOpener,
+                                  CciOdpDatasetOpener, CciOdpDataStore,
+                                  CciOdpDataTreeOpener,
+                                  CciOdpVectorDataCubeOpener,
+                                  VectorDataCubeDescriptor,
+                                  get_temporal_resolution_from_id)
+from xcube_cci.dtaccess import DATATREE_TYPE, DataTreeDescriptor
 
 AEROSOL_DAY_ID = 'esacci.AEROSOL.day.L3.AAI.multi-sensor.multi-platform.' \
                  'MSAAI.1-7.r1'
@@ -31,6 +28,8 @@ BIOMASS_ID = "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.MERGED.5-0.10
 CLOUD_ID = "esacci.CLOUD.mon.L3C.CLD_PRODUCTS.MODIS.Terra.MODIS_TERRA.2-0.r1"
 ICESHEETS_ID = 'esacci.ICESHEETS.yr.Unspecified.IV.PALSAR.ALOS.UNSPECIFIED.' \
                '1-1.greenland_margin_2006_2011'
+FIRE_ID = "esacci.FIRE.mon.L3S.BA.MODIS.Terra.MODIS_TERRA.v5-1.pixel"
+HR_LC_ID = "esacci.LC.yr.L4.Map.multi-sensor.multi-platform.HRLC10-A02.v1-2.Amazonia"
 LAKES_ID = 'esacci.LAKES.day.L3S.LK_PRODUCTS.multi-sensor.multi-platform.' \
            'MERGED.v1-1.r1'
 OZONE_MON_ID = 'esacci.OZONE.mon.L3.NP.multi-sensor.multi-platform.MERGED.' \
@@ -145,7 +144,7 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
     @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
             'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_dataset_crs_variable(self):
-        descriptor = self.opener.describe_data(SEAICE_ID)
+        descriptor = self.opener.describe_data([SEAICE_ID])[0]
         self.assertIsNotNone(descriptor)
         self.assertTrue('Lambert_Azimuthal_Grid' in
                         descriptor.data_vars.keys())
@@ -156,7 +155,7 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
     @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
             'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_climatology_dataset(self):
-        descriptor = self.opener.describe_data(AEROSOL_CLIMATOLOGY_ID)
+        descriptor = self.opener.describe_data([AEROSOL_CLIMATOLOGY_ID])[0]
         self.assertIsNotNone(descriptor)
         self.assertTrue('absorbing_aerosol_index' in
                         descriptor.data_vars.keys())
@@ -168,7 +167,7 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
     @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
             'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_data(self):
-        descriptor = self.opener.describe_data(OZONE_MON_ID)
+        descriptor = self.opener.describe_data([OZONE_MON_ID])[0]
         self.assertIsNotNone(descriptor)
         self.assertIsInstance(descriptor, DatasetDescriptor)
         self.assertEqual(OZONE_MON_ID, descriptor.data_id)
@@ -195,7 +194,7 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
                          descriptor.time_range)
         self.assertEqual('1M', descriptor.time_period)
 
-        descriptor = self.opener.describe_data(AEROSOL_DAY_ID)
+        descriptor = self.opener.describe_data([AEROSOL_DAY_ID])[0]
         self.assertIsNotNone(descriptor)
         self.assertIsInstance(descriptor, DatasetDescriptor)
         self.assertEqual(AEROSOL_DAY_ID, descriptor.data_id)
@@ -223,7 +222,7 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
     @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
             'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_2d_grid_coords_data(self):
-        descriptor = self.opener.describe_data(COORDS_2D_ID)
+        descriptor = self.opener.describe_data([COORDS_2D_ID])[0]
         self.assertIsNotNone(descriptor)
         self.assertEqual('dataset', str(descriptor.data_type))
         self.assertEqual(['Time', 'x', 'y', 'bnds'], list(descriptor.dims.keys()))
@@ -408,7 +407,7 @@ class CciOdpDatasetOpenerTimeSeriesTest(unittest.TestCase):
     @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
             'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_monthly_ozone(self):
-        descriptor = self.opener.describe_data(OZONE_MON_GOMOS_ID)
+        descriptor = self.opener.describe_data([OZONE_MON_GOMOS_ID])[0]
         self.assertIsNotNone(descriptor)
         self.assertEqual('1M', descriptor.time_period)
         self.assertEqual(('2002-01-01', '2011-12-31'), descriptor.time_range)
@@ -470,7 +469,7 @@ class CciOdpDatasetOpenerTimeSeriesNormalizeTest(unittest.TestCase):
     @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
             'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_monthly_ozone(self):
-        descriptor = self.opener.describe_data(OZONE_MON_GOMOS_ID)
+        descriptor = self.opener.describe_data([OZONE_MON_GOMOS_ID])[0]
         self.assertIsNotNone(descriptor)
         self.assertEqual('1M', descriptor.time_period)
         self.assertEqual(('2002-01-01', '2011-12-31'), descriptor.time_range)
@@ -532,14 +531,14 @@ class CciOdpDatasetOpenerNormalizeTest(unittest.TestCase):
     @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
             'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_dataset_crs_variable(self):
-        descriptor = self.opener.describe_data(ICESHEETS_ID)
+        descriptor = self.opener.describe_data([ICESHEETS_ID])[0]
         self.assertIsNotNone(descriptor)
         self.assertTrue('crs' in descriptor.data_vars.keys())
 
     @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
             'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_dataset(self):
-        descriptor = self.opener.describe_data(AEROSOL_DAY_ID)
+        descriptor = self.opener.describe_data([AEROSOL_DAY_ID])[0]
         self.assertIsNotNone(descriptor)
         self.assertIsInstance(descriptor, DatasetDescriptor)
         self.assertEqual(AEROSOL_DAY_ID, descriptor.data_id)
@@ -671,8 +670,9 @@ class CciOdpDatasetOpenerNormalizeTest(unittest.TestCase):
 
 
 def user_agent(ext: str = "") -> str:
-    from xcube_cci.version import version
     from platform import machine, python_version, system
+
+    from xcube_cci.version import version
 
     return "xcube-cci-testing/{version} (Python {python};" \
            " {system} {arch}) {ext}".format(
@@ -706,7 +706,7 @@ class CciOdpDataFrameOpenerTest(unittest.TestCase):
     @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
             'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_describe_data(self):
-        descriptor = self._opener.describe_data(GHG_DS_ID)
+        descriptor = self._opener.describe_data([GHG_DS_ID])[0]
         self.assertIsNotNone(descriptor)
         self.assertIsInstance(descriptor, GeoDataFrameDescriptor)
         self.assertEqual(GHG_DS_ID, descriptor.data_id)
@@ -753,6 +753,21 @@ class CciOdpDataFrameOpenerTest(unittest.TestCase):
             )
         )
 
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    def test_open_data(self):
+        gdf = self._opener.open_data(
+            "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1",
+            place_names=["ZAMBEZI_KABOMPO_KABOMPO", "ZAMBEZI_KAFUE_KASAKA", "ZAMBEZI_ZAMBEZE_MATUNDO"]
+        )
+        self.assertIsNotNone(gdf)
+        self.assertEqual(
+            {'geometry', 'time', 'water_surface_height_above_reference_datum', 'water_surface_height_uncertainty',
+             'platform', 'orbit_track_number', 'mission_cycle_number'},
+            set(gdf.columns)
+        )
+        self.assertEqual((1747, 7), gdf.shape)
+
 
 class CciOdpVectorDataCubeOpenerTest(unittest.TestCase):
 
@@ -775,8 +790,8 @@ class CciOdpVectorDataCubeOpenerTest(unittest.TestCase):
 
     @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
             'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
-    def test_describe_data_sealevel(self):
-        descriptor = self._opener.describe_data(VDC_ID)
+    def test_describe_data_fire(self):
+        descriptor = self._opener.describe_data([VDC_ID])[0]
         self.assertIsNotNone(descriptor)
         self.assertIsInstance(descriptor, VectorDataCubeDescriptor)
         self.assertEqual(VDC_ID, descriptor.data_id)
@@ -819,6 +834,98 @@ class CciOdpVectorDataCubeOpenerTest(unittest.TestCase):
         self.assertIsNotNone(data.zarr_store.get())
 
 
+class CciOdpDataTreeOpenerTest(unittest.TestCase):
+
+    def setUp(self) -> None:
+        self._opener = CciOdpDataTreeOpener()
+
+    def test_dataset_names(self):
+        ds_names = self._opener.dataset_names
+        self.assertTrue(len(ds_names) > 10)
+
+    def test_get_data_types(self):
+        data_types = self._opener.get_data_types()
+        self.assertEqual(1, len(data_types))
+        self.assertEqual(DATATREE_TYPE, data_types[0])
+
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    def test_has_data(self):
+        self.assertTrue(self._opener.has_data(FIRE_ID))
+
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    def test_describe_data_fire(self):
+        descriptor = self._opener.describe_data([FIRE_ID])[0]
+        self.assertIsNotNone(descriptor)
+        self.assertIsInstance(descriptor, DataTreeDescriptor)
+        self.assertEqual(FIRE_ID, descriptor.data_id)
+        self.assertEqual('datatree', str(descriptor.data_type))
+        self.assertEqual(["y", "x", "time", "bnds"], list(descriptor.dims.keys()))
+        self.assertEqual(2, descriptor.dims['bnds'])
+        self.assertEqual(279, descriptor.dims['time'])
+        self.assertEqual(57888, descriptor.dims['x'])
+        self.assertEqual(28499, descriptor.dims['y'])
+        self.assertEqual(3, len(descriptor.data_vars))
+        self.assertTrue('JD' in descriptor.data_vars)
+        self.assertEqual(3, descriptor.data_vars['JD'].ndim)
+        self.assertEqual(tuple(['time', 'y', 'x']),
+                         descriptor.data_vars['JD'].dims)
+        self.assertEqual('int16', descriptor.data_vars['JD'].dtype)
+        self.assertEqual(('2001-01-01', '2022-12-31'), descriptor.time_range)
+        self.assertEqual('1M', descriptor.time_period)
+        self.assertIsNone(descriptor.dataset)
+        self.assertListEqual(
+            ["AREA_1", "AREA_2", "AREA_3", "AREA_4", "AREA_5", "AREA_6"],
+            list(descriptor.data_nodes.keys())
+        )
+
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    def test_get_open_data_params_schema(self):
+        schema = self._opener.get_open_data_params_schema(FIRE_ID).to_dict()
+        self.assertIsNotNone(schema)
+        self.assertTrue('variable_names' in schema['properties'])
+        self.assertTrue('place_names' in schema['properties'])
+        self.assertTrue('time_range' in schema['properties'])
+        self.assertFalse(schema['additionalProperties'])
+
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    def test_open_data(self):
+        data = self._opener.open_data(
+            FIRE_ID, place_names=["AREA_1", "AREA_2"], variable_names=["JD", "CL"]
+        )
+        self.assertIsNotNone(data)
+        self.assertTrue(data.is_root)
+        self.assertTrue(data.is_empty)
+        self.assertEqual({"AREA_1", "AREA_2"}, set(data.keys()))
+        area_1_dt = data.get("AREA_1")
+        self.assertIsNotNone(area_1_dt.dataset)
+        self.assertEqual(2, len(area_1_dt.dataset.data_vars))
+        self.assertIn("CL", area_1_dt.dataset.data_vars)
+        self.assertIn("JD", area_1_dt.dataset.data_vars)
+        self.assertEqual({"time", "x", "y", "bnds"}, set(area_1_dt.dataset.dims.keys()))
+        self.assertEqual({264, 28499, 57888}, set(area_1_dt.dataset.JD.shape))
+        self.assertIsNotNone(area_1_dt.dataset.zarr_store.get())
+
+    def test_open_data_lc(self):
+        place_name = "A02T20KPA"
+        variable_name = "CL01"
+        data = self._opener.open_data(HR_LC_ID, place_names=[place_name], variable_names=[variable_name])
+        ds = data.get(place_name)
+        self.assertIsNotNone(ds)
+        self.assertTrue(data.is_root)
+        self.assertTrue(data.is_empty)
+        self.assertEqual({"A02T20KPA"}, set(data.keys()))
+        sub_dt = data.get("A02T20KPA")
+        self.assertIsNotNone(sub_dt.dataset)
+        self.assertEqual(1, len(sub_dt.dataset.data_vars))
+        self.assertIn("CL01", sub_dt.dataset.data_vars)
+        self.assertEqual({"time", "x", "y", "bnds"}, set(sub_dt.dataset.dims.keys()))
+        self.assertEqual((1, 10980, 10980), sub_dt.dataset.CL01.shape)
+        self.assertIsNotNone(sub_dt.dataset.zarr_store.get())
+
 class CciOdpDataStoreTest(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -837,7 +944,7 @@ class CciOdpDataStoreTest(unittest.TestCase):
 
     def test_get_data_types(self):
         self.assertEqual(
-            ('dataset', "geodataframe", "vectordatacube"),
+            ('dataset', "geodataframe", "vectordatacube", "datatree"),
             CciOdpDataStore.get_data_types()
         )
 
@@ -875,8 +982,7 @@ class CciOdpDataStoreTest(unittest.TestCase):
     @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
             'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_search_geodataframe(self):
-        geodataframe_search_result = \
-            list(self.store.search_data('geodataframe'))
+        geodataframe_search_result = list(self.store.search_data('geodataframe'))
         self.assertIsNotNone(geodataframe_search_result)
         self.assertTrue(len(geodataframe_search_result) > 20)
 
@@ -900,7 +1006,7 @@ class CciDataNormalizationTest(unittest.TestCase):
         good_datasets = []
         for data in all_data:
             if 'climatology' in data.data_id:
-                print(f'Cannot read data due to unsupported frequency')
+                print('Cannot read data due to unsupported frequency')
                 datasets_with_unsupported_frequencies.append(data.data_id)
                 continue
             if not data.data_vars or len(data.data_vars) < 1:

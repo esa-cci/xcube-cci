@@ -19,56 +19,51 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from abc import abstractmethod
 import json
 import os
-from typing import Any, Iterator, List, Tuple, Optional, Dict, Union, Container
+from abc import abstractmethod
+from typing import Any, Container, Dict, Iterator, List, Optional, Tuple, Union
+
 import pyproj
-from shapely import Point
 import xarray as xr
 import xvec
-
+from shapely import Point
 from xcube.core.normalize import normalize_dataset
-from xcube.core.store import GEO_DATA_FRAME_TYPE
-from xcube.core.store import DATASET_TYPE
-from xcube.core.store import DataDescriptor
-from xcube.core.store import DataOpener
-from xcube.core.store import DataStore
-from xcube.core.store import DataStoreError
-from xcube.core.store import DataType
-from xcube.core.store import DatasetDescriptor
-from xcube.core.store import GeoDataFrameDescriptor
-from xcube.core.store import VariableDescriptor
-from xcube.util.jsonschema import JsonArraySchema
-from xcube.util.jsonschema import JsonBooleanSchema
-from xcube.util.jsonschema import JsonDateSchema
-from xcube.util.jsonschema import JsonIntegerSchema
-from xcube.util.jsonschema import JsonNumberSchema
-from xcube.util.jsonschema import JsonObjectSchema
-from xcube.util.jsonschema import JsonStringSchema
+from xcube.core.store import (DATASET_TYPE, GEO_DATA_FRAME_TYPE,
+                              DataDescriptor, DataOpener, DatasetDescriptor,
+                              DataStore, DataStoreError, DataType,
+                              GeoDataFrameDescriptor, VariableDescriptor)
+from xcube.util.jsonschema import (JsonArraySchema, JsonBooleanSchema,
+                                   JsonDateSchema, JsonIntegerSchema,
+                                   JsonNumberSchema, JsonObjectSchema,
+                                   JsonStringSchema)
 
 from .cciodp import CciOdp
 from .chunkstore import CciChunkStore
-from .constants import CCI_ODD_URL
-from .constants import CCI_ODD_TEST_URL
-from .constants import OTC_ODD_URL
-from .constants import DATAFRAME_OPENER_ID
-from .constants import DATASET_OPENER_ID
-from .constants import DEFAULT_NUM_RETRIES
-from .constants import DEFAULT_RETRY_BACKOFF_BASE
-from .constants import DEFAULT_RETRY_BACKOFF_MAX
-from .constants import ODP_LOCATION
-from .constants import OPENSEARCH_CEDA_URL
-from .constants import OPENSEARCH_CEDA_TEST_URL
-from .constants import OPENSEARCH_OTC_URL
-from .constants import VECTORDATACUBE_OPENER_ID
+from .constants import (CCI_ODD_TEST_URL, CCI_ODD_URL, DATAFRAME_OPENER_ID,
+                        DATASET_OPENER_ID, DATASET_STATES_FILE,
+                        DATATREE_OPENER_ID, DATATREE_STATES_FILE,
+                        DEFAULT_NUM_RETRIES, DEFAULT_RETRY_BACKOFF_BASE,
+                        DEFAULT_RETRY_BACKOFF_MAX, GEODATAFRAME_STATES_FILE,
+                        ODP_LOCATION, OPENSEARCH_CEDA_TEST_URL,
+                        OPENSEARCH_CEDA_URL, OPENSEARCH_OTC_URL, OTC_ODD_URL,
+                        VECTORDATACUBE_OPENER_ID, VECTORDATACUBE_STATES_FILE)
 from .dataframeaccess import DataFrameAccessor
-from .normalize import normalize_coord_names
-from .normalize import normalize_dims_description
-from .normalize import normalize_variable_dims_description
-from .normalize import normalize_var_infos
-from .vdcaccess import VectorDataCubeDescriptor
-from .vdcaccess import VECTOR_DATA_CUBE_TYPE
+from .dtaccess import (DATATREE_TYPE, DataTreeDescriptor, DataTreeMapping,
+                       LazyDataTree)
+from .normalize import (normalize_coord_names, normalize_dims_description,
+                        normalize_var_infos,
+                        normalize_variable_dims_description)
+from .odpconnector import OdpConnector
+from .vdcaccess import VECTOR_DATA_CUBE_TYPE, VectorDataCubeDescriptor
+
+_DATA_TYPE_TO_FILE_NAME = {
+    DATASET_TYPE: DATASET_STATES_FILE,
+    DATATREE_TYPE: DATATREE_STATES_FILE,
+    GEO_DATA_FRAME_TYPE: GEODATAFRAME_STATES_FILE,
+    VECTOR_DATA_CUBE_TYPE: VECTORDATACUBE_STATES_FILE
+}
+
 
 _RELEVANT_METADATA_ATTRIBUTES = \
     ['ecv', 'institute', 'processing_level', 'product_string',
@@ -117,167 +112,108 @@ def get_endpoint_urls() -> (str, str):
 class CciOdpDataOpener(DataOpener):
 
     # noinspection PyShadowingBuiltins
-    def __init__(self,
-                 cci_cdc: CciOdp,
-                 id: str,
-                 data_type: DataType,
-                 normalize_data: bool = True):
-        self._cci_cdc = cci_cdc
+    def __init__(
+            self,
+            id: str,
+            normalize_data: bool = True,
+            drs_ids: List[str] = None,
+            **cdc_params
+    ):
         self._id = id
-        self._data_type = data_type
         self._normalize_data = normalize_data
+        filename = _DATA_TYPE_TO_FILE_NAME.get(self.get_data_types()[0])
+        states_file = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            f'data/{filename}'
+        )
+        with open(states_file, 'r') as fp:
+            self._states = json.load(fp)
+        self._dataset_names = drs_ids
+        if not drs_ids:
+            drs_ids = []
+            self._dataset_names = []
+            for drs_id, attrs in self._states.items():
+                self._dataset_names.append(drs_id)
+                places = attrs.get("places")
+                drs_ids.append(drs_id)
+                if places is None:
+                    continue
+                var_names = attrs.get("var_names")
+                pattern = attrs.get("pattern")
+                for place in places:
+                    if var_names is None:
+                        drs_ids.append(f"{drs_id}~{place}")
+                        continue
+                    for var_name in var_names:
+                        if pattern is None:
+                            raise ValueError("Var names are provided, but no pattern.")
+                        var_place_key = pattern.format(var_name=var_name, place=place)
+                        drs_ids.append(f"{drs_id}~{var_place_key}")
+        self._cci_odp = CciOdp(
+            **cdc_params,
+            data_type=self._get_cci_odp_datatype(),
+            drs_ids=drs_ids
+        )
+        if len(drs_ids) != len(self._dataset_names):
+            self._search_cci_odp = CciOdp(
+                **cdc_params,
+                data_type=self._get_cci_odp_datatype(),
+                drs_ids=self._dataset_names
+            )
+        else:
+            self._search_cci_odp = self._cci_odp
 
     @property
     def dataset_names(self) -> List[str]:
-        return self._cci_cdc.dataset_names
+        return self._dataset_names
 
     @classmethod
     @abstractmethod
     def get_data_types(cls) -> Tuple[DataType, ...]:
+        pass
+
+    @classmethod
+    @abstractmethod
+    def _get_cci_odp_datatype(cls) -> str:
         pass
 
     def has_data(self, data_id: str) -> bool:
         return data_id in self.dataset_names
 
-    def _describe_data(self, data_ids: List[str]) -> List[DatasetDescriptor]:
-        ds_metadata_list = self._cci_cdc.get_datasets_metadata(data_ids)
-        data_descriptors = []
-        for i, ds_metadata in enumerate(ds_metadata_list):
-            data_descriptors.append(self._get_data_descriptor_from_metadata(
-                data_ids[i], ds_metadata)
-            )
-        return data_descriptors
+    def get_states(self, data_id: str):
+        return self._states.get(data_id)
 
-    def describe_data(self, data_id: str) -> DataDescriptor:
-        self._assert_valid_data_id(data_id)
-        try:
-            ds_metadata = self._cci_cdc.get_dataset_metadata(data_id)
-            return self._get_data_descriptor_from_metadata(data_id, ds_metadata)
-        except ValueError:
-            raise DataStoreError(
-                f'Cannot describe metadata. '
-                f'"{data_id}" does not seem to be a valid identifier.'
-            )
+    def describe_data(self, data_ids: List[str]) -> List[DatasetDescriptor]:
+        data_descriptors = []
+        for data_id in data_ids:
+            self._assert_valid_data_id(data_id)
+            places = self._states.get(data_id, {}).get("places")
+            var_names = self._states.get(data_id, {}).get("var_names")
+            pattern = self._states.get(data_id, {}).get("pattern")
+            if places is None:
+                metadata = [self._cci_odp.get_dataset_metadata(data_id)]
+            elif var_names is None:
+                metadata = [self._cci_odp.get_dataset_metadata(f"{data_id}~{places[0]}")]
+            else:
+                sub_specifiers = [
+                    pattern.format(place=places[0], var_name=var_name) for var_name in var_names
+                ]
+                sub_data_ids = [f"{data_id}~{sub_specifier}" for sub_specifier in sub_specifiers]
+                metadata = self._cci_odp.get_datasets_metadata(sub_data_ids)
+            data_descriptors.append(self._get_data_descriptor_from_metadata(data_id, metadata))
+        return data_descriptors
 
     # noinspection PyArgumentList
     @abstractmethod
     def _get_data_descriptor_from_metadata(self,
-                                           data_id: str,
-                                           metadata: dict) -> DatasetDescriptor:
+                             data_id: str,
+                             metadata: List[dict]
+                             ) -> DatasetDescriptor:
         pass
 
-    def _get_variable_descriptors(self,
-                                  var_names: List[str],
-                                  var_infos: dict,
-                                  time_dim_name: str,
-                                  normalize_dims: bool = True) \
-            -> Dict[str, VariableDescriptor]:
-        var_descriptors = {}
-        for var_name in var_names:
-            if var_name in var_infos:
-                var_info = var_infos[var_name]
-                var_dtype = var_info['data_type']
-                var_dims = self._normalize_var_dims(
-                    var_info['dimensions'], time_dim_name) \
-                    if normalize_dims else var_info['dimensions']
-                var_descriptors[var_name] = VariableDescriptor(
-                    var_name, var_dtype, var_dims, attrs=var_info
-                )
-            else:
-                var_descriptors[var_name] = VariableDescriptor(
-                    var_name, '', ''
-                )
-        return var_descriptors
-
-    @staticmethod
-    def _remove_irrelevant_metadata_attributes(attrs: dict):
-        to_remove_list = []
-        for attribute in attrs:
-            if attribute not in _RELEVANT_METADATA_ATTRIBUTES:
-                to_remove_list.append(attribute)
-        for to_remove in to_remove_list:
-            attrs.pop(to_remove)
-
-    def search_data(self, **search_params) -> Iterator[DatasetDescriptor]:
-        search_result = self._cci_cdc.search(**search_params)
-        data_descriptors = self._describe_data(search_result)
-        return iter(data_descriptors)
-
-    def get_open_data_params_schema(
-            self, data_id: str = None
-    ) -> JsonObjectSchema:
-        if data_id is None:
-            return self._get_open_data_params_schema()
-        self._assert_valid_data_id(data_id)
-        dsd = self.describe_data(data_id)
-        return self._get_open_data_params_schema(dsd)
-
-    @abstractmethod
-    def _get_open_data_params_schema(
-            self,
-            dsd: DatasetDescriptor = None
-    ) -> JsonObjectSchema:
-        pass
-
-    @abstractmethod
-    def open_data(self, data_id: str, **open_params) -> Any:
-        pass
-
-    def _assert_valid_data_id(self, data_id: str):
-        if data_id not in self.dataset_names:
-            raise DataStoreError(f'Cannot describe metadata of '
-                                 f'data resource "{data_id}", '
-                                 f'as it cannot be accessed by '
-                                 f'data accessor "{self._id}".')
-
-    def _normalize_dataset(self, ds: xr.Dataset) -> xr.Dataset:
-        if self._normalize_data:
-            return normalize_dataset(ds)
-        return ds
-
-    def _normalize_dims(self, dims: dict) -> dict:
-        if self._normalize_data:
-            return normalize_dims_description(dims)
-        return dims.copy()
-
-    def _normalize_var_dims(self, var_dims: List[str], time_dim_name: str) \
-            -> Optional[List[str]]:
-        if self._normalize_data:
-            return normalize_variable_dims_description(var_dims)
-        new_var_dims = var_dims.copy()
-        if time_dim_name not in new_var_dims and len(new_var_dims) > 0:
-            new_var_dims.insert(0, time_dim_name)
-        return new_var_dims
-
-    def _normalize_var_infos(self, var_infos: Dict[str, Dict[str, Any]]) -> \
-            Dict[str, Dict[str, Any]]:
-        if self._normalize_data:
-            return normalize_var_infos(var_infos.copy())
-        return var_infos
-
-    def _normalize_coord_names(self, coord_names: List[str]):
-        if self._normalize_data:
-            return normalize_coord_names(coord_names.copy())
-        return coord_names
-
-
-class CciOdpDatasetOpener(CciOdpDataOpener):
-
-    def __init__(self, normalize_data: bool = True, **cdc_params):
-        super().__init__(
-            CciOdp(**cdc_params, data_type='dataset'),
-            DATASET_OPENER_ID,
-            DATASET_TYPE,
-            normalize_data=normalize_data,
-        )
-
-    @classmethod
-    def get_data_types(cls) -> Tuple[DataType, ...]:
-        return DATASET_TYPE,
-
-    def _get_data_descriptor_from_metadata(self,
-                                           data_id: str,
-                                           metadata: dict) -> DatasetDescriptor:
+    def _get_dataset_descriptor_from_metadata(self,
+                             data_id: str,
+                             metadata: dict) -> DatasetDescriptor:
         ds_metadata = metadata.copy()
         is_climatology = \
             ds_metadata.get('time_frequency', '') == 'climatology' and \
@@ -292,7 +228,7 @@ class CciOdpDatasetOpener(CciOdpDataOpener):
             bounds_dim_name = 'bnds'
             dims['bnds'] = 2
         temporal_resolution = get_temporal_resolution_from_id(data_id)
-        dataset_info = self._cci_cdc.get_dataset_info(data_id, ds_metadata)
+        dataset_info = self._cci_odp.get_dataset_info(data_id, ds_metadata)
         spatial_resolution = dataset_info['y_res']
         if spatial_resolution <= 0:
             spatial_resolution = None
@@ -369,7 +305,7 @@ class CciOdpDatasetOpener(CciOdpDataOpener):
         attrs.update(ds_metadata)
         self._remove_irrelevant_metadata_attributes(attrs)
         descriptor = DatasetDescriptor(data_id,
-                                       data_type=self._data_type,
+                                       data_type=DATASET_TYPE,
                                        crs=crs,
                                        dims=dims,
                                        coords=coord_descriptors,
@@ -383,6 +319,129 @@ class CciOdpDatasetOpener(CciOdpDataOpener):
         descriptor.open_params_schema = data_schema
         return descriptor
 
+    def _get_variable_descriptors(self,
+                                  var_names: List[str],
+                                  var_infos: dict,
+                                  time_dim_name: str,
+                                  normalize_dims: bool = True) \
+            -> Dict[str, VariableDescriptor]:
+        var_descriptors = {}
+        for var_name in var_names:
+            if var_name in var_infos:
+                var_info = var_infos[var_name]
+                var_dtype = var_info['data_type']
+                var_dims = self._normalize_var_dims(
+                    var_info['dimensions'], time_dim_name) \
+                    if normalize_dims else var_info['dimensions']
+                var_descriptors[var_name] = VariableDescriptor(
+                    var_name, var_dtype, var_dims, attrs=var_info
+                )
+            else:
+                var_descriptors[var_name] = VariableDescriptor(
+                    var_name, '', ''
+                )
+        return var_descriptors
+
+    @staticmethod
+    def _remove_irrelevant_metadata_attributes(attrs: dict):
+        to_remove_list = []
+        for attribute in attrs:
+            if attribute not in _RELEVANT_METADATA_ATTRIBUTES:
+                to_remove_list.append(attribute)
+        for to_remove in to_remove_list:
+            attrs.pop(to_remove)
+
+    def search_data(self, **search_params) -> Iterator[DatasetDescriptor]:
+        search_result = self._search_cci_odp.search(**search_params)
+        data_descriptors = self.describe_data(search_result)
+        return iter(data_descriptors)
+
+    def get_open_data_params_schema(
+            self, data_id: str = None
+    ) -> JsonObjectSchema:
+        if data_id is None:
+            return self._get_open_data_params_schema()
+        self._assert_valid_data_id(data_id)
+        dsd = self.describe_data([data_id])[0]
+        return self._get_open_data_params_schema(dsd)
+
+    @abstractmethod
+    def _get_open_data_params_schema(
+            self,
+            dsd: DatasetDescriptor = None
+    ) -> JsonObjectSchema:
+        pass
+
+    @abstractmethod
+    def open_data(self, data_id: str, **open_params) -> Any:
+        pass
+
+    def _assert_valid_data_id(self, data_id: str):
+        if data_id not in self.dataset_names:
+            raise DataStoreError(f'Cannot describe metadata of '
+                                 f'data resource "{data_id}", '
+                                 f'as it cannot be accessed by '
+                                 f'data accessor "{self._id}".')
+
+    def _normalize_dataset(self, ds: xr.Dataset) -> xr.Dataset:
+        if self._normalize_data:
+            return normalize_dataset(ds)
+        return ds
+
+    def _normalize_dims(self, dims: dict) -> dict:
+        if self._normalize_data:
+            return normalize_dims_description(dims)
+        return dims.copy()
+
+    def _normalize_var_dims(self, var_dims: List[str], time_dim_name: str) \
+            -> Optional[List[str]]:
+        if self._normalize_data:
+            return normalize_variable_dims_description(var_dims)
+        new_var_dims = var_dims.copy()
+        if time_dim_name not in new_var_dims and len(new_var_dims) > 0:
+            new_var_dims.insert(0, time_dim_name)
+        return new_var_dims
+
+    def _normalize_var_infos(self, var_infos: Dict[str, Dict[str, Any]]) -> \
+            Dict[str, Dict[str, Any]]:
+        if self._normalize_data:
+            return normalize_var_infos(var_infos.copy())
+        return var_infos
+
+    def _normalize_coord_names(self, coord_names: List[str]):
+        if self._normalize_data:
+            return normalize_coord_names(coord_names.copy())
+        return coord_names
+
+
+class CciOdpDatasetOpener(CciOdpDataOpener):
+
+    def __init__(
+            self,
+            normalize_data: bool = True,
+            drs_ids: List[str] = None,
+            **cdc_params
+    ):
+        super().__init__(
+            DATASET_OPENER_ID,
+            normalize_data=normalize_data,
+            drs_ids=drs_ids,
+            **cdc_params
+        )
+
+    @classmethod
+    def get_data_types(cls) -> Tuple[DataType, ...]:
+        return DATASET_TYPE,
+
+    def _get_cci_odp_datatype(cls) -> str:
+        return DATASET_TYPE.alias
+
+    def _get_data_descriptor_from_metadata(self,
+                             data_id: str,
+                             metadata: list [dict]) -> DatasetDescriptor:
+        # we expect there to be only one metadata list
+        return self._get_dataset_descriptor_from_metadata(data_id, metadata[0])
+
     def open_data(self, data_id: str, **open_params) -> Any:
         cci_schema = self.get_open_data_params_schema(data_id)
         cci_schema.validate_instance(open_params)
@@ -391,7 +450,7 @@ class CciOdpDatasetOpener(CciOdpDataOpener):
                           'time_range',
                           'bbox')
         )
-        chunk_store = CciChunkStore(self._cci_cdc, data_id, cube_kwargs)
+        chunk_store = CciChunkStore(self._cci_odp, data_id, cube_kwargs)
         ds = xr.open_zarr(chunk_store, consolidated=False)
         ds.zarr_store.set(chunk_store)
         ds = self._normalize_dataset(ds)
@@ -443,21 +502,26 @@ class CciOdpDataFrameOpener(CciOdpDataOpener):
 
     def __init__(self, **cdc_params):
         super().__init__(
-            CciOdp(**cdc_params, data_type='geodataframe'),
             DATAFRAME_OPENER_ID,
-            GEO_DATA_FRAME_TYPE
+            **cdc_params
         )
 
     @classmethod
     def get_data_types(cls) -> Tuple[DataType, ...]:
         return GEO_DATA_FRAME_TYPE,
 
+    def _get_cci_odp_datatype(cls) -> str:
+        return GEO_DATA_FRAME_TYPE.alias
+
     def _get_data_descriptor_from_metadata(self,
-                                           data_id: str,
-                                           metadata: dict) -> GeoDataFrameDescriptor:
-        ds_metadata = metadata.copy()
-        temporal_resolution = get_temporal_resolution_from_id(data_id)
-        dataset_info = self._cci_cdc.get_dataset_info(data_id, ds_metadata)
+                             data_id: str,
+                             metadata: List[dict]) -> GeoDataFrameDescriptor:
+        # we expect there to be only one metadata list
+        ds_metadata = metadata[0].copy()
+        specifiers = self._states.get(data_id, {}).get('places')
+        m_data_id = f"{data_id}~{specifiers[0]}" if specifiers is not None else data_id
+        temporal_resolution = get_temporal_resolution_from_id(m_data_id)
+        dataset_info = self._cci_odp.get_dataset_info(m_data_id, ds_metadata)
         bbox = dataset_info['bbox']
         crs = dataset_info['crs']
         temporal_coverage = (
@@ -468,7 +532,7 @@ class CciOdpDataFrameOpener(CciOdpDataOpener):
         )
         feature_schema = self._get_feature_schema(ds_metadata)
         descriptor = GeoDataFrameDescriptor(data_id,
-                                            data_type=self._data_type,
+                                            data_type=GEO_DATA_FRAME_TYPE,
                                             crs=crs,
                                             bbox=bbox,
                                             time_range=temporal_coverage,
@@ -479,7 +543,7 @@ class CciOdpDataFrameOpener(CciOdpDataOpener):
         return descriptor
 
     def get_title(self, data_id: str) -> str:
-        ds_metadata = self._cci_cdc.get_dataset_metadata(data_id)
+        ds_metadata = self._cci_odp.get_dataset_metadata(data_id)
         return ds_metadata.get("title", data_id)
 
     @staticmethod
@@ -514,7 +578,10 @@ class CciOdpDataFrameOpener(CciOdpDataOpener):
                           'time_range',
                           'bbox')
         )
-        data_frame_accessor = DataFrameAccessor(self._cci_cdc, data_id, frame_kwargs)
+        specifiers = self._states.get(data_id).get("places", [])
+        place_names = open_params.get("place_names", specifiers)
+        specifier_mappings = {k: v for k, v in enumerate(specifiers) if v in place_names}
+        data_frame_accessor = DataFrameAccessor(self._cci_odp, data_id, frame_kwargs, specifier_mappings)
         return data_frame_accessor.get_geodataframe()
 
     def _get_open_data_params_schema(
@@ -556,6 +623,12 @@ class CciOdpDataFrameOpener(CciOdpDataOpener):
             except pyproj.exceptions.CRSError:
                 # do not set bbox then
                 pass
+        if gfd:
+            specifiers = self._states.get(gfd.data_id).get("places")
+            if specifiers:
+                geodataframe_params["place_names"] = JsonArraySchema(
+                    items=JsonStringSchema(enum=specifiers)
+                )
         cci_schema = JsonObjectSchema(
             properties=dict(**geodataframe_params),
             required=[
@@ -569,23 +642,26 @@ class CciOdpVectorDataCubeOpener(CciOdpDataOpener):
 
     def __init__(self, normalize_data: bool = True, **cdc_params):
         super().__init__(
-            CciOdp(**cdc_params, data_type='vectordatacube'),
             VECTORDATACUBE_OPENER_ID,
-            VECTOR_DATA_CUBE_TYPE,
             normalize_data=normalize_data,
+            **cdc_params
         )
 
     @classmethod
     def get_data_types(cls) -> Tuple[DataType, ...]:
         return VECTOR_DATA_CUBE_TYPE,
 
+    def _get_cci_odp_datatype(cls) -> str:
+        return VECTOR_DATA_CUBE_TYPE.alias
+
     def _get_data_descriptor_from_metadata(
-            self, data_id: str, metadata: dict
+            self, data_id: str, metadata: List[dict]
     ) -> VectorDataCubeDescriptor:
-        ds_metadata = metadata.copy()
+        # we expect there to be only one metadata list
+        ds_metadata = metadata[0].copy()
         dims = self._normalize_dims(ds_metadata.get('dimensions', {}))
         temporal_resolution = get_temporal_resolution_from_id(data_id)
-        dataset_info = self._cci_cdc.get_dataset_info(data_id, ds_metadata)
+        dataset_info = self._cci_odp.get_dataset_info(data_id, ds_metadata)
         bbox = dataset_info['bbox']
         crs = dataset_info['crs']
         temporal_coverage = (
@@ -622,7 +698,7 @@ class CciOdpVectorDataCubeOpener(CciOdpDataOpener):
         attrs.update(ds_metadata)
         self._remove_irrelevant_metadata_attributes(attrs)
         descriptor = VectorDataCubeDescriptor(data_id,
-                                              data_type=self._data_type,
+                                              data_type=VECTOR_DATA_CUBE_TYPE,
                                               crs=crs,
                                               dims=dims,
                                               coords=coord_descriptors,
@@ -685,7 +761,7 @@ class CciOdpVectorDataCubeOpener(CciOdpDataOpener):
                           'time_range',
                           'bbox')
         )
-        chunk_store = CciChunkStore(self._cci_cdc, data_id, cube_kwargs)
+        chunk_store = CciChunkStore(self._cci_odp, data_id, cube_kwargs)
         ds = xr.open_zarr(chunk_store, consolidated=False)
 
         def _convert_to_point(chunk):
@@ -697,6 +773,147 @@ class CciOdpVectorDataCubeOpener(CciOdpDataOpener):
         ds = ds.set_xindex("geometry", xvec.GeometryIndex)
         ds.zarr_store.set(chunk_store)
         return ds
+
+
+class CciOdpDataTreeOpener(CciOdpDataOpener):
+
+    def __init__(self, normalize_data: bool = True, drs_ids: List[str] = None, **cdc_params):
+
+        super().__init__(
+            DATATREE_OPENER_ID,
+            normalize_data=normalize_data,
+            **cdc_params
+        )
+
+    @classmethod
+    def get_data_types(cls) -> Tuple[DataType, ...]:
+        return DATATREE_TYPE,
+
+    @classmethod
+    def _get_cci_odp_datatype(cls) -> str:
+        return DATASET_TYPE.alias
+
+    def _get_data_descriptor_from_metadata(self, data_id: str, metadata: List[dict]) -> DataTreeDescriptor:
+        places = self._states.get(data_id, {}).get('places')
+        var_names = self._states.get(data_id, {}).get('var_names')
+        if var_names is None:
+            dataset_id = f"{data_id}~{places[0]}"
+            ds_descriptor = self._get_dataset_descriptor_from_metadata(dataset_id, metadata[0])
+            ds_dict = ds_descriptor.to_dict()
+        else:
+            pattern = self._states.get(data_id, {}).get("pattern")
+            ds_dict = None
+            for i, var_name in enumerate(var_names):
+                specifier = pattern.format(place=places[0], var_name=var_name)
+                sub_data_id = f"{data_id}~{specifier}"
+                sub_ds_descriptor = self._get_dataset_descriptor_from_metadata(sub_data_id, metadata[i])
+                sub_ds_dict = sub_ds_descriptor.to_dict()
+                if ds_dict is None:
+                    ds_dict = sub_ds_dict
+                else:
+                    ds_dict.get("data_vars").update(sub_ds_dict.get("data_vars"))
+        ds_dict.pop("bbox")
+        ds_dict.pop("open_params_schema")
+        ds_descriptor = DatasetDescriptor.from_dict(ds_dict)
+
+        inner_descriptors = {}
+        for place in places:
+            ds_descriptor.data_id = place
+            inner_desc = DataTreeDescriptor(
+                data_id=place,
+                data_type=DATATREE_TYPE,
+                time_range=ds_descriptor.time_range,
+                time_period=ds_descriptor.time_period,
+                spatial_res=ds_descriptor.spatial_res,
+                dims=ds_descriptor.dims,
+                coords=ds_descriptor.coords,
+                data_vars=ds_descriptor.data_vars,
+                dataset=ds_descriptor,
+                attrs=ds_descriptor.attrs,
+            )
+            inner_descriptors[place] = inner_desc
+        descriptor = DataTreeDescriptor(
+                data_id=data_id,
+                data_type=DATATREE_TYPE,
+                time_range=ds_descriptor.time_range,
+                time_period=ds_descriptor.time_period,
+                spatial_res=ds_descriptor.spatial_res,
+                dims=ds_descriptor.dims,
+                coords=ds_descriptor.coords,
+                data_vars=ds_descriptor.data_vars,
+                data_nodes=inner_descriptors,
+                attrs=ds_descriptor.attrs,
+            )
+        data_schema = self._get_open_data_params_schema(descriptor)
+        descriptor.open_params_schema = data_schema
+        return descriptor
+
+    def _get_open_data_params_schema(self, descriptor: DataTreeDescriptor = None) -> JsonObjectSchema:
+        # noinspection PyUnresolvedReferences
+        dataset_params = dict(
+            normalize_data=JsonBooleanSchema(default=True),
+            variable_names=JsonArraySchema(items=JsonStringSchema(
+                enum=descriptor.data_vars.keys() if descriptor and descriptor.data_vars else None))
+        )
+        if descriptor:
+            try:
+                if descriptor.data_nodes:
+                    dataset_params['place_names'] = (
+                        JsonArraySchema(items=JsonStringSchema(enum=descriptor.data_nodes.keys())))
+            except AttributeError:
+                pass
+        if descriptor:
+            min_date = descriptor.time_range[0] if descriptor.time_range else None
+            max_date = descriptor.time_range[1] if descriptor.time_range else None
+            if min_date or max_date:
+                dataset_params['time_range'] = \
+                    JsonDateSchema.new_range(min_date, max_date)
+        else:
+            dataset_params['time_range'] = JsonDateSchema.new_range(None, None)
+        cci_schema = JsonObjectSchema(
+            properties=dict(**dataset_params),
+            required=[
+            ],
+            additional_properties=False
+        )
+        return cci_schema
+
+    def open_data(self, data_id: str, **open_params) -> Any:
+        cci_schema = self.get_open_data_params_schema(data_id)
+        cci_schema.validate_instance(open_params)
+        cci_kwargs, open_params = cci_schema.process_kwargs_subset(
+            open_params, ('variable_names', 'time_range')
+        )
+        specifiers = open_params.get(
+            "place_names", self._states.get(data_id).get("places", [])
+        )
+        dataset_var_names = self._states.get(data_id).get("var_names", [])
+        var_names = dataset_var_names
+        if len(dataset_var_names) > 0 and "variable_names" in cci_kwargs:
+            var_names = []
+            request_variable_names = cci_kwargs.pop("variable_names")
+            for variable_name in request_variable_names:
+                dataset_var_found = False
+                for dataset_var_name in dataset_var_names:
+                    if variable_name in dataset_var_name:
+                        var_names.append(dataset_var_name)
+                        dataset_var_found = True
+                        break
+                if not dataset_var_found:
+                    raise ValueError(f"Could not determine variable '{variable_name}'.")
+        datatree = LazyDataTree(
+            name=data_id,
+            children=DataTreeMapping(
+                base_id=data_id,
+                specifiers=specifiers,
+                cci_odp=self._cci_odp,
+                normalize_data=self._normalize_data,
+                var_names=var_names,
+                pattern=self._states.get(data_id).get("pattern"),
+                **cci_kwargs
+            )
+        )
+        return datatree
 
 
 class CciOdpDataStore(DataStore):
@@ -715,27 +932,30 @@ class CciOdpDataStore(DataStore):
                            'retry_backoff_max', 'retry_backoff_base',
                            'user_agent')
         )
+
+        dataframe_opener = CciOdpDataFrameOpener(**cdc_kwargs)
+        vectordatacube_opener = CciOdpVectorDataCubeOpener(**cdc_kwargs)
+        datatree_opener = CciOdpDataTreeOpener(**cdc_kwargs)
+
+        user_agent = cdc_kwargs.get("user_agent")
+        endpoint_description_url = cdc_kwargs.get("endpoint_description_url")
+        odp_connector = OdpConnector(user_agent, endpoint_description_url)
+        drs_ids = odp_connector.get_drs_ids()
+        drs_ids = [x for x in drs_ids if x not in set(dataframe_opener.dataset_names)]
+        drs_ids = [x for x in drs_ids if x not in set(vectordatacube_opener.dataset_names)]
+        drs_ids = [x for x in drs_ids if x not in set(datatree_opener.dataset_names)]
         dataset_opener = CciOdpDatasetOpener(
             normalize_data=normalize_data,
+            drs_ids=drs_ids,
             **cdc_kwargs
         )
-        dataframe_opener = CciOdpDataFrameOpener(
-            **cdc_kwargs
-        )
-        vectordatacube_opener = CciOdpVectorDataCubeOpener(
-            **cdc_kwargs
-        )
+
         self._openers = {
             DATASET_OPENER_ID: dataset_opener,
             DATAFRAME_OPENER_ID: dataframe_opener,
-            VECTORDATACUBE_OPENER_ID: vectordatacube_opener
+            VECTORDATACUBE_OPENER_ID: vectordatacube_opener,
+            DATATREE_OPENER_ID: datatree_opener
         }
-        dataset_states_file = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)),
-            'data/dataset_states.json'
-        )
-        with open(dataset_states_file, 'r') as fp:
-            self._dataset_states = json.load(fp)
 
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
@@ -766,7 +986,7 @@ class CciOdpDataStore(DataStore):
     @classmethod
     def get_data_types(cls) -> Tuple[str, ...]:
         return (DATASET_TYPE.alias, GEO_DATA_FRAME_TYPE.alias,
-                VECTOR_DATA_CUBE_TYPE.alias)
+                VECTOR_DATA_CUBE_TYPE.alias, DATATREE_TYPE.alias)
 
     def get_data_types_for_data(self, data_id: str) -> Tuple[str, ...]:
         if self.has_data(data_id, data_type=DATASET_TYPE.alias):
@@ -775,6 +995,8 @@ class CciOdpDataStore(DataStore):
             return GEO_DATA_FRAME_TYPE.alias,
         if self.has_data(data_id, data_type=VECTOR_DATA_CUBE_TYPE.alias):
             return VECTOR_DATA_CUBE_TYPE.alias,
+        if self.has_data(data_id, data_type=DATATREE_TYPE.alias):
+            return DATATREE_TYPE.alias,
         raise DataStoreError(
             f'Data resource {data_id!r} does not exist in store'
         )
@@ -803,6 +1025,8 @@ class CciOdpDataStore(DataStore):
                 return [self._openers[DATASET_OPENER_ID]]
             if GEO_DATA_FRAME_TYPE.is_super_type_of(data_type):
                 return [self._openers[DATAFRAME_OPENER_ID]]
+            if data_type == DATATREE_TYPE.alias:
+                return [self._openers[DATATREE_OPENER_ID]]
         return list(self._openers.values())
 
     def get_data_ids(self,
@@ -810,22 +1034,21 @@ class CciOdpDataStore(DataStore):
                      include_attrs: Container[str] | bool = False,) -> \
             Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
         openers = self._get_openers(data_type=data_type)
-        data_ids = []
         for opener in openers:
-            data_ids.extend(opener.dataset_names)
-        for data_id in data_ids:
-            if include_attrs is None or not include_attrs:
-                yield data_id
-            else:
-                attrs = {}
-                if isinstance(include_attrs, Container):
-                    for attr in include_attrs:
-                        value = self._dataset_states.get(data_id, {}).get(attr)
-                        if value is not None:
-                            attrs[attr] = value
-                elif include_attrs:
-                    attrs = self._dataset_states.get(data_id, {})
-                yield data_id, attrs
+            for data_id in opener.dataset_names:
+                if include_attrs is None or not include_attrs:
+                    yield data_id
+                else:
+                    states = opener.get_states(data_id)
+                    attrs = {}
+                    if isinstance(include_attrs, Container):
+                        for attr in include_attrs:
+                            value = states.get(attr)
+                            if value is not None:
+                                attrs[attr] = value
+                    elif include_attrs:
+                        attrs = states.get(data_id, {})
+                    yield data_id, attrs
 
     def has_data(self, data_id: str, data_type: str = None) -> bool:
         openers = self._get_openers(data_type=data_type)
@@ -840,7 +1063,7 @@ class CciOdpDataStore(DataStore):
         openers = self._get_openers(data_type=data_type)
         for opener in openers:
             if opener.has_data(data_id):
-                return opener.describe_data(data_id)
+                return opener.describe_data([data_id])[0]
         raise ValueError(f"No opener provides data with id {data_id}")
 
     @classmethod
@@ -851,9 +1074,8 @@ class CciOdpDataStore(DataStore):
         if data_type is not None:
             data_ids = CciOdp(data_type=data_type).dataset_names
         else:
-            data_ids = CciOdp(data_type=DATASET_TYPE.alias).dataset_names + \
-                       CciOdp(data_type=GEO_DATA_FRAME_TYPE.alias).dataset_names + \
-                       CciOdp(data_type=VECTOR_DATA_CUBE_TYPE.alias).dataset_names
+            odp_connector = OdpConnector("")
+            data_ids = odp_connector.get_drs_ids()
         ecvs = set([data_id.split('.')[1] for data_id in data_ids])
         frequencies = set(
             [data_id.split('.')[2].replace('-days', ' days').
@@ -955,6 +1177,7 @@ class CciOdpDataStore(DataStore):
     def _is_valid_data_type(cls, data_type: str) -> bool:
         return data_type is None \
                or data_type == "vectordatacube" \
+               or data_type == "datatree" \
                or DATASET_TYPE.is_super_type_of(data_type) \
                or GEO_DATA_FRAME_TYPE.is_super_type_of(data_type)
 
@@ -962,13 +1185,13 @@ class CciOdpDataStore(DataStore):
     def _assert_valid_data_type(cls, data_type):
         if not cls._is_valid_data_type(data_type):
             raise DataStoreError(
-                f'Data type must be {DATASET_TYPE!r}, {GEO_DATA_FRAME_TYPE!r}, '
+                f'Data type must be {DATASET_TYPE!r}, {GEO_DATA_FRAME_TYPE!r}, {DATATREE_TYPE!r}, '
                 f'or {VECTOR_DATA_CUBE_TYPE!r}, but got {data_type!r}')
 
     def _assert_valid_opener_id(self, opener_id):
         if opener_id is not None and opener_id not in list(self._openers.keys()):
             raise DataStoreError(
-                f'Data opener identifier must be {DATASET_OPENER_ID!r}, '
+                f'Data opener identifier must be {DATASET_OPENER_ID!r}, {DATATREE_TYPE!r}, '
                 f'{DATAFRAME_OPENER_ID!r}, or {VECTORDATACUBE_OPENER_ID!r},'
                 f'but got {opener_id!r}'
             )

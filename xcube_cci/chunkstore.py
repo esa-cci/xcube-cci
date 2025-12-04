@@ -24,23 +24,20 @@ import copy
 import itertools
 import json
 import math
-import numcodecs
 import time
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta, abstractmethod
 from collections.abc import MutableMapping
-from numcodecs import Blosc
-from typing import Iterator, Any, List, Dict, Tuple, Callable, Iterable, \
-    KeysView, Mapping
+from typing import (Any, Callable, Dict, Iterable, Iterator, KeysView, List,
+                    Mapping, Tuple)
 
+import numcodecs
 import numpy as np
 import pandas as pd
+from numcodecs import Blosc
 
 from .cciodp import CciOdp
-from .constants import COMMON_COORD_VAR_NAMES
-from .constants import LOG
-from .constants import TIMESTAMP_FORMAT
-from .timerangegetter import extract_time_range_as_strings
-from .timerangegetter import TimeRangeGetter
+from .constants import COMMON_COORD_VAR_NAMES, LOG, TIMESTAMP_FORMAT
+from .timerangegetter import TimeRangeGetter, extract_time_range_as_strings
 
 _MIN_CHUNK_SIZE = 512 * 512
 _MAX_CHUNK_SIZE = 2048 * 2048
@@ -355,7 +352,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
                     var_encoding['dtype'] = 'U'
                 elif len(dimensions) == 1 and sizes[0] < 512 * 512:
                     LOG.info(f"Variable '{variable_name}' is encoded as string. Will convert it to metadata.")
-                    variable = {variable_name: sizes[0]}
+                    variable = {variable_name: sizes}
                     var_data = self.get_variable_data(data_id, variable)
                     global_attrs[variable_name] = \
                         [var.decode('utf-8')
@@ -866,7 +863,7 @@ class CciChunkStore(RemoteChunkStore):
                  trace_store_calls=False):
         self._cci_cdc = cci_cdc
         if dataset_id not in self._cci_cdc.dataset_names:
-            raise ValueError(f'Data ID {dataset_id} not provided by CDC.')
+            raise ValueError(f'Data ID {dataset_id} not provided by CCI Open Data Portal.')
         self._metadata = self._cci_cdc.get_dataset_metadata(dataset_id)
         self._time_range_getter = TimeRangeGetter(self._cci_cdc, self._metadata)
         super().__init__(dataset_id,
@@ -902,7 +899,9 @@ class CciChunkStore(RemoteChunkStore):
         var_names, coord_names = self._cci_cdc.var_and_coord_names(dataset_id)
         coords_dict = {}
         for coord_name in coord_names:
-            coords_dict[coord_name] = self.get_attrs(coord_name).get('size')
+            coords_dict[coord_name] = self.get_attrs(coord_name).get(
+                'shape', [self.get_attrs(coord_name).get('size')]
+            )
         dimension_data = self.get_variable_data(dataset_id, coords_dict)
         if len(dimension_data) == 0:
             # no valid data found in indicated time range,
@@ -911,7 +910,7 @@ class CciChunkStore(RemoteChunkStore):
                                                              coords_dict)
         return dimension_data
 
-    def get_variable_data(self, dataset_id: str, variable_dict: Dict[str, int]):
+    def get_variable_data(self, dataset_id: str, variable_dict: Dict[str, List[int]]):
         try:
             start = self._time_ranges[0][0].strftime(TIMESTAMP_FORMAT)
             end = self._time_ranges[0][1].strftime(TIMESTAMP_FORMAT)
@@ -1015,7 +1014,7 @@ class CciChunkStore(RemoteChunkStore):
             offset = 1
         for i, var_dimension in enumerate(var_dimensions):
             if var_dimension == 'time':
-                dim_indexes.append(slice(None, None, None))
+                dim_indexes.append(slice(0, self._time_chunking))
                 continue
             dim_size = self._dimensions.get(var_dimension, -1)
             if dim_size < 0:

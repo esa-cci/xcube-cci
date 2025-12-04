@@ -19,25 +19,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any
-from typing import Dict
-from typing import Hashable
-from typing import Mapping
-from typing import Optional
-from typing import Tuple
+from typing import Any, Dict, Hashable, Mapping, Optional, Tuple
+
 import dask.array as da
 import numpy as np
 import xarray
-
-from xcube.core.store import DataDescriptor
-from xcube.core.store import DataType
-from xcube.core.store import DataTypeLike
-from xcube.core.store import VariableDescriptor
+from xcube.core.store import (DataDescriptor, DataType, DataTypeLike,
+                              VariableDescriptor)
 from xcube.util.assertions import assert_true
-from xcube.util.jsonschema import JsonIntegerSchema
-from xcube.util.jsonschema import JsonObjectSchema
+from xcube.util.jsonschema import JsonIntegerSchema, JsonObjectSchema
 
 from .constants import LOG
+
 
 class VectorDataCube(xarray.Dataset):
     """A wrapper class around an xarray Dataset to keep it separate."""

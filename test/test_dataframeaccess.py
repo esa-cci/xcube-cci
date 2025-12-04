@@ -1,5 +1,6 @@
-import os
 import unittest
+
+import pandas as pd
 
 from xcube_cci.cciodp import CciOdp
 from xcube_cci.dataframeaccess import DataFrameAccessor
@@ -17,5 +18,8 @@ class DataFrameAccessTest(unittest.TestCase):
         self.assertIsNotNone(gdf)
 
     def test_get_geodataframe_for_dataset(self):
-        gdf = self._dfa._get_features_from_cci_cdc(0)
+        gdf = self._dfa._get_features_from_cci_cdc(
+            GHG_DS_ID,
+            (pd.Timestamp('2003-01-08 00:00:00'), pd.Timestamp('2003-01-08 23:59:59'))
+        )
         self.assertIsNotNone(gdf)

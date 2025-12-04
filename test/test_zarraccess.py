@@ -24,6 +24,7 @@ import unittest
 
 from xcube.core.store import DataStoreError
 from xcube.util.jsonschema import JsonObjectSchema
+
 from xcube_cci.zarraccess import CciZarrDataStore
 
 

@@ -1,8 +1,8 @@
 import unittest
 
 from xcube.util.extension import ExtensionRegistry
-from xcube_cci.dataaccess import CciOdpDataStore
 
+from xcube_cci.dataaccess import CciOdpDataStore
 from xcube_cci.plugin import init_plugin
 
 

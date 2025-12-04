@@ -19,22 +19,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from xcube.constants import EXTENSION_POINT_DATA_OPENERS
-from xcube.constants import EXTENSION_POINT_DATA_STORES
+from xcube.constants import (EXTENSION_POINT_DATA_OPENERS,
+                             EXTENSION_POINT_DATA_STORES)
 from xcube.util import extension
 
-from xcube_cci.constants import CCI_DATA_STORE_ID
-from xcube_cci.constants import CDC_DATASET_OPENER_ID
-from xcube_cci.constants import CDC_SHORT_DATA_STORE_ID
-from xcube_cci.constants import CDC_LONG_DATA_STORE_ID
-from xcube_cci.constants import DATASET_OPENER_ID
-from xcube_cci.constants import DATA_STORE_ID
-from xcube_cci.constants import KC_CCI_DATA_STORE_ID
-from xcube_cci.constants import KC_CDC_DATA_STORE_ID
-from xcube_cci.constants import KC_DATA_STORE_ID
-from xcube_cci.constants import ZARR_CCI_DATA_STORE_ID
-from xcube_cci.constants import ZARR_CDC_DATA_STORE_ID
-from xcube_cci.constants import ZARR_DATA_STORE_ID
+from xcube_cci.constants import (CCI_DATA_STORE_ID, CDC_DATASET_OPENER_ID,
+                                 CDC_LONG_DATA_STORE_ID,
+                                 CDC_SHORT_DATA_STORE_ID, DATA_STORE_ID,
+                                 DATASET_OPENER_ID, KC_CCI_DATA_STORE_ID,
+                                 KC_CDC_DATA_STORE_ID, KC_DATA_STORE_ID,
+                                 ZARR_CCI_DATA_STORE_ID,
+                                 ZARR_CDC_DATA_STORE_ID, ZARR_DATA_STORE_ID)
 
 
 def init_plugin(ext_registry: extension.ExtensionRegistry):

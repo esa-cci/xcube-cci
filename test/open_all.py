@@ -32,7 +32,6 @@ import click
 import xarray as xr
 import zarr.storage
 
-from xcube.core.normalize import cubify_dataset
 from xcube_cci.cciodp import CciOdp
 from xcube_cci.chunkstore import CciChunkStore
 
@@ -46,14 +45,14 @@ DEFAULT_OUTPUT = 'open-report'
               help=f'Output directory. Defaults to "{DEFAULT_OUTPUT}".')
 @click.option('--force',
               is_flag=True,
-              help=f'Force deletion of an existing OUTPUT_DIR.')
+              help='Force deletion of an existing OUTPUT_DIR.')
 @click.option('--cache', 'cache_size',
               metavar='CACHE_SIZE',
-              help=f'Cache size, e.g. "100M" or "2G". If given, an in-memory LRU cache will be used.')
+              help='Cache size, e.g. "100M" or "2G". If given, an in-memory LRU cache will be used.')
 @click.option('--observe',
               is_flag=True,
-              help=f'Dump data requests. '
-                   f'Note, turning this flag on will slightly increase measured durations.')
+              help='Dump data requests. '
+                   'Note, turning this flag on will slightly increase measured durations.')
 @click.argument('dataset_id', nargs=-1, required=False)
 def gen_report(output_dir: str,
                force: bool,
@@ -136,7 +135,7 @@ def gen_report(output_dir: str,
 
     report_type_specifiers(output_dir, ts_dict=id_to_ts)
 
-    logging.info(f'Tests completed.')
+    logging.info('Tests completed.')
 
 
 def get_selected_dataset_ids(odp, ds_id_parts):
@@ -193,7 +192,7 @@ def report_error(output_dir: str, ds_id: str, t0: float, stage: str, e: Exceptio
 
 
 def report_type_specifiers(output_dir: str, ts_dict: dict):
-    json_path = os.path.join(output_dir, f'type_specifiers.json')
+    json_path = os.path.join(output_dir, 'type_specifiers.json')
     with open(json_path, 'w') as fp:
         json.dump(ts_dict, fp, indent=2)
 

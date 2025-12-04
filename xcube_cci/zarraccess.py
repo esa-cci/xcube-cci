@@ -19,24 +19,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any
-from typing import Container
-from typing import Tuple
-from typing import Union
-
 import json
 import os
+from typing import Any, Container, Tuple, Union
 
-from xcube.core.store import DataStoreError
-from xcube.core.store import DataTypeLike
-from xcube.core.store import get_data_store_class
+from xcube.core.store import DataStoreError, DataTypeLike, get_data_store_class
 from xcube.util.jsonschema import JsonObjectSchema
 
 from.constants import ZARR_LOCATION
 
 if os.environ.get(ZARR_LOCATION, 'CEDA') == "OTC":
-    CCI_ZARR_STORE_BUCKET_NAME = 'cci-zarr-backup'
-    CCI_ZARR_STORE_ENDPOINT = 'https://cci-zarr-backup.obs.eu-nl.otc.t-systems.com'
+    CCI_ZARR_STORE_ENDPOINT = 'https://ceda-backup-data.obs.eu-nl.otc.t-systems.com/zarr'
     DATA_IDS_FILE_PATH = f'{CCI_ZARR_STORE_ENDPOINT}/data_ids.json'
     CCI_ZARR_STORE_PARAMS = dict(
         root=CCI_ZARR_STORE_ENDPOINT
