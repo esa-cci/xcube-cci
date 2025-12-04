@@ -89,7 +89,7 @@
         ],
         "title": "ESA Aerosol Climate Change Initiative (Aerosol CCI): Level 2 aerosol products from MERIS (ALAMO algorithm), Version 2.2"
     },
-      "esacci.GHG.satellite-orbit-frequency.L2.CH4.TROPOMI.Sentinel-5P.WFMD.v1-8.r1": {
+    "esacci.GHG.satellite-orbit-frequency.L2.CH4.TROPOMI.Sentinel-5P.WFMD.v1-8.r1": {
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
@@ -168,6 +168,7 @@
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
+            "constrain_time",
             "constrain_region",
             "write_geojson"
         ],
@@ -291,6 +292,7 @@
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
+            "constrain_time",
             "constrain_region",
             "write_geojson"
         ],
@@ -443,6 +445,7 @@
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
+            "constrain_time",
             "constrain_region",
             "write_geojson"
         ],
@@ -452,6 +455,7 @@
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
+            "constrain_time",
             "constrain_region",
             "write_geojson"
         ],
@@ -471,6 +475,7 @@
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
+            "constrain_time",
             "constrain_region",
             "write_geojson"
         ],
@@ -508,6 +513,7 @@
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
+            "constrain_time",
             "constrain_region",
             "write_geojson"
         ],
