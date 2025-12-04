@@ -192,15 +192,18 @@ class DataTreeMapping(MutableMapping):
                 ds = xr.open_zarr(chunk_store, consolidated=False)
                 ds.zarr_store.set(chunk_store)
             else:
-                var_datasets = []
+                ds = None
                 for var_name in self._var_names:
                     var_key = self._pattern.format(var_name=var_name, place=key)
                     data_id = f"{self._base_id}~{var_key}"
                     chunk_store = CciChunkStore(self._cci_odp, data_id, self._cci_kwargs)
-                    ds = xr.open_zarr(chunk_store, consolidated=False)
-                    ds.zarr_store.set(chunk_store)
-                    var_datasets.append(ds)
-                ds = xr.merge(var_datasets)
+                    dataset = xr.open_zarr(chunk_store, consolidated=False)
+                    dataset.zarr_store.set(chunk_store)
+                    if ds is None:
+                        ds = dataset
+                        continue
+                    for data_var in dataset.data_vars:
+                        ds[data_var] = dataset[data_var]
             if self._normalize_data:
                 ds = normalize_dataset(ds)
             self._loaded[key] = xr.DataTree(name=key, dataset=ds)
