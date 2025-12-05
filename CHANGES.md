@@ -16,7 +16,8 @@
   "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1~AMAZON_NEGRO_SAO-FELIPE".
   To open the dataset with a subset of places, pass `place_names` as parameter 
   to the store method `open_params()`. You can get a list of available place names 
-  from `get_open_data_params_schema()`.  
+  from `get_open_data_params_schema()`.
+* We fixed an issue with geodataframes which could cause that not all data were read in.
 * Fixed issues that data could not be accessed from ICESHEETS datasets with multiple time steps in base files.
   Solves [#69](https://github.com/dcs4cop/xcube-cci/issues/69)
 
