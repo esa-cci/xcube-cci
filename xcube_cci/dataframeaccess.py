@@ -196,9 +196,7 @@ class GeoDataFrame:
         if features is None:
             raise ValueError('features must not be None')
         self._features = features
-        first_element = next(features)
-        crs = features.crs if hasattr(features, 'crs') else None
-        self._lazy_data_frame = gpd.GeoDataFrame.from_features([first_element], crs=crs)
+        self._lazy_data_frame = None
 
     @property
     def features(self):
@@ -216,6 +214,11 @@ class GeoDataFrame:
         return self._lazy_data_frame
 
     def close(self):
+        """
+        In the ESA Climate Toolbox, closable resources are closed when removed
+        from the resources cache. Therefore, we provide a close method here,
+        although geopandas.GeoDataFrame doesn't have one.
+        """
         try:
             self._features.close()
         except AttributeError:
@@ -242,39 +245,9 @@ class GeoDataFrame:
             return getattr(self.lazy_data_frame, item)
 
     def __getitem__(self, item):
-        if isinstance(item, slice) or isinstance(item, int):
-            num_features = len(self.lazy_data_frame)
-            max_req_item = item
-            if isinstance(item, slice):
-                max_req_item = item.stop
-            new_rows = []
-            try:
-                while num_features < max_req_item:
-                    feature = next(self.features)
-                    new_rows.append(feature)
-                    num_features += 1
-            except StopIteration:
-                pass
-            new_gdf = gpd.GeoDataFrame.from_features(new_rows, crs=self.lazy_data_frame.crs)
-            self._lazy_data_frame = pd.concat([self.lazy_data_frame, new_gdf], ignore_index=True)
         return self.lazy_data_frame.__getitem__(item)
 
     def __setitem__(self, key, value):
-        if isinstance(key, slice) or isinstance(key, int):
-            num_features = len(self.lazy_data_frame)
-            max_req_item = key
-            if isinstance(key, slice):
-                max_req_item = key.stop
-            new_rows = []
-            try:
-                while num_features < max_req_item:
-                    feature = next(self.features)
-                    new_rows.append(feature)
-                    num_features += 1
-            except StopIteration:
-                pass
-            new_gdf = gpd.GeoDataFrame.from_features(new_rows, crs=self.lazy_data_frame.crs)
-            self._lazy_data_frame = pd.concat([self.lazy_data_frame, new_gdf], ignore_index=True)
         return self.lazy_data_frame.__setitem__(key, value)
 
     def __str__(self):
@@ -284,4 +257,4 @@ class GeoDataFrame:
         return repr(self.lazy_data_frame)
 
     def __len__(self):
-        return len(self._features)
+        return len(self.lazy_data_frame)
