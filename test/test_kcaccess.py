@@ -19,7 +19,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os
 import unittest
 
 import xarray as xr
@@ -54,7 +53,7 @@ class CciKerchunkDataStoreTest(unittest.TestCase):
     def test_list_data_ids(self):
         data_ids = self.store.list_data_ids()
         self.assertIn(
-            "ESACCI-BIOMASS-L4-AGB-CHANGE-100m-2018-2017-fv4.0-kr1.1",
+            "ESACCI-BIOMASS-L4-AGB-CHANGE-100m-2020-2010-fv4.0-kr1.1",
             data_ids
         )
         self.assertIn(
@@ -76,19 +75,19 @@ class CciKerchunkDataStoreTest(unittest.TestCase):
 
     def test_has_data(self):
         store = self.store
-        data_id = 'ESACCI-L4_FIRE-BA-MODIS-20010101-20200120-fv5.1-kr1.2'
+        data_id = 'ESACCI-BIOMASS-L4-AGB-CHANGE-100m-2020-2010-fv4.0-kr1.1'
         self.assertEqual(True, store.has_data(data_id))
         self.assertEqual(False, store.has_data("lst-cube"))
 
     def test_describe_data(self):
-        data_id = 'ESACCI-L4_FIRE-BA-MODIS-20010101-20200120-fv5.1-kr1.2'
+        data_id = 'ESACCI-BIOMASS-L4-AGB-CHANGE-100m-2020-2010-fv4.0-kr1.1'
         descriptor = self.store.describe_data(data_id)
         self.assertIsInstance(descriptor, DatasetDescriptor)
         self.assertEqual(data_id, descriptor.data_id)
         self.assertIsInstance(descriptor.data_type, DataType)
         self.assertIs(xr.Dataset, descriptor.data_type.dtype)
         self.assertIsInstance(descriptor.bbox, tuple)
-        self.assertIsNone(descriptor.spatial_res)  # ?
+        self.assertIsInstance(descriptor.spatial_res, float)
         self.assertIsInstance(descriptor.dims, dict)
         self.assertIsInstance(descriptor.coords, dict)
         self.assertIsInstance(descriptor.data_vars, dict)
@@ -106,7 +105,7 @@ class CciKerchunkDataStoreTest(unittest.TestCase):
 
     def test_search_data(self):
         search_results = list(self.store.search_data())
-        self.assertEqual(164, len(search_results))
+        self.assertEqual(209, len(search_results))
         for descriptor, data_id in zip(search_results, self.store.get_data_ids()):
             self.assertIsInstance(descriptor, DatasetDescriptor)
             self.assertEqual(data_id, descriptor.data_id)
