@@ -1036,10 +1036,10 @@ class CciOdpDataStore(DataStore):
         openers = self._get_openers(data_type=data_type)
         for opener in openers:
             for data_id in opener.dataset_names:
-                if include_attrs is None or not include_attrs:
+                states = opener.get_states(data_id)
+                if include_attrs is None or not include_attrs or not states:
                     yield data_id
                 else:
-                    states = opener.get_states(data_id)
                     attrs = {}
                     if isinstance(include_attrs, Container):
                         for attr in include_attrs:
