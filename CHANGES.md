@@ -1,4 +1,4 @@
-## Changes in 0.12.0 (in development)
+## Changes in 0.12
 * Updated list of kerchunk datasets
 * Added xarray Data Trees as fourth data model. Data Trees provide a tree-like 
   hierarchical structure of datasets, where single nodes can be accessed by an
