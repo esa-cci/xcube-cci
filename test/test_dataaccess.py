@@ -753,8 +753,8 @@ class CciOdpDataFrameOpenerTest(unittest.TestCase):
             )
         )
 
-    # @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
-    #         'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_open_data(self):
         gdf = self._opener.open_data(
             "esacci.RD.satellite-orbit-frequency.L3S.WL.multi-sensor.multi-platform.MERGED.v1-1.r1",
