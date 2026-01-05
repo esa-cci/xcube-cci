@@ -5,7 +5,7 @@ from unittest import skip, skipIf
 
 from xcube.core.gridmapping import GridMapping
 from xcube.core.normalize import normalize_dataset
-from xcube.core.store import DATASET_TYPE, GEO_DATA_FRAME_TYPE, DataStoreError
+from xcube.core.store import DATASET_TYPE, GEO_DATA_FRAME_TYPE, DataStoreError, new_data_store
 from xcube.core.store.descriptor import (DatasetDescriptor,
                                          GeoDataFrameDescriptor)
 from xcube.core.verify import assert_cube
@@ -81,6 +81,39 @@ class DataAccessTest(unittest.TestCase):
             'esacci.OZONE.satellite-orbit-frequency.L3.NP.sensor.platform.'
             'MERGED.fv0002.r1'
         ))
+
+
+class NewDataStoreTest(unittest.TestCase):
+
+    def test_new_data_store_esa_cci(self):
+        self.assertIsNotNone(new_data_store("esa-cci"))
+
+    def test_new_data_store_esa_cdc(self):
+        self.assertIsNotNone(new_data_store("esa-cdc"))
+
+    def test_new_data_store_esa_climate_data_centre(self):
+        self.assertIsNotNone(new_data_store("esa-climate-data-centre"))
+
+    def test_new_data_store_esa_cci_kc(self):
+        self.assertIsNotNone(new_data_store("esa-cci-kc"))
+
+    def test_new_data_store_esa_cdc_kc(self):
+        self.assertIsNotNone(new_data_store("esa-cdc-kc"))
+
+    def test_new_data_store_esa_cci_zarr(self):
+        self.assertIsNotNone(new_data_store("esa-cci-zarr"))
+
+    def test_new_data_store_esa_ccikc(self):
+        self.assertIsNotNone(new_data_store("ccikc"))
+
+    def test_new_data_store_cciodp(self):
+        self.assertIsNotNone(new_data_store("cciodp"))
+
+    def test_new_data_store_ccikc(self):
+        self.assertIsNotNone(new_data_store("ccikc"))
+
+    def test_new_data_store_ccizarr(self):
+        self.assertIsNotNone(new_data_store("ccizarr"))
 
 
 class CciOdpDatasetOpenerTest(unittest.TestCase):
