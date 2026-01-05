@@ -1,4 +1,5 @@
 ## Changes in 0.12.1 (in development)
+* Avoid FileNotFoundError when opening store [#70](https://github.com/dcs4cop/xcube-cci/issues/70)
 
 ## Changes in 0.12
 * Updated list of kerchunk datasets
