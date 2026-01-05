@@ -1,3 +1,5 @@
+## Changes in 0.12.2 (in development)
+
 ## Changes in 0.12.1
 * Avoid FileNotFoundError when opening store [#70](https://github.com/dcs4cop/xcube-cci/issues/70)
 
