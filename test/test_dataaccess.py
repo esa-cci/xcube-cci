@@ -909,6 +909,8 @@ class CciOdpDataTreeOpenerTest(unittest.TestCase):
         self.assertEqual({264, 28499, 57888}, set(area_1_dt.dataset.JD.shape))
         self.assertIsNotNone(area_1_dt.dataset.zarr_store.get())
 
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_open_data_lc(self):
         place_name = "A02T20KPA"
         variable_name = "CL01"

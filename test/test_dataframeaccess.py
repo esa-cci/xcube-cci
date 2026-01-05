@@ -1,4 +1,6 @@
-import unittest
+import os
+from unittest import skipIf
+from unittest import TestCase
 
 import pandas as pd
 
@@ -7,16 +9,20 @@ from xcube_cci.dataframeaccess import DataFrameAccessor
 
 GHG_DS_ID = "esacci.GHG.satellite-orbit-frequency.L2.CH4.SCIAMACHY.Envisat.IMAP.v7-2.r1"
 
-class DataFrameAccessTest(unittest.TestCase):
+class DataFrameAccessTest(TestCase):
 
     def setUp(self) -> None:
         ccicdc = CciOdp(data_type='geodataframe')
         self._dfa = DataFrameAccessor(ccicdc, GHG_DS_ID, {})
 
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_get_geodataframe(self):
         gdf = self._dfa.get_geodataframe()
         self.assertIsNotNone(gdf)
 
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     def test_get_geodataframe_for_dataset(self):
         gdf = self._dfa._get_features_from_cci_cdc(
             GHG_DS_ID,
