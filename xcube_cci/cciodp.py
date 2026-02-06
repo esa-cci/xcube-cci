@@ -2041,6 +2041,8 @@ class CciOdp:
             array, var_name, var_dict, var_infos, attributes
     ):
         var_infos[var_name] = {}
+        if array.rio.crs:
+            var_infos[var_name]["crs_wkt"] = array.rio.crs.wkt
         band_dim = -1
         divisor = 1
         if "band" in array.dims:
