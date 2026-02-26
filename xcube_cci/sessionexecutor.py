@@ -57,33 +57,41 @@ class SessionExecutor:
         self._num_retries = num_retries
         self._retry_backoff_max = retry_backoff_max
         self._retry_backoff_base = retry_backoff_base
+        self._executor_loop = None
+        self._executor_thread = None
+        self._loop_lock = threading.Lock()
+
+    def _ensure_executor_loop(self):
+        if self._executor_loop is not None:
+            return
+
+        with self._loop_lock:
+            if self._executor_loop is not None:
+                return
+
+            loop_created = threading.Event()
+
+            def loop_runner():
+                self._executor_loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(self._executor_loop)
+                loop_created.set()
+                self._executor_loop.run_forever()
+
+            self._executor_thread = threading.Thread(
+                target=loop_runner,
+                daemon=True
+            )
+            self._executor_thread.start()
+
+            loop_created.wait()
 
     def run_with_session(self, async_function, *params):
-        coro = _run_with_session_executor(
-            async_function, *params, headers=self._headers
+        self._ensure_executor_loop()
+        future = asyncio.run_coroutine_threadsafe(
+            _run_with_session_executor(async_function, *params, headers=self._headers),
+            self._executor_loop
         )
-        try:
-            asyncio.get_running_loop()
-        except RuntimeError:
-            return asyncio.run(coro)
-
-        result_container = {}
-        exception_container = {}
-
-        def coro_runner():
-            try:
-                result_container["result"] = asyncio.run(coro)
-            except Exception as e:
-                exception_container["exception"] = e
-
-        thread = threading.Thread(target=coro_runner, daemon=True)
-        thread.start()
-        thread.join()
-
-        if "exception" in exception_container:
-            raise exception_container["exception"]
-
-        return result_container.get("result")
+        return future.result()
 
     def get_response_content(self, url: str) -> Optional[bytes]:
         return self.run_with_session(self.get_response_content_from_session, url)
