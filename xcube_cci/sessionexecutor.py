@@ -1,5 +1,5 @@
 # The MIT License (MIT)
-# Copyright (c) 2025 ESA Climate Change Initiative
+# Copyright (c) 2026 ESA Climate Change Initiative
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
 
 import asyncio
 import random
-import time
+import threading
 from typing import Optional
 
 import aiohttp
@@ -31,10 +31,13 @@ from .constants import (DEFAULT_NUM_RETRIES, DEFAULT_RETRY_BACKOFF_BASE,
 
 
 async def _run_with_session_executor(async_function, *params, headers):
+    timeout = aiohttp.ClientTimeout(total=300, connect=30, sock_connect=30, sock_read=120)
+    connector = aiohttp.TCPConnector(limit=50, force_close=True)
     async with aiohttp.ClientSession(
-            connector=aiohttp.TCPConnector(limit=50),
-            headers=headers,
-            trust_env=True
+        connector=connector,
+        headers=headers,
+        trust_env=True,
+        timeout=timeout,
     ) as session:
         return await async_function(session, *params)
 
@@ -56,56 +59,72 @@ class SessionExecutor:
         self._retry_backoff_base = retry_backoff_base
 
     def run_with_session(self, async_function, *params):
-        # See https://github.com/aio-libs/aiohttp/blob/master/docs/
-        # client_advanced.rst#graceful-shutdown
-        loop = asyncio.new_event_loop()
         coro = _run_with_session_executor(
             async_function, *params, headers=self._headers
         )
-        result = loop.run_until_complete(coro)
-        # Short sleep to allow underlying connections to close
-        loop.run_until_complete(asyncio.sleep(1.))
-        loop.close()
-        return result
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            return asyncio.run(coro)
+
+        result_container = {}
+        exception_container = {}
+
+        def coro_runner():
+            try:
+                result_container["result"] = asyncio.run(coro)
+            except Exception as e:
+                exception_container["exception"] = e
+
+        thread = threading.Thread(target=coro_runner, daemon=True)
+        thread.start()
+        thread.join()
+
+        if "exception" in exception_container:
+            raise exception_container["exception"]
+
+        return result_container.get("result")
 
     def get_response_content(self, url: str) -> Optional[bytes]:
         return self.run_with_session(self.get_response_content_from_session, url)
 
     async def get_response_content_from_session(
-            self, session: aiohttp.ClientSession,
-            url: str
+            self, session: aiohttp.ClientSession, url: str
     ) -> Optional[bytes]:
         num_retries = self._num_retries
-        retry_backoff_max = self._retry_backoff_max  # ms
+        retry_backoff_max = self._retry_backoff_max
         retry_backoff_base = self._retry_backoff_base
         for i in range(num_retries):
-            resp = await session.request(method='GET', url=url)
-            if resp.status == 200:
-                try:
-                    content = await resp.read()
-                    return content
-                except aiohttp.client_exceptions.ClientPayloadError as cpe:
-                    error_message =str(cpe)
-            elif 500 <= resp.status < 600:
-                if self._enable_warnings:
-                    error_message = f'Error {resp.status}: Cannot access url.'
-                    LOG.warning(error_message)
-                return None
-            elif resp.status == 429:
-                error_message = "Error 429: Too Many Requests."
-            else:
-                break
-            # Retry after 'Retry-After' with exponential backoff
-            retry_min = int(resp.headers.get('Retry-After', '100'))
+            retry_min = 100
+            try:
+                async with session.get(url) as resp:
+                    retry_min = int(resp.headers.get('Retry-After', '100'))
+                    if resp.status == 200:
+                        return await resp.read()
+                    elif 500 <= resp.status < 600:
+                        error_message = f"Error {resp.status}: Cannot access url."
+                        if self._enable_warnings:
+                            LOG.warning(error_message)
+                        return None
+                    elif resp.status == 429:
+                        error_message = "Error 429: Too Many Requests."
+                    else:
+                        return None
+            except (
+                    aiohttp.ClientConnectionError,
+                    aiohttp.ServerDisconnectedError,
+                    aiohttp.ClientPayloadError,
+                    asyncio.TimeoutError,
+            ) as e:
+                error_message = str(e)
             retry_backoff = random.random() * retry_backoff_max
             retry_total = retry_min + retry_backoff
             if self._enable_warnings:
-                retry_message = \
-                    f'{error_message} ' \
-                    f'Attempt {i + 1} of {num_retries} to retry after ' \
-                    f'{"%.2f" % retry_min} + {"%.2f" % retry_backoff} = ' \
-                    f'{"%.2f" % retry_total} ms ...'
-                LOG.info(retry_message)
-            time.sleep(retry_total / 1000.0)
+                LOG.info(
+                    f"{error_message} - attempt {i + 1}/{num_retries}, "
+                    f"retrying in {retry_total / 1000:.2f} s"
+                )
+            await asyncio.sleep(retry_total / 1000)
             retry_backoff_max *= retry_backoff_base
+
         return None
