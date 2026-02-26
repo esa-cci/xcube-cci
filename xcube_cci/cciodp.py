@@ -34,7 +34,7 @@ from urllib.parse import quote
 
 import geopandas as gpd
 import lxml.etree as etree
-import nest_asyncio
+import nest_asyncio2 as na
 import numcodecs
 import numpy as np
 import pandas as pd
@@ -82,7 +82,7 @@ _FEATURE_LIST_LOCK = asyncio.Lock()
 _EARLY_START_TIME = '1000-01-01T00:00:00'
 _LATE_END_TIME = '3000-12-31T23:59:59'
 
-nest_asyncio.apply()
+na.apply()
 
 _RE_TO_DATETIME_FORMATS = \
     [(re.compile(14 * '\\d'), '%Y%m%d%H%M%S', relativedelta()),
