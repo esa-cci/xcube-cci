@@ -1,3 +1,5 @@
+## Changes in 0.13.1 (in development)
+
 ## Changes in 0.13
 
 * Class `SessionExecutor` now runs all asynchronous tasks in a single dedicated loop. This change
