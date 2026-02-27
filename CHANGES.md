@@ -1,4 +1,10 @@
-## Changes in 0.12.2 (in development)
+## Changes in 0.13
+
+* Class `SessionExecutor` now runs all asynchronous tasks in a single dedicated loop. This change
+  * increases performance of the `cciodp` store
+  * causes that the package `nest-asyncio` is no longer needed
+  * ensures compatibility with python 3.14
+* Read CRS information from tif files
 
 ## Changes in 0.12.1
 * Avoid FileNotFoundError when opening store [#70](https://github.com/dcs4cop/xcube-cci/issues/70)
