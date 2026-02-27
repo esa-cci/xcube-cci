@@ -30,18 +30,6 @@ from .constants import (DEFAULT_NUM_RETRIES, DEFAULT_RETRY_BACKOFF_BASE,
                         DEFAULT_RETRY_BACKOFF_MAX, LOG)
 
 
-async def _run_with_session_executor(async_function, *params, headers):
-    timeout = aiohttp.ClientTimeout(total=300, connect=30, sock_connect=30, sock_read=120)
-    connector = aiohttp.TCPConnector(limit=50, force_close=True)
-    async with aiohttp.ClientSession(
-        connector=connector,
-        headers=headers,
-        trust_env=True,
-        timeout=timeout,
-    ) as session:
-        return await async_function(session, *params)
-
-
 class SessionExecutor:
 
     def __init__(
@@ -58,6 +46,7 @@ class SessionExecutor:
         self._retry_backoff_max = retry_backoff_max
         self._retry_backoff_base = retry_backoff_base
         self._executor_loop = None
+        self._executor_session = None
         self._executor_thread = None
         self._loop_lock = threading.Lock()
 
@@ -74,6 +63,14 @@ class SessionExecutor:
             def loop_runner():
                 self._executor_loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(self._executor_loop)
+                timeout = aiohttp.ClientTimeout(total=300, connect=30, sock_connect=30, sock_read=120)
+                connector = aiohttp.TCPConnector(limit=50, loop=self._executor_loop, force_close=True)
+                self._executor_session = aiohttp.ClientSession(
+                    connector=connector,
+                    headers=self._headers,
+                    trust_env=True,
+                    timeout=timeout
+                )
                 loop_created.set()
                 self._executor_loop.run_forever()
 
@@ -87,8 +84,12 @@ class SessionExecutor:
 
     def run_with_session(self, async_function, *params):
         self._ensure_executor_loop()
+
+        async def _run_with_session_executor(e_function, *e_params):
+            return await e_function(self._executor_session, *e_params)
+
         future = asyncio.run_coroutine_threadsafe(
-            _run_with_session_executor(async_function, *params, headers=self._headers),
+            _run_with_session_executor(async_function, *params),
             self._executor_loop
         )
         return future.result()
