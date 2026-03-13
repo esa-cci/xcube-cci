@@ -101,12 +101,22 @@
     },
     "esacci.GHG.satellite-orbit-frequency.L2.CO2.OCO.OCO-2.FOCAL.v10-1.r1": {
         "data_type": "geodataframe",
-        "verification_flags": [],
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_geojson"
+        ],
         "title": "ESA Greenhouse Gases Climate Change Initiative (GHG_cci): Column averaged carbon dioxide from OCO-2 generated with the FOCAL algorithm, version 10.1"
     },
     "esacci.GHG.satellite-orbit-frequency.L2.CO2.OCO.OCO-2.FOCAL.v11.r1": {
         "data_type": "geodataframe",
-        "verification_flags": [],
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_geojson"
+        ],
         "title": "ESA Greenhouse Gases Climate Change Initiative (GHG_cci): Column averaged carbon dioxide from OCO-2 generated with the FOCAL algorithm, version 11.0"
     },
     "esacci.GHG.satellite-orbit-frequency.L2.CO2.SCIAMACHY.Envisat.BESD.v02-01-02.r1": {
@@ -121,7 +131,12 @@
     },
     "esacci.GHG.satellite-orbit-frequency.L2.CO2.SCIAMACHY.Envisat.WFMD.v4-0.r1": {
         "data_type": "geodataframe",
-        "verification_flags": [],
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_geojson"
+        ],
         "title": "ESA Greenhouse Gases Climate Change Initiative (GHG_cci): Column-averaged CO2 from SCIAMACHY generated with the WFMD algorithm (CO2_SCI_WFMD), v4.0"
     },
     "esacci.GHG.satellite-orbit-frequency.L2.CO2.TANSO-FTS-2.GOSAT-2.SRFP.v2-0-2.r1": {
@@ -178,6 +193,7 @@
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
+            "constrain_time",
             "constrain_region",
             "write_geojson"
         ],
@@ -195,7 +211,12 @@
     },
     "esacci.GHG.satellite-orbit-frequency.L2.CH4.SCIAMACHY.Envisat.WFMD.v4-0.r1": {
         "data_type": "geodataframe",
-        "verification_flags": [],
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_geojson"
+        ],
         "title": "ESA Greenhouse Gases Climate Change Initiative (GHG_cci): Column-averaged CH4 from SCIAMACHY generated with the WFMD algorithm (CH4_SCI_WFMD), version 4.0"
     },
     "esacci.GHG.satellite-orbit-frequency.L2.CH4.TANSO-FTS-2.GOSAT-2.SRFP.v2-0-2.r1": {
@@ -358,6 +379,7 @@
         "verification_flags": [
             "open",
             "constrain_time",
+            "constrain_region",
             "write_geojson"
         ],
         "title": "ESA Sea Ice Climate Change Initiative (Sea_Ice_cci):  Northern hemisphere sea ice thickness from Envisat on the satellite swath (L2P), v2.0"
@@ -367,6 +389,7 @@
         "verification_flags": [
             "open",
             "constrain_time",
+            "constrain_region",
             "write_geojson"
         ],
         "title": "ESA Sea Ice Climate Change Initiative (Sea_Ice_cci):  Northern hemisphere sea ice thickness from Envisat on the satellite swath (L2P), v3.0"
@@ -485,6 +508,7 @@
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
+            "constrain_time",
             "constrain_region",
             "write_geojson"
         ],
@@ -494,6 +518,7 @@
         "data_type": "geodataframe",
         "verification_flags": [
             "open",
+            "constrain_time",
             "constrain_region",
             "write_geojson"
         ],

@@ -15,22 +15,6 @@
             "AREA_6"
         ]
     },
-    "esacci.FIRE.mon.L3S.BA.multi-sensor.multi-platform.SYN.v1-1.pixel": {
-        "data_type": "datatree",
-        "verification_flags": [
-            "open",
-            "constrain_time"
-        ],
-        "title": "ESA Fire Climate Change Initiative (Fire_cci): Sentinel-3 SYN Burned Area Pixel product, version 1.1",
-        "places": [
-            "AREA_1",
-            "AREA_2",
-            "AREA_3",
-            "AREA_4",
-            "AREA_5",
-            "AREA_6"
-        ]
-    },
     "esacci.FIRE.mon.L3S.BA.MSI-(Sentinel-2).Sentinel-2A.MSI.2-0.pixel": {
         "data_type": "datatree",
         "verification_flags": [
@@ -287,6 +271,22 @@
             "h46v16",
             "h46v20",
             "h46v21"
+        ]
+    },
+    "esacci.FIRE.mon.L3S.BA.multi-sensor.multi-platform.SYN.v1-1.pixel": {
+        "data_type": "datatree",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Fire Climate Change Initiative (Fire_cci): Sentinel-3 SYN Burned Area Pixel product, version 1.1",
+        "places": [
+            "AREA_1",
+            "AREA_2",
+            "AREA_3",
+            "AREA_4",
+            "AREA_5",
+            "AREA_6"
         ]
     },
     "esacci.LC.yr.L4.Map.multi-sensor.multi-platform.HRLC10-A03.v1-2.Siberia": {
