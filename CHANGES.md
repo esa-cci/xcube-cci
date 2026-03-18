@@ -1,5 +1,7 @@
 ## Changes in 0.13.1 (in development)
 
+* Updated list of dataset states
+
 ## Changes in 0.13
 
 * Class `SessionExecutor` now runs all asynchronous tasks in a single dedicated loop. This change
