@@ -72,11 +72,6 @@ def compute_cache_size(factor=0.2, min_mb=0, max_gb=8):
     return size
 
 
-class NullStore(dict):
-    def __setitem__(self, k, v):
-        pass
-
-
 class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
     """
     A remote Zarr Store.
@@ -145,7 +140,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
             ))
 
         self._vfs = {}
-        self._vfs_cache = LRU(compute_cache_size(), d=NullStore())
+        self._vfs_cache = LRU(compute_cache_size(), d={})
         self._var_name_to_ranges = {}
         self._ranges_to_indexes = {}
         self._ranges_to_var_names = {}
@@ -807,6 +802,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
             self._try_building_vfs_entry(key)
             value = self._vfs[key]
         if isinstance(value, tuple):
+            # value = self._fetch_chunk(key, *value)
             try:
                 value = self._vfs_cache[key]
             except KeyError:
