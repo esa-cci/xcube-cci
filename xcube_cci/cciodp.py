@@ -1216,7 +1216,7 @@ class CciOdp:
             self, session, request: Dict, dim_indexes: Tuple, to_bytes: bool = True
     ) -> Optional[bytes]:
         key = (
-            frozenset(request.items()),
+            json.dumps(request, sort_keys=True),
             dim_indexes,
             to_bytes,
         )
