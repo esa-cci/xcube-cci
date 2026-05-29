@@ -1220,9 +1220,10 @@ class CciOdp:
             dim_indexes,
             to_bytes,
         )
-        existing = self._task_cache.get(key)
-        if existing is not None:
-            return await existing
+        try:
+            return await self._task_cache[key]
+        except KeyError:
+            pass
         if self._data_type == "vectordatacube":
             task = asyncio.create_task(self._get_vectordatacube_chunk(
                 session, request, dim_indexes, to_bytes
