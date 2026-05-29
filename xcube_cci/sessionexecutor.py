@@ -104,7 +104,6 @@ class SessionExecutor:
     async def get_response_content_from_session(
             self, session: aiohttp.ClientSession, url: str
     ) -> Optional[bytes]:
-        print(f"Retrieving from {url}")
         num_retries = self._num_retries
         retry_backoff_max = self._retry_backoff_max
         retry_backoff_base = self._retry_backoff_base
