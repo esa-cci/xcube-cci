@@ -33,7 +33,9 @@ from typing import (Any, Callable, Dict, Iterable, Iterator, KeysView, List,
 import numcodecs
 import numpy as np
 import pandas as pd
+import psutil
 from numcodecs import Blosc
+from zict import LRU
 
 from .cciodp import CciOdp
 from .constants import COMMON_COORD_VAR_NAMES, LOG, TIMESTAMP_FORMAT
@@ -57,6 +59,22 @@ def _dict_to_bytes(d: Dict):
 
 def _str_to_bytes(s: str):
     return bytes(s, encoding='utf-8')
+
+
+def compute_cache_size(factor=0.2, min_mb=128, max_gb=8):
+    avail = psutil.virtual_memory().available
+
+    size = int(avail * factor)
+
+    size = max(size, min_mb * 1024**2)
+    size = min(size, max_gb * 1024**3)
+
+    return size
+
+
+class NullStore(dict):
+    def __setitem__(self, k, v):
+        pass
 
 
 class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
@@ -127,6 +145,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
             ))
 
         self._vfs = {}
+        self._vfs_cache = LRU(compute_cache_size(), d=NullStore())
         self._var_name_to_ranges = {}
         self._ranges_to_indexes = {}
         self._ranges_to_var_names = {}
@@ -788,7 +807,10 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
             self._try_building_vfs_entry(key)
             value = self._vfs[key]
         if isinstance(value, tuple):
-            return self._fetch_chunk(key, *value)
+            try:
+                value = self._vfs_cache[key]
+            except KeyError:
+                self._vfs_cache[key] = value = self._fetch_chunk(key, *value)
         return value
 
     def _try_building_vfs_entry(self, key):
