@@ -61,7 +61,7 @@ def _str_to_bytes(s: str):
     return bytes(s, encoding='utf-8')
 
 
-def compute_cache_size(factor=0.2, min_mb=128, max_gb=8):
+def compute_cache_size(factor=0.2, min_mb=0, max_gb=8):
     avail = psutil.virtual_memory().available
 
     size = int(avail * factor)
