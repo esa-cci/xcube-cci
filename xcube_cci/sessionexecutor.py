@@ -30,6 +30,10 @@ from .constants import (DEFAULT_NUM_RETRIES, DEFAULT_RETRY_BACKOFF_BASE,
                         DEFAULT_RETRY_BACKOFF_MAX, LOG)
 
 
+class OpendapTimeoutError(Exception):
+    pass
+
+
 class SessionExecutor:
 
     def __init__(
@@ -100,6 +104,7 @@ class SessionExecutor:
     async def get_response_content_from_session(
             self, session: aiohttp.ClientSession, url: str
     ) -> Optional[bytes]:
+        print(f"Retrieving from {url}")
         num_retries = self._num_retries
         retry_backoff_max = self._retry_backoff_max
         retry_backoff_base = self._retry_backoff_base
@@ -114,11 +119,8 @@ class SessionExecutor:
                         error_message = f"Error {resp.status}: Cannot access url."
                         if self._enable_warnings:
                             LOG.warning(error_message)
-                        return None
                     elif resp.status == 429:
                         error_message = "Error 429: Too Many Requests."
-                    else:
-                        return None
             except (
                     aiohttp.ClientConnectionError,
                     aiohttp.ServerDisconnectedError,
@@ -135,5 +137,4 @@ class SessionExecutor:
                 )
             await asyncio.sleep(retry_total / 1000)
             retry_backoff_max *= retry_backoff_base
-
-        return None
+        raise OpendapTimeoutError(error_message)
