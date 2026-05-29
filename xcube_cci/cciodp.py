@@ -2132,7 +2132,8 @@ class CciOdp:
             res_dict['das'] = res_dict['das'].replace(
                 '        Float32 valid_max Infinity;\n', ''
             )
-        self._result_dicts[url] = res_dict
+            if 'dds' in res_dict:
+                self._result_dicts[url] = res_dict
         return res_dict
 
     async def _get_opendap_dataset(self, session, url: str):
