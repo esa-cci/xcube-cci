@@ -23,10 +23,12 @@ import json
 import os
 from abc import abstractmethod
 from typing import Any, Container, Dict, Iterator, List, Optional, Tuple, Union
-
+import psutil
 import pyproj
 import xarray as xr
 import xvec
+from zict import LRU
+
 from shapely import Point
 from xcube.core.normalize import normalize_dataset
 from xcube.core.store import (DATASET_TYPE, GEO_DATA_FRAME_TYPE,
@@ -109,6 +111,14 @@ def get_endpoint_urls() -> (str, str):
     return OPENSEARCH_CEDA_URL, CCI_ODD_URL
 
 
+def compute_cache_size(factor=0.2, min_mb=0, max_gb=8):
+    avail = psutil.virtual_memory().available
+    size = int(avail * factor)
+    size = max(size, min_mb * 1024**2)
+    size = min(size, max_gb * 1024**3)
+    return size
+
+
 class CciOdpDataOpener(DataOpener):
 
     # noinspection PyShadowingBuiltins
@@ -116,11 +126,13 @@ class CciOdpDataOpener(DataOpener):
             self,
             id: str,
             normalize_data: bool = True,
+            cache: LRU = None,
             drs_ids: List[str] = None,
             **cdc_params
     ):
         self._id = id
         self._normalize_data = normalize_data
+        self._cache = cache
         filename = _DATA_TYPE_TO_FILE_NAME.get(self.get_data_types()[0])
         states_file = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
@@ -419,12 +431,14 @@ class CciOdpDatasetOpener(CciOdpDataOpener):
     def __init__(
             self,
             normalize_data: bool = True,
+            cache: LRU = None,
             drs_ids: List[str] = None,
             **cdc_params
     ):
         super().__init__(
             DATASET_OPENER_ID,
             normalize_data=normalize_data,
+            cache=cache,
             drs_ids=drs_ids,
             **cdc_params
         )
@@ -450,7 +464,7 @@ class CciOdpDatasetOpener(CciOdpDataOpener):
                           'time_range',
                           'bbox')
         )
-        chunk_store = CciChunkStore(self._cci_odp, data_id, cube_kwargs)
+        chunk_store = CciChunkStore(self._cci_odp, data_id, cube_kwargs, cache=self._cache)
         ds = xr.open_zarr(chunk_store, consolidated=False)
         ds.zarr_store.set(chunk_store)
         ds = self._normalize_dataset(ds)
@@ -640,10 +654,11 @@ class CciOdpDataFrameOpener(CciOdpDataOpener):
 
 class CciOdpVectorDataCubeOpener(CciOdpDataOpener):
 
-    def __init__(self, normalize_data: bool = True, **cdc_params):
+    def __init__(self, normalize_data: bool = True, cache: LRU = None, **cdc_params):
         super().__init__(
             VECTORDATACUBE_OPENER_ID,
             normalize_data=normalize_data,
+            cache=cache,
             **cdc_params
         )
 
@@ -761,7 +776,7 @@ class CciOdpVectorDataCubeOpener(CciOdpDataOpener):
                           'time_range',
                           'bbox')
         )
-        chunk_store = CciChunkStore(self._cci_odp, data_id, cube_kwargs)
+        chunk_store = CciChunkStore(self._cci_odp, data_id, cube_kwargs, cache=self._cache)
         ds = xr.open_zarr(chunk_store, consolidated=False)
 
         def _convert_to_point(chunk):
@@ -777,11 +792,12 @@ class CciOdpVectorDataCubeOpener(CciOdpDataOpener):
 
 class CciOdpDataTreeOpener(CciOdpDataOpener):
 
-    def __init__(self, normalize_data: bool = True, drs_ids: List[str] = None, **cdc_params):
+    def __init__(self, normalize_data: bool = True, cache: LRU = None, **cdc_params):
 
         super().__init__(
             DATATREE_OPENER_ID,
             normalize_data=normalize_data,
+            cache=cache,
             **cdc_params
         )
 
@@ -908,6 +924,7 @@ class CciOdpDataTreeOpener(CciOdpDataOpener):
                 specifiers=specifiers,
                 cci_odp=self._cci_odp,
                 normalize_data=self._normalize_data,
+                cache=self._cache,
                 var_names=var_names,
                 pattern=self._states.get(data_id).get("pattern"),
                 **cci_kwargs
@@ -933,9 +950,13 @@ class CciOdpDataStore(DataStore):
                            'user_agent')
         )
 
+        cache_size = store_params.get('cache_size')
+        cache_size = cache_size * 1024**2 if cache_size is not None else compute_cache_size()
+        cache = LRU(cache_size, d={})
+
         dataframe_opener = CciOdpDataFrameOpener(**cdc_kwargs)
-        vectordatacube_opener = CciOdpVectorDataCubeOpener(**cdc_kwargs)
-        datatree_opener = CciOdpDataTreeOpener(**cdc_kwargs)
+        vectordatacube_opener = CciOdpVectorDataCubeOpener(cache=cache, **cdc_kwargs)
+        datatree_opener = CciOdpDataTreeOpener(cache=cache, **cdc_kwargs)
 
         user_agent = cdc_kwargs.get("user_agent")
         endpoint_description_url = cdc_kwargs.get("endpoint_description_url")
@@ -947,6 +968,7 @@ class CciOdpDataStore(DataStore):
         dataset_opener = CciOdpDatasetOpener(
             normalize_data=normalize_data,
             drs_ids=drs_ids,
+            cache = cache,
             **cdc_kwargs
         )
 
@@ -975,7 +997,8 @@ class CciOdpDataStore(DataStore):
             retry_backoff_base=JsonNumberSchema(
                 default=DEFAULT_RETRY_BACKOFF_BASE, exclusive_minimum=1.0
             ),
-            user_agent=JsonStringSchema(default=None)
+            user_agent=JsonStringSchema(default=None),
+            cache_size=JsonIntegerSchema(minimum=0, title="Size of cache in MB")
         )
         return JsonObjectSchema(
             properties=dict(**cciodp_params),

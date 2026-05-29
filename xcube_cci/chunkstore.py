@@ -29,14 +29,12 @@ from abc import ABCMeta, abstractmethod
 from collections.abc import MutableMapping
 from typing import (Any, Callable, Dict, Iterable, Iterator, KeysView, List,
                     Mapping, Tuple)
+from zict import LRU
 
 import numcodecs
 import numpy as np
 import pandas as pd
-import psutil
 from numcodecs import Blosc
-from zict import LRU
-
 from .cciodp import CciOdp
 from .constants import COMMON_COORD_VAR_NAMES, LOG, TIMESTAMP_FORMAT
 from .timerangegetter import TimeRangeGetter, extract_time_range_as_strings
@@ -61,17 +59,6 @@ def _str_to_bytes(s: str):
     return bytes(s, encoding='utf-8')
 
 
-def compute_cache_size(factor=0.2, min_mb=0, max_gb=8):
-    avail = psutil.virtual_memory().available
-
-    size = int(avail * factor)
-
-    size = max(size, min_mb * 1024**2)
-    size = min(size, max_gb * 1024**3)
-
-    return size
-
-
 class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
     """
     A remote Zarr Store.
@@ -79,6 +66,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
     :param data_id: The identifier of the data resource
     :param cube_params: A mapping containing additional parameters to define
         the data set.
+    :param cache: An optional MutableMapping that may be used as cache
     :param observer: An optional callback function called when remote requests
         are mode: observer(**kwargs).
     :param trace_store_calls: Whether store calls shall be printed
@@ -88,6 +76,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
     def __init__(self,
                  data_id: str,
                  cube_params: Mapping[str, Any] = None,
+                 cache=None,
                  observer: Callable = None,
                  trace_store_calls=False):
         if not cube_params:
@@ -140,7 +129,7 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
             ))
 
         self._vfs = {}
-        self._vfs_cache = LRU(compute_cache_size(), d={})
+        self._vfs_cache = cache
         self._var_name_to_ranges = {}
         self._ranges_to_indexes = {}
         self._ranges_to_var_names = {}
@@ -802,11 +791,13 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
             self._try_building_vfs_entry(key)
             value = self._vfs[key]
         if isinstance(value, tuple):
-            # value = self._fetch_chunk(key, *value)
-            try:
-                value = self._vfs_cache[key]
-            except KeyError:
-                self._vfs_cache[key] = value = self._fetch_chunk(key, *value)
+            if self._vfs_cache is not None:
+                try:
+                    value = self._vfs_cache[key]
+                except KeyError:
+                    self._vfs_cache[key] = value = self._fetch_chunk(key, *value)
+            else:
+                value = self._fetch_chunk(key, *value)
         return value
 
     def _try_building_vfs_entry(self, key):
@@ -877,6 +868,7 @@ class CciChunkStore(RemoteChunkStore):
                  cci_cdc: CciOdp,
                  dataset_id: str,
                  cube_params: Mapping[str, Any] = None,
+                 cache: LRU = None,
                  observer: Callable = None,
                  trace_store_calls=False):
         self._cci_cdc = cci_cdc
@@ -886,6 +878,7 @@ class CciChunkStore(RemoteChunkStore):
         self._time_range_getter = TimeRangeGetter(self._cci_cdc, self._metadata)
         super().__init__(dataset_id,
                          cube_params,
+                         cache=cache,
                          observer=observer,
                          trace_store_calls=trace_store_calls)
 

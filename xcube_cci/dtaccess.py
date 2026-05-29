@@ -22,6 +22,7 @@
 import warnings
 from collections.abc import Hashable, Mapping, MutableMapping
 from typing import Any, List, Optional
+from zict import LRU
 
 import dask
 import numpy as np
@@ -169,6 +170,7 @@ class DataTreeMapping(MutableMapping):
             specifiers: List[str],
             cci_odp: CciOdp,
             normalize_data: True,
+            cache: LRU = None,
             var_names: List[str] = None,
             pattern: str = None,
             **cci_kwargs
@@ -177,6 +179,7 @@ class DataTreeMapping(MutableMapping):
         self._specifiers = specifiers
         self._cci_odp = cci_odp
         self._normalize_data = normalize_data
+        self._cache = cache
         self._var_names = var_names
         self._pattern = pattern
         self._cci_kwargs = cci_kwargs
@@ -188,7 +191,7 @@ class DataTreeMapping(MutableMapping):
                 raise ValueError(f"Unsupported key {key}")
             if self._var_names is None or self._pattern is None:
                 data_id = f"{self._base_id}~{key}"
-                chunk_store = CciChunkStore(self._cci_odp, data_id, self._cci_kwargs)
+                chunk_store = CciChunkStore(self._cci_odp, data_id, self._cci_kwargs, cache=self._cache)
                 ds = xr.open_zarr(chunk_store, consolidated=False)
                 ds.zarr_store.set(chunk_store)
             else:
@@ -196,7 +199,7 @@ class DataTreeMapping(MutableMapping):
                 for var_name in self._var_names:
                     var_key = self._pattern.format(var_name=var_name, place=key)
                     data_id = f"{self._base_id}~{var_key}"
-                    chunk_store = CciChunkStore(self._cci_odp, data_id, self._cci_kwargs)
+                    chunk_store = CciChunkStore(self._cci_odp, data_id, self._cci_kwargs, cache=self._cache)
                     dataset = xr.open_zarr(chunk_store, consolidated=False)
                     dataset.zarr_store.set(chunk_store)
                     if ds is None:
