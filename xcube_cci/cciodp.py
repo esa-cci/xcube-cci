@@ -392,6 +392,7 @@ class CciOdp:
         self._num_retries = num_retries
         self._retry_backoff_max = retry_backoff_max
         self._retry_backoff_base = retry_backoff_base
+        self._task_cache = {}
         self._data_type = data_type
         self._data_sources = {}
         self._features = {}
@@ -1214,11 +1215,27 @@ class CciOdp:
     async def _get_data_chunk(
             self, session, request: Dict, dim_indexes: Tuple, to_bytes: bool = True
     ) -> Optional[bytes]:
+        key = (
+            frozenset(request.items()),
+            dim_indexes,
+            to_bytes,
+        )
+        existing = self._task_cache.get(key)
+        if existing is not None:
+            return await existing
         if self._data_type == "vectordatacube":
-            return await self._get_vectordatacube_chunk(
+            task = asyncio.create_task(self._get_vectordatacube_chunk(
                 session, request, dim_indexes, to_bytes
+            ))
+        else:
+            task = asyncio.create_task(
+                self._get_dataset_chunk(session, request, dim_indexes, to_bytes)
             )
-        return await self._get_dataset_chunk(session, request, dim_indexes, to_bytes)
+        self._task_cache[key] = task
+        try:
+            return await task
+        finally:
+            self._task_cache.pop(key, None)
 
     async def get_geometry_data(
             self, session, dataset, data_source, geom_var_name, ds_dim_indexes
