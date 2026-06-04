@@ -2242,3 +2242,16 @@ class CciOdp:
             LOG.warning(f'Could not read data from "{url}"')
             return None
         return dataset[proxy.id].data
+
+    def __getstate__(self):
+        # overwrite to allow for serialisation
+        state = self.__dict__.copy()
+        state["_task_cache"] = None
+        return state
+
+
+    def __setstate__(self, state):
+        # overwrite to set clean state after de-serialisation
+        self.__dict__.update(state)
+        self._task_cache = {}
+

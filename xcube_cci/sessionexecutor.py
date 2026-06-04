@@ -140,3 +140,21 @@ class SessionExecutor:
             await asyncio.sleep(retry_total / 1000)
             retry_backoff_max *= retry_backoff_base
         raise OpendapTimeoutError(error_message)
+
+    def __getstate__(self):
+        # overwrite to allow for serialisation
+        state = self.__dict__.copy()
+        state["_executor_session"] = None
+        state["_executor_loop"] = None
+        state["_executor_thread"] = None
+        state["_loop_lock"] = None
+        return state
+
+
+    def __setstate__(self, state):
+        # overwrite to set clean state after de-serialisation
+        self.__dict__.update(state)
+        self._executor_session = None
+        self._executor_loop = None
+        self._executor_thread = None
+        self._loop_lock = threading.Lock()
