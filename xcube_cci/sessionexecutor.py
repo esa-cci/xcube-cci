@@ -107,6 +107,7 @@ class SessionExecutor:
         num_retries = self._num_retries
         retry_backoff_max = self._retry_backoff_max
         retry_backoff_base = self._retry_backoff_base
+        error_message = "Max number of retries exceeded"
         for i in range(num_retries):
             retry_min = 100
             try:
@@ -120,6 +121,8 @@ class SessionExecutor:
                             LOG.warning(error_message)
                     elif resp.status == 429:
                         error_message = "Error 429: Too Many Requests."
+                    elif resp.status == 404:
+                        error_message = "Error 404: Dataset not found."
             except (
                     aiohttp.ClientConnectionError,
                     aiohttp.ServerDisconnectedError,
