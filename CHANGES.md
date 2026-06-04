@@ -1,4 +1,12 @@
-## Changes in 0.13.2 (in development)
+## Changes in 0.14 (in development)
+
+  * Improved error messages when data cannot be accessed from opendap
+  * added caching of chunks using a Least-Recently-Used-Cache
+    Cache Size in MB can be set for the store using the newly added parameter `cache_size`
+  * avoid concurrent calls of the same request
+  * Ensure classes `SessionExecutor` and `CciOdp` can be serialised and de-serialised. 
+    This is necessary for support of dask clusters.
+  * Updated list of datatree states
 
 ## Changes in 0.13.1
 
