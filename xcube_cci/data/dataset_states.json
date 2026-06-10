@@ -1943,42 +1943,22 @@
     },
     "esacci.LST.day.L3C.LST.MODIS.Aqua.MODISA.3-00.DAY": {
         "data_type": "dataset",
-        "verification_flags": [
-            "open",
-            "constrain_time",
-            "constrain_region",
-            "write_zarr"
-        ],
+        "verification_flags": [],
         "title": "ESA Land Surface Temperature Climate Change Initiative (LST_cci): Land surface temperature from  MODIS (Moderate resolution Infra-red Spectroradiometer) on Aqua, level 3 collated (L3C) global product (2002-2018), version 3.00"
     },
     "esacci.LST.day.L3C.LST.MODIS.Aqua.MODISA.3-00.NIGHT": {
         "data_type": "dataset",
-        "verification_flags": [
-            "open",
-            "constrain_time",
-            "constrain_region",
-            "write_zarr"
-        ],
+        "verification_flags": [],
         "title": "ESA Land Surface Temperature Climate Change Initiative (LST_cci): Land surface temperature from  MODIS (Moderate resolution Infra-red Spectroradiometer) on Aqua, level 3 collated (L3C) global product (2002-2018), version 3.00"
     },
     "esacci.LST.day.L3C.LST.MODIS.Aqua.MODISA.4-00.DAY": {
         "data_type": "dataset",
-        "verification_flags": [
-            "open",
-            "constrain_time",
-            "constrain_region",
-            "write_zarr"
-        ],
+        "verification_flags": [],
         "title": "ESA Land Surface Temperature Climate Change Initiative (LST_cci): Daily land surface temperature from  MODIS (Moderate resolution Infra-red Spectroradiometer) on Aqua, level 3 collated (L3C) global product (2002-2021), version 4.00"
     },
     "esacci.LST.day.L3C.LST.MODIS.Aqua.MODISA.4-00.NIGHT": {
         "data_type": "dataset",
-        "verification_flags": [
-            "open",
-            "constrain_time",
-            "constrain_region",
-            "write_zarr"
-        ],
+        "verification_flags": [],
         "title": "ESA Land Surface Temperature Climate Change Initiative (LST_cci): Daily land surface temperature from  MODIS (Moderate resolution Infra-red Spectroradiometer) on Aqua, level 3 collated (L3C) global product (2002-2021), version 4.00"
     },
     "esacci.LST.day.L3C.LST.MODIS.Terra.MODIST.3-00.DAY": {
@@ -2243,22 +2223,12 @@
     },
     "esacci.LST.mon.L3C.LST.MODIS.Aqua.MODISA.3-00.DAY": {
         "data_type": "dataset",
-        "verification_flags": [
-            "open",
-            "constrain_time",
-            "constrain_region",
-            "write_zarr"
-        ],
+        "verification_flags": [],
         "title": "ESA Land Surface Temperature Climate Change Initiative (LST_cci): Monthly land surface temperature from  MODIS (Moderate resolution Infra-red Spectroradiometer) on Aqua, level 3 collated (L3C) global product (2002-2018), version 3.00"
     },
     "esacci.LST.mon.L3C.LST.MODIS.Aqua.MODISA.3-00.NIGHT": {
         "data_type": "dataset",
-        "verification_flags": [
-            "open",
-            "constrain_time",
-            "constrain_region",
-            "write_zarr"
-        ],
+        "verification_flags": [],
         "title": "ESA Land Surface Temperature Climate Change Initiative (LST_cci): Monthly land surface temperature from  MODIS (Moderate resolution Infra-red Spectroradiometer) on Aqua, level 3 collated (L3C) global product (2002-2018), version 3.00"
     },
     "esacci.LST.mon.L3C.LST.MODIS.Terra.MODIST.3-00.DAY": {
