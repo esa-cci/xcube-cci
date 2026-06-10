@@ -1,4 +1,4 @@
-## Changes in 0.14 (in development)
+## Changes in 0.14
 
   * Improved error messages when data cannot be accessed from opendap
   * added caching of chunks using a Least-Recently-Used-Cache
