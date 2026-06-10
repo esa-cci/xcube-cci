@@ -413,6 +413,22 @@
         ],
         "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
     },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.CHANGE.7-0.100m-2020-2010": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2005-2012 and 2015-2024, v7.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.CHANGE.7-0.100m-2020-2019": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2005-2012 and 2015-2024, v7.0"
+    },
     "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.6-0.10000m-2010-2007": {
         "data_type": "dataset",
         "verification_flags": [
@@ -773,6 +789,85 @@
         ],
         "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
     },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.7-0.10000m-2020-2010": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2005-2012 and 2015-2024, v7.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.7-0.10000m-2020-2019": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2005-2012 and 2015-2024, v7.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.7-0.1000m-2020-2010": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2005-2012 and 2015-2024, v7.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.7-0.1000m-2020-2019": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2005-2012 and 2015-2024, v7.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.7-0.25000m-2020-2010": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2005-2012 and 2015-2024, v7.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.7-0.25000m-2020-2019": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2005-2012 and 2015-2024, v7.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.7-0.50000m-2020-2010": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2005-2012 and 2015-2024, v7.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.DIFF.7-0.50000m-2020-2019": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "write_zarr"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2005-2012 and 2015-2024, v7.0"
+    },
     "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.MERGED.2-0.r1": {
         "data_type": "dataset",
         "verification_flags": [
@@ -892,6 +987,46 @@
             "write_zarr"
         ],
         "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2007, 2010, 2015, 2016, 2017, 2018, 2019, 2020, 2021 and 2022, v6.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.MERGED.7-0.10000m": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2005-2012 and 2015-2024, v7.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.MERGED.7-0.1000m": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2005-2012 and 2015-2024, v7.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.MERGED.7-0.100m": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2005-2012 and 2015-2024, v7.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.MERGED.7-0.25000m": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2005-2012 and 2015-2024, v7.0"
+    },
+    "esacci.BIOMASS.yr.L4.AGB.multi-sensor.multi-platform.MERGED.7-0.50000m": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Biomass Climate Change Initiative (Biomass_cci): Global datasets of forest above-ground biomass for the years 2005-2012 and 2015-2024, v7.0"
     },
     "esacci.CLOUD.mon.L3C.CLD_PRODUCTS.MODIS.Aqua.MODIS_AQUA.2-0.r1": {
         "data_type": "dataset",
@@ -1483,6 +1618,11 @@
         ],
         "title": "ESA Lakes Climate Change Initiative (Lakes_cci):  Lake products, Version 2.1"
     },
+    "esacci.LAKES.day.L3S.LK_PRODUCTS.multi-sensor.multi-platform.MERGED.v3-0-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [],
+        "title": "ESA Lakes Climate Change Initiative (Lakes_cci):  Lake products, Version 3.0"
+    },
     "esacci.LC.13-yrs.L4.WB.ASAR.Envisat.Map.4-0.r1": {
         "data_type": "dataset",
         "verification_flags": [
@@ -1963,17 +2103,32 @@
     },
     "esacci.LST.day.L3C.LST.VIIRS.NOAA-20.VIIRS1.1-00.DAY": {
         "data_type": "dataset",
-        "verification_flags": [],
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
         "title": "ESA Land Surface Temperature Climate Change Initiative (LST_cci): Land surface temperature from VIIRS (Visible Infrared Imaging Radiometer Suite) on NOAA-20  (National Oceanic and Atmospheric Administration), level 3 collated (L3C) global product (2018-2024), version 1.00"
     },
     "esacci.LST.day.L3C.LST.VIIRS.NOAA-20.VIIRS1.1-00.NIGHT": {
         "data_type": "dataset",
-        "verification_flags": [],
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
         "title": "ESA Land Surface Temperature Climate Change Initiative (LST_cci): Land surface temperature from VIIRS (Visible Infrared Imaging Radiometer Suite) on NOAA-20  (National Oceanic and Atmospheric Administration), level 3 collated (L3C) global product (2018-2024), version 1.00"
     },
     "esacci.LST.day.L3C.LST.VIIRS.SNPP.VIIRS0.1-00.DAY": {
         "data_type": "dataset",
-        "verification_flags": [],
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
         "title": "ESA Land Surface Temperature Climate Change Initiative (LST_cci): Land surface temperature from VIIRS (Visible Infrared Imaging Radiometer Suite) on Suomi National Polar-orbiting Partnership (SNPP), level 3 collated (L3C) global product (2012-2024), version 1.00"
     },
     "esacci.LST.day.L3C.LST.VIIRS.SNPP.VIIRS0.1-00.NIGHT": {
@@ -3008,6 +3163,64 @@
             "write_zarr"
         ],
         "title": "ESA Permafrost Climate Change Initiative (Permafrost_cci): Permafrost extent for the Northern Hemisphere, v5.0"
+    },
+    "esacci.PREC.day.L3C.NH3.IASI.Metop-A.ANNI-IASI_METOPA.4-0-1r.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Precursors for Aerosols and Ozone Climate Change Initiative (Precursors_cci): IASI/Metop-A NH3 L3 product, version 4R"
+    },
+    "esacci.PREC.day.L3C.NH3.IASI.Metop-B.ANNI-IASI_METOPB.4-0-1r.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Precursors for Aerosols and Ozone Climate Change Initiative (Precursors_cci): IASI/Metop-B NH3 L3 product, version 4R"
+    },
+    "esacci.PREC.day.L3C.NH3.IASI.Metop-C.ANNI-IASI_METOPC.4-0-1r.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Precursors for Aerosols and Ozone Climate Change Initiative (Precursors_cci): IASI/Metop-C NH3 L3 product, version 4R"
+    },
+    "esacci.PREC.day.L3C.NH3.IASI.multi-platform.ANNI-IASI_MERGED.4-0-1r.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Precursors for Aerosols and Ozone Climate Change Initiative (Precursors_cci): IASI NH3 L3 merged product, version 4R"
+    },
+    "esacci.PREC.mon.L3C.HCHO.TROPOMI.Sentinel-5P.TROPOMI_S5P_BIRA-1440x2880_1M.2-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time",
+            "constrain_region",
+            "write_zarr"
+        ],
+        "title": "ESA Precursors for Aerosols and Ozone Climate Change Initiative (Precursors_cci): monthly L3 HCHO from TROPOMI, version 2.0"
+    },
+    "esacci.PREC.mon.L3C.NO2.TROPOMI.Sentinel-5P.TROPOMI_KNMI-0900x1800_1M.fv1-0.r1": {
+        "data_type": "dataset",
+        "verification_flags": [
+            "open",
+            "constrain_time"
+        ],
+        "title": "ESA Precursors for Aerosols and Ozone Climate Change Initiative (Precursors_cci): TROPOMI monthly mean level 3 tropospheric nitrogen dioxide (NO2) version 1.0"
     },
     "esacci.PREC.mon.L3S.CO.multi-sensor.multi-platform.IASI_MOPITT_MERGED_LATMOS-180x360_1M.1-0.r1": {
         "data_type": "dataset",
