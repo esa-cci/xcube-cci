@@ -6,7 +6,7 @@
   * avoid concurrent calls of the same request
   * Ensure classes `SessionExecutor` and `CciOdp` can be serialised and de-serialised. 
     This is necessary for support of dask clusters.
-  * Updated list of datatree states
+  * Updated list of data states
 
 ## Changes in 0.13.1
 
