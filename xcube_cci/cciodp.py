@@ -49,7 +49,7 @@ from pydap.parsers.dds import dds_to_dataset
 from shapely import Point
 from shapely.geometry import mapping
 from six.moves.urllib.parse import urlsplit, urlunsplit
-from xcube.core.store import DATASET_TYPE, GEO_DATA_FRAME_TYPE
+from xcube.core.store import DataStoreError, DATASET_TYPE, GEO_DATA_FRAME_TYPE
 
 from xcube_cci.timeutil import get_timestrings_from_string
 
@@ -1123,7 +1123,10 @@ class CciOdp:
                            endDate=end_time,
                            drsId=dataset_name)
             feature_list = await self._get_feature_list(session, request, '.tif')
-        time_chunking = await self.get_time_chunking(session, dataset_name)
+        try:
+            time_chunking = await self.get_time_chunking(session, dataset_name)
+        except ValueError as ve:
+            raise DataStoreError(str(ve))
         ds = self._data_sources[dataset_name]
         # TODO find better criterion
         if time_chunking > 1 and (ds["ecv"] == "BIOMASS" or ds["ecv"] == "ICESHEETS"):
@@ -1913,12 +1916,10 @@ class CciOdp:
                 return await self._get_variable_infos_from_tar_feature(feature, session)
             elif download_url.endswith(".tif"):
                 return await self._get_variable_infos_from_tif_feature(feature, session)
-            LOG.warning('Dataset is not accessible via Opendap or Download')
-            return {}, {}
+            raise DataStoreError("Dataset is not accessible via Opendap or Download")
         dataset = await self._get_opendap_dataset(session, opendap_url)
         if not dataset:
-            LOG.info(f'Could not extract information about variables and attributes from {opendap_url}')
-            return {}, {}
+            raise DataStoreError(f"Could not extract information about variables and attributes from {opendap_url}")
         variable_infos = {}
         time_set_as_dim = False
         for key in dataset.keys():
