@@ -793,9 +793,9 @@ class RemoteChunkStore(MutableMapping, metaclass=ABCMeta):
         if isinstance(value, tuple):
             if self._vfs_cache is not None:
                 try:
-                    value = self._vfs_cache[key]
+                    value = self._vfs_cache[f"{self._dataset_name}:{key}"]
                 except KeyError:
-                    self._vfs_cache[key] = value = self._fetch_chunk(key, *value)
+                    self._vfs_cache[f"{self._dataset_name}:{key}"] = value = self._fetch_chunk(key, *value)
             else:
                 value = self._fetch_chunk(key, *value)
         return value
