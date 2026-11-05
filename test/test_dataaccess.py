@@ -412,8 +412,8 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
         self.assertEqual(('y', 'x', 'Time'), dataset.AltiKaSEC.dims)
         self.assertEqual([635, 634, 1], dataset.AltiKaSEC.chunk_sizes)
 
-    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
-            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_SEARCH_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_SEARCH_TESTS = 1')
     def test_search(self):
         search_result = list(self.opener.search_data(cci_attrs=dict(
             ecv='CLOUD',
@@ -680,8 +680,8 @@ class CciOdpDatasetOpenerNormalizeTest(unittest.TestCase):
                          set(dataset.ozone_mixing_ratio.chunk_sizes))
         self.assertIsNotNone(dataset.zarr_store.get())
 
-    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
-            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_SEARCH_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_SEARCH_TESTS = 1')
     def test_search(self):
         search_result = list(self.opener.search_data(
             cci_attrs=(dict(ecv='LAKES')))
@@ -1014,15 +1014,15 @@ class CciOdpDataStoreTest(unittest.TestCase):
         self.assertTrue('sensor' in cci_properties)
         self.assertTrue('platform' in cci_properties)
 
-    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
-            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_SEARCH_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_SEARCH_TESTS = 1')
     def test_search_geodataframe(self):
         geodataframe_search_result = list(self.store.search_data('geodataframe'))
         self.assertIsNotNone(geodataframe_search_result)
         self.assertTrue(len(geodataframe_search_result) > 20)
 
-    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
-            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_SEARCH_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_SEARCH_TESTS = 1')
     def test_search_vectordatacube(self):
         vectordatacube_search_result = list(self.store.search_data('vectordatacube'))
         self.assertIsNotNone(vectordatacube_search_result)
