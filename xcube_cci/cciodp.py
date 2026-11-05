@@ -843,11 +843,11 @@ class CciOdp:
                        drsId=dataset_name
                        )
         orig_request = copy.deepcopy(request)
-        opendap_url = await self._get_opendap_url(session, request)
+        opendap_url = await self._get_data_url(session, request, ".nc")
         var_data = {}
         if not opendap_url:
             request = copy.deepcopy(orig_request)
-            tar_url = await self._get_tar_url(session, request)
+            tar_url = await self._get_data_url(session, request, ".gz")
             if tar_url is not None:
                 tif_files = await self._get_tif_files_from_tar_url(tar_url, session)
                 if len(tif_files) > 0:
@@ -862,7 +862,7 @@ class CciOdp:
                                                   data=list(data))
             else:
                 request = copy.deepcopy(orig_request)
-                tif_url = await self._get_tif_url(session, request)
+                tif_url = await self._get_data_url(session, request, ".tif")
                 if tif_url is not None:
                     array = rioxarray.open_rasterio(tif_url, chunks=dict(x=512, y=512))
                     for var_name in variable_dict:
@@ -1175,30 +1175,28 @@ class CciOdp:
             'uuid', self._data_sources[dataset_name]['fid']
         )
 
-    async def _get_shapefile_url(self, session, request: Dict):
-        request['fileFormat'] = '.shp'
-        feature_list = await self._get_feature_list(session, request, '.shp')
+    async def _get_data_url(self, session, request: Dict, file_format: str):
+        start_date = request.get("startDate")
+        end_date = request.get("endDate")
+        feature_list = await self._get_feature_list(session, request, file_format)
         if len(feature_list) == 0:
-            return
-        return feature_list[0][2]
-
-    async def _get_tif_url(self, session, request: Dict):
-        feature_list = await self._get_feature_list(session, request, '.tif')
-        if len(feature_list) == 0:
-            return
-        return feature_list[0][2]
-
-    async def _get_tar_url(self, session, request: Dict):
-        feature_list = await self._get_feature_list(session, request, '.gz')
-        if len(feature_list) == 0:
-            return
-        return feature_list[0][2]
-
-    async def _get_opendap_url(self, session, request: Dict):
-        feature_list = await self._get_feature_list(session, request, '.nc')
-        if len(feature_list) == 0:
-            return
-        return feature_list[0][2]
+            return None
+        if start_date is None or end_date is None or start_date == end_date:
+            return feature_list[0][2]
+        start = pd.Timestamp(start_date)
+        end = pd.Timestamp(end_date)
+        overlaps = [min(f[1], end) - max(f[0], start) for f in feature_list]
+        best = int(np.argmax(overlaps))
+        if overlaps[best] > pd.Timedelta(0):
+            return feature_list[best][2]
+        request_center = start + ((end - start) / 2)
+        distances_to_center = [
+            pd.Timedelta(-1) if f[1] > f[0] or f[1] == end
+            else abs(f[0] + (f[1] - f[0]) / 2 - request_center)
+            for f in feature_list
+        ]
+        best = int(np.argmax(distances_to_center))
+        return feature_list[best][2] if distances_to_center[best] >= pd.Timedelta(0) else None
 
     def get_data_chunk(
             self, request: Dict, dim_indexes: Tuple, to_bytes: bool = True
@@ -1335,7 +1333,7 @@ class CciOdp:
         drs_id = request.get("drsId")
         orig_request = copy.deepcopy(request)
         var_name = request.pop('varNames')[0]
-        opendap_url = await self._get_opendap_url(session, request)
+        opendap_url = await self._get_data_url(session, request, ".nc")
         await self._ensure_all_info_in_data_sources(
             session, [drs_id]
         )
@@ -1343,7 +1341,7 @@ class CciOdp:
             get('variable_infos', {}).get(var_name, {}).get('data_type')
         if not opendap_url:
             request = copy.deepcopy(orig_request)
-            tar_url = await self._get_tar_url(session, request)
+            tar_url = await self._get_data_url(session, request, ".gz")
             if tar_url is not None:
                 dims = self._data_sources[drs_id].get("variable_infos", {}).\
                     get(var_name, {}).get("dimensions")
@@ -1369,7 +1367,7 @@ class CciOdp:
                     return data
             else:
                 request = copy.deepcopy(orig_request)
-                tif_url = await self._get_tif_url(session, request)
+                tif_url = await self._get_data_url(session, request, ".tif")
                 if tif_url is not None:
                     dims = self._data_sources[drs_id].get("variable_infos", {}). \
                         get(var_name, {}).get("dimensions")
@@ -1422,7 +1420,7 @@ class CciOdp:
             self, session, request: Dict
     ) -> Optional[gpd.GeoDataFrame]:
         var_names = request['varNames']
-        shapefile_url = await self._get_shapefile_url(session, request)
+        shapefile_url = await self._get_data_url(session, request, ".shp")
         if not shapefile_url:
             return None
         gdf = gpd.read_file(shapefile_url)

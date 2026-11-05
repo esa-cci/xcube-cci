@@ -426,8 +426,8 @@ class CciCdcTest(unittest.TestCase):
         self.assertEqual(dimension_data['lon']['chunkSize'], 72900)
         self.assertEqual(len(dimension_data['lon']['data']), 0)
 
-    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
-            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_SEARCH_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_SEARCH_TESTS = 1')
     def test_search_ecv(self):
         cci_cdc = CciOdp()
         aerosol_sources = cci_cdc.search(
@@ -440,8 +440,8 @@ class CciCdcTest(unittest.TestCase):
         )
         self.assertTrue(len(aerosol_sources) > 13)
 
-    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
-            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_SEARCH_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_SEARCH_TESTS = 1')
     def test_search_frequency(self):
         cci_cdc = CciOdp()
         five_day_sources = cci_cdc.search(
@@ -454,8 +454,8 @@ class CciCdcTest(unittest.TestCase):
         )
         self.assertTrue(len(five_day_sources) > 10)
 
-    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
-            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_SEARCH_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_SEARCH_TESTS = 1')
     def test_search_processing_level(self):
         cci_cdc = CciOdp()
         l2p_sources = cci_cdc.search(
@@ -468,8 +468,8 @@ class CciCdcTest(unittest.TestCase):
         )
         self.assertTrue(len(l2p_sources) > 10)
 
-    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
-            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_SEARCH_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_SEARCH_TESTS = 1')
     def test_search_product_string(self):
         cci_cdc = CciOdp()
         avhrr19g_sources = cci_cdc.search(
@@ -482,8 +482,8 @@ class CciCdcTest(unittest.TestCase):
         )
         self.assertTrue(len(avhrr19g_sources) > 3)
 
-    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
-            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_SEARCH_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_SEARCH_TESTS = 1')
     def test_search_product_version(self):
         cci_cdc = CciOdp(data_type="geodataframe")
         v238_sources = cci_cdc.search(
@@ -496,8 +496,8 @@ class CciCdcTest(unittest.TestCase):
         )
         self.assertTrue(len(v238_sources) > 2)
 
-    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
-            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_SEARCH_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_SEARCH_TESTS = 1')
     def test_search_data_type(self):
         cci_cdc = CciOdp()
         siconc_sources = cci_cdc.search(
@@ -510,8 +510,8 @@ class CciCdcTest(unittest.TestCase):
         )
         self.assertTrue(len(siconc_sources) > 3)
 
-    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
-            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_SEARCH_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_SEARCH_TESTS = 1')
     def test_search_sensor(self):
         cci_cdc = CciOdp(data_type="geodataframe")
         sciamachy_sources = cci_cdc.search(
