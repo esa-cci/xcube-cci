@@ -1190,13 +1190,14 @@ class CciOdp:
         if overlaps[best] > pd.Timedelta(0):
             return feature_list[best][2]
         request_center = start + ((end - start) / 2)
+        _MAX_DIST = pd.Timedelta(3650, "D")
         distances_to_center = [
-            pd.Timedelta(-1) if f[1] > f[0] or f[1] == end
+            _MAX_DIST if f[1] > f[0] or f[1] == end
             else abs(f[0] + (f[1] - f[0]) / 2 - request_center)
             for f in feature_list
         ]
-        best = int(np.argmax(distances_to_center))
-        return feature_list[best][2] if distances_to_center[best] >= pd.Timedelta(0) else None
+        best = int(np.argmin(distances_to_center))
+        return feature_list[best][2] if distances_to_center[best] < _MAX_DIST else None
 
     def get_data_chunk(
             self, request: Dict, dim_indexes: Tuple, to_bytes: bool = True
