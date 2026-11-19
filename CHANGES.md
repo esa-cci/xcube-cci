@@ -1,5 +1,8 @@
 ## Changes in 0.14.3 (in development)
 
+* Fix retrieval of time slices: For certain datasets, data from adjacent time steps were retrieved 
+  [#74](https://github.com/esa-cci/xcube-cci/issues/74)
+
 ## Changes in 0.14.2
 
 * Avoid redundant requests to the open data portal, 

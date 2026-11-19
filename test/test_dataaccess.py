@@ -3,6 +3,7 @@ import os
 import unittest
 from unittest import skip, skipIf
 
+import numpy as np
 from xcube.core.gridmapping import GridMapping
 from xcube.core.normalize import normalize_dataset
 from xcube.core.store import DATASET_TYPE, GEO_DATA_FRAME_TYPE, DataStoreError, new_data_store
@@ -412,8 +413,8 @@ class CciOdpDatasetOpenerTest(unittest.TestCase):
         self.assertEqual(('y', 'x', 'Time'), dataset.AltiKaSEC.dims)
         self.assertEqual([635, 634, 1], dataset.AltiKaSEC.chunk_sizes)
 
-    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
-            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_SEARCH_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_SEARCH_TESTS = 1')
     def test_search(self):
         search_result = list(self.opener.search_data(cci_attrs=dict(
             ecv='CLOUD',
@@ -680,8 +681,8 @@ class CciOdpDatasetOpenerNormalizeTest(unittest.TestCase):
                          set(dataset.ozone_mixing_ratio.chunk_sizes))
         self.assertIsNotNone(dataset.zarr_store.get())
 
-    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
-            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_SEARCH_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_SEARCH_TESTS = 1')
     def test_search(self):
         search_result = list(self.opener.search_data(
             cci_attrs=(dict(ecv='LAKES')))
@@ -1014,15 +1015,15 @@ class CciOdpDataStoreTest(unittest.TestCase):
         self.assertTrue('sensor' in cci_properties)
         self.assertTrue('platform' in cci_properties)
 
-    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
-            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_SEARCH_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_SEARCH_TESTS = 1')
     def test_search_geodataframe(self):
         geodataframe_search_result = list(self.store.search_data('geodataframe'))
         self.assertIsNotNone(geodataframe_search_result)
         self.assertTrue(len(geodataframe_search_result) > 20)
 
-    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
-            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_SEARCH_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_SEARCH_TESTS = 1')
     def test_search_vectordatacube(self):
         vectordatacube_search_result = list(self.store.search_data('vectordatacube'))
         self.assertIsNotNone(vectordatacube_search_result)
@@ -1088,3 +1089,21 @@ class CciDataNormalizationTest(unittest.TestCase):
               f'{datasets_that_could_not_be_opened}')
         print(f'Datasets that were verified '
               f'(#{len(good_datasets)}): {good_datasets}')
+
+class CciDataConsistencyTest(unittest.TestCase):
+
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    def test_odp_and_kerchunk_results(self):
+        odp_ds = new_data_store("cciodp").open_data(
+            "esacci.SEAICE.day.L4.SICONC.multi-sensor.multi-platform.AMSR_25kmEASE2.2-1.NH",
+            variable_names=["ice_conc"],
+        )["ice_conc"]
+        kerchunk_ds = new_data_store("ccikc").open_data(
+            "ESACCI-SEAICE-L4-SICONC-AMSR_25.0kmEASE2-NH-20020601-20170515-fv2.1_kr1.0"
+        )["ice_conc"]
+        for index in range(1, 6):
+            odp_ice_conc = odp_ds.isel(time=index).to_numpy()
+            odp_time = odp_ds.time.isel(time=index)
+            kerchunk_ice_conc = kerchunk_ds.sel(time=odp_time).to_numpy()
+            self.assertAlmostEqual(np.nansum(odp_ice_conc), np.nansum(kerchunk_ice_conc), places=8)
