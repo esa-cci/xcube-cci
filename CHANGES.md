@@ -1,5 +1,7 @@
 ## Changes in 0.14.3 (in development)
 
+* Use times from filename when catalogue date property appears to be wrong [#75](https://github.com/dcs4cop/xcube-cci/issues/75)
+
 ## Changes in 0.14.2
 
 * Avoid redundant requests to the open data portal, 
