@@ -3,7 +3,7 @@ import os
 import unittest
 from typing import Callable, Dict, List, Tuple
 from unittest import skip, skipIf
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import numpy as np
 import pandas as pd
@@ -68,6 +68,20 @@ class CciCdcTest(unittest.TestCase):
         )
         with patch.object(odp, "_fetch_opensearch_feature_list", side_effect=fetch):
             self.assertEqual(urls[1], asyncio.run(odp._get_opendap_url(None, request)))
+
+    def test_feature_extraction_deduplicates_only_known_uuids(self) -> None:
+        features = []
+        entries = [
+            {"properties": {
+                "identifier": uuid,
+                "date": "2000-01-01T00:00:00/2000-01-01T23:59:59",
+                "links": {"related": [{"title": "Opendap", "href": url}]},
+            }}
+            for uuid, url in [("a", "first"), ("a", "duplicate"), (None, "second"), (None, "third")]
+        ]
+        CciOdp._extract_times_and_opendap_url(features, entries[:1], "")
+        CciOdp._extract_times_and_opendap_url(features, entries[1:], "")
+        self.assertEqual(["first", "second", "third"], [feature[2] for feature in features])
 
     def test_extract_times_checks_frequency_and_filename(self) -> None:
         cases = [

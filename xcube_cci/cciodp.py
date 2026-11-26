@@ -931,62 +931,56 @@ class CciOdp:
             except (TypeError, IndexError, ValueError, KeyError):
                 end_date = int(end_date_str)
             feature_list = []
-            if ds_id not in self._features:
-                self._features[ds_id] = {}
-            if len(self._features[ds_id].get(file_format, {})) == 0:
-                self._features[ds_id][file_format] = []
+            dataset_features = self._features.setdefault(ds_id, {})
+            cached_features = dataset_features.get(file_format, [])
+            if not cached_features:
                 await self._fetch_opensearch_feature_list(
                     session, self._opensearch_url, feature_list,
                     extender, request, ""
                 )
-                if len(feature_list) == 0:
-                    # try without dates. For some data sets, this works better
-                    if 'startDate' in request:
-                        request.pop('startDate')
-                    if 'endDate' in request:
-                        request.pop('endDate')
+                if not feature_list:
+                    # Some data sets return usable features only without dates.
+                    request.pop('startDate', None)
+                    request.pop('endDate', None)
                     await self._fetch_opensearch_feature_list(
                         session, self._opensearch_url, feature_list,
                         extender, request, ""
                     )
-                feature_list.sort(key=lambda x: x[0])
-                self._features[ds_id][file_format] = feature_list
             else:
-                if start_date < self._features[ds_id][file_format][0][0]:
-                    request['endDate'] = datetime.strftime(
-                        self._features[ds_id][file_format][0][0], TIMESTAMP_FORMAT
+                if start_date < cached_features[0][0]:
+                    earlier_request = dict(
+                        request, endDate=cached_features[0][0].strftime(TIMESTAMP_FORMAT)
                     )
                     await self._fetch_opensearch_feature_list(
                         session, self._opensearch_url, feature_list,
-                        extender, request, ""
+                        extender, earlier_request, ""
                     )
-                    if len(feature_list) > 0:
-                        feature_list.sort(key=lambda x: x[0])
-                        end_offset = -1
-                        while feature_list[end_offset] in self._features[ds_id][file_format] \
-                                and end_offset > 0:
-                            end_offset -= 1
-                        self._features[ds_id][file_format] = \
-                            feature_list[:end_offset] + self._features[ds_id][file_format]
-                if end_date > self._features[ds_id][file_format][-1][1]:
-                    request['startDate'] = datetime.strftime(
-                        self._features[ds_id][file_format][-1][1], TIMESTAMP_FORMAT
+                if end_date > cached_features[-1][1]:
+                    later_request = dict(
+                        request, startDate=cached_features[-1][1].strftime(TIMESTAMP_FORMAT)
                     )
-                    request['endDate'] = end_date_str
+                    later_features = []
                     await self._fetch_opensearch_feature_list(
-                        session, self._opensearch_url, feature_list,
-                        extender, request, ""
+                        session, self._opensearch_url, later_features,
+                        extender, later_request, ""
                     )
-                    if len(feature_list) > 0:
-                        feature_list.sort(key=lambda x: x[0])
-                        end_offset = 0
-                        while feature_list[end_offset] in self._features[ds_id][file_format] \
-                                and end_offset < len(feature_list) - 1:
-                            end_offset += 1
-                        if feature_list[end_offset] not in self._features[ds_id][file_format]:
-                            self._features[ds_id][file_format] = \
-                                self._features[ds_id][file_format] + feature_list[end_offset:]
-            sub_feature_list = [f for f in self._features[ds_id][file_format] if name_filter in f[2]]
+                    feature_list.extend(later_features)
+
+            if feature_list:
+                merged_features = cached_features.copy()
+                seen_uuids = {feature[3] for feature in cached_features if feature[3]}
+                for feature in feature_list:
+                    uuid = feature[3]
+                    if uuid and uuid in seen_uuids:
+                        continue
+                    merged_features.append(feature)
+                    if uuid:
+                        seen_uuids.add(uuid)
+                merged_features.sort(key=lambda feature: feature[0])
+                cached_features = merged_features
+                dataset_features[file_format] = cached_features
+
+            sub_feature_list = [f for f in cached_features if name_filter in f[2]]
             start = bisect.bisect_left(
                 [feature[1] for feature in sub_feature_list], start_date
             )
@@ -1019,10 +1013,14 @@ class CciOdp:
             name_filter: str, time_frequency: Optional[str] = None
     ) -> None:
         period, minimum_digits = get_time_period(time_frequency)
+        seen_uuids = {feature[3] for feature in features if feature[3]}
         for feature in feature_list:
+            properties = feature.get('properties', {})
+            uuid = properties.get("identifier")
+            if uuid and uuid in seen_uuids:
+                continue
             start_time = None
             end_time = None
-            properties = feature.get('properties', {})
             url = None
             links = properties.get('links', {}).get('related', {})
             for link in links:
@@ -1031,7 +1029,6 @@ class CciOdp:
                     url = url if name_filter in url else None
             if not url:
                 continue
-            uuid = properties.get("identifier")
             date_property = properties.get('date')
             if date_property is not None:
                 try:
@@ -1072,6 +1069,8 @@ class CciOdp:
                 if isinstance(start_time, datetime):
                     start_time, end_time = pd.Timestamp(start_time), pd.Timestamp(end_time)
                 features.append((start_time, end_time, url, uuid))
+                if uuid:
+                    seen_uuids.add(uuid)
 
     async def get_time_chunking(self, session, dataset_name: str):
         await self._ensure_all_info_in_data_source(session, dataset_name)
@@ -1464,41 +1463,30 @@ class CciOdp:
         )
         if total_results < initial_maximum_records or max_wanted_results < 1000:
             return
-        num_results = 0
         extension.clear()
-        while num_results < total_results:
-            if 'startDate' in query_args and 'endDate' in query_args:
-                # we have to clear the extension of any previous values
-                # to avoid duplicate values extension.clear()
-                start_time = datetime.strptime(
-                    query_args.pop('startDate'), TIMESTAMP_FORMAT
-                )
-                start_time = datetime(start_time.year, month=1, day=1)
-                end_time = datetime.strptime(
-                    query_args.pop('endDate'), TIMESTAMP_FORMAT
-                )
-                end_time = datetime(end_time.year, month=12, day=31, hour=23, minute=59, second=59)
-                one_year = relativedelta(years=1, seconds=-1)
-                one_second = relativedelta(seconds=1)
-                current_time = start_time
-                while current_time < end_time:
-                    task_start = current_time.strftime(TIMESTAMP_FORMAT)
-                    current_time += one_year
-                    if current_time > end_time:
-                        current_time = end_time
-                    task_end = current_time.strftime(TIMESTAMP_FORMAT)
-                    await self._fetch_opensearch_feature_part_list(
-                        session, base_url, query_args, start_page,
-                        None, extension, extender,
-                        task_start, task_end, name_filter
-                    )
-                    current_time += one_second
-                num_results = total_results
-            else:
-                await self._fetch_opensearch_feature_part_list(
-                    session, base_url, query_args, start_page,
-                    None, extension, extender, None, None, name_filter)
-                num_results = len(extension)
+        if 'startDate' not in query_args or 'endDate' not in query_args:
+            await self._fetch_opensearch_feature_part_list(
+                session, base_url, query_args, start_page,
+                None, extension, extender, None, None, name_filter
+            )
+            return
+
+        query_args = query_args.copy()
+        start_time = datetime.strptime(query_args.pop('startDate'), TIMESTAMP_FORMAT)
+        end_time = datetime.strptime(query_args.pop('endDate'), TIMESTAMP_FORMAT)
+        current_time = datetime(start_time.year, 1, 1)
+        end_time = datetime(end_time.year, 12, 31, 23, 59, 59)
+        one_year = relativedelta(years=1, seconds=-1)
+        one_second = relativedelta(seconds=1)
+        while current_time < end_time:
+            task_start = current_time.strftime(TIMESTAMP_FORMAT)
+            current_time = min(current_time + one_year, end_time)
+            task_end = current_time.strftime(TIMESTAMP_FORMAT)
+            await self._fetch_opensearch_feature_part_list(
+                session, base_url, query_args, start_page,
+                None, extension, extender, task_start, task_end, name_filter
+            )
+            current_time += one_second
 
     async def _fetch_opensearch_feature_part_list(
             self, session, base_url, query_args, start_page, max_records,
