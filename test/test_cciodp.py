@@ -1,6 +1,9 @@
+import asyncio
 import os
 import unittest
+from typing import Callable, Dict, List, Tuple
 from unittest import skip, skipIf
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -37,6 +40,92 @@ SST_ID = 'esacci.SST.satellite-orbit-frequency.L3U.SSTskin.AVHRR-3.NOAA-19.' \
 
 
 class CciCdcTest(unittest.TestCase):
+
+    def test_opendap_url_with_dataset_wide_file_dates(self) -> None:
+        odp = CciOdp()
+        odp._data_sources[OC_DAY_ID] = {"time_frequency": "day"}
+        urls = [f"https://example.com/product-{day}-fv1.1.nc"
+                for day in ("19721211", "19721212")]
+        feature_list = [
+            {"properties": {
+                "date": "1972-12-11T00:00:00/1977-05-16T23:59:59",
+                "links": {"related": [{"title": "Opendap", "href": url}]},
+            }}
+            for url in urls
+        ]
+
+        async def fetch(
+                session: None, base_url: str, extension: List[Tuple],
+                extender: Callable[[List[Tuple], List[Dict], str], None],
+                query: Dict[str, str], name_filter: str
+        ) -> None:
+            extender(extension, feature_list, name_filter)
+
+        request = dict(
+            drsId=OC_DAY_ID,
+            startDate="1972-12-12T12:00:00",
+            endDate="1972-12-12T23:59:59",
+        )
+        with patch.object(odp, "_fetch_opensearch_feature_list", side_effect=fetch):
+            self.assertEqual(urls[1], asyncio.run(odp._get_opendap_url(None, request)))
+
+    def test_extract_times_checks_frequency_and_filename(self) -> None:
+        cases = [
+            ("monthly", "product-20000215.nc", "2000-02-01T01:23:12", "2001-01-01T00:00:00",
+             "2000-02-01T00:00:00", "2000-02-29T23:59:59"),
+            ("day", "product-20000201.nc", "2000-02-01T00:00:00", "2000-02-02T00:00:00",
+             "2000-02-01T00:00:00", "2000-02-02T00:00:00"),
+            ("day", "product-20000201.nc", "2000-02-01T00:00:00", "2000-02-03T00:00:00",
+             "2000-02-01T00:00:00", "2000-02-01T23:59:59"),
+            ("3-hours", "product-20000201T030000.nc", "2000-02-01T00:00:00", "2000-02-02T00:00:00",
+             "2000-02-01T03:00:00", "2000-02-01T05:59:59"),
+            ("3-hours", "product-20000201.nc", "2000-02-01T00:00:00", "2000-02-02T00:00:00",
+             "2000-02-01T00:00:00", "2000-02-02T00:00:00"),
+            ("5 days", "product-20000227.nc", "2000-02-01T00:00:00", "2000-04-01T00:00:00",
+             "2000-02-27T00:00:00", "2000-03-02T23:59:59"),
+            ("5 days", "product-20000227.nc", None, None,
+             "2000-02-27T00:00:00", "2000-03-02T23:59:59"),
+            ("5 days", "product-20000227.nc", "invalid", "invalid",
+             "2000-02-27T00:00:00", "2000-03-02T23:59:59"),
+            ("year", "product-2000.nc", "1990-01-01T00:00:00", "2010-01-01T00:00:00",
+             "2000-01-01T00:00:00", "2000-12-31T23:59:59"),
+            ("5-yrs", "product-2000.nc", "1980-01-01T00:00:00", "2020-01-01T00:00:00",
+             "2000-01-01T00:00:00", "2004-12-31T23:59:59"),
+            ("day", "product-20000201-20000202.nc", "2000-02-01T00:00:00", "2001-01-01T00:00:00",
+             "2000-02-01T00:00:00", "2000-02-02T00:00:00"),
+            (None, "product-20000201.nc", "2000-02-01T00:00:00", "2001-01-01T00:00:00",
+             "2000-02-01T00:00:00", "2001-01-01T00:00:00"),
+        ]
+        for frequency, filename, start, end, expected_start, expected_end in cases:
+            with self.subTest(frequency=frequency, filename=filename):
+                feature = {"properties": {
+                    "links": {"related": [
+                        {"title": "Download", "href": f"https://example.com/{filename}"}
+                    ]},
+                }}
+                if start is not None:
+                    feature["properties"]["date"] = f"{start}/{end}"
+                features = []
+                CciOdp._extract_times_and_download_url(features, [feature], "", frequency)
+                self.assertEqual(
+                    (pd.Timestamp(expected_start), pd.Timestamp(expected_end)),
+                    features[0][:2],
+                )
+
+    def test_extract_times_prefers_title_with_explicit_end(self) -> None:
+        feature = {"properties": {
+            "date": "2000-01-01T00:00:00/2001-01-01T00:00:00",
+            "title": "product-20000215-20000310.nc",
+            "links": {"related": [
+                {"title": "Download", "href": "https://example.com/product-20000201.nc"}
+            ]},
+        }}
+        features = []
+        CciOdp._extract_times_and_download_url(features, [feature], "", "month")
+        self.assertEqual(
+            (pd.Timestamp("2000-02-15"), pd.Timestamp("2000-03-10")),
+            features[0][:2],
+        )
 
     @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
             'XCUBE_CCI_DISABLE_WEB_TESTS = 1')

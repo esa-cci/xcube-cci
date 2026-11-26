@@ -25,12 +25,14 @@ import io
 import json
 import math
 import os
-import re
 import tarfile
 import urllib.parse
 from datetime import datetime
+from functools import partial
 from typing import Dict, List, Mapping, Optional, Tuple, Union
 from urllib.parse import quote
+
+from aiohttp import ClientSession
 
 import geopandas as gpd
 import lxml.etree as etree
@@ -51,7 +53,11 @@ from shapely.geometry import mapping
 from six.moves.urllib.parse import urlsplit, urlunsplit
 from xcube.core.store import DataStoreError, DATASET_TYPE, GEO_DATA_FRAME_TYPE
 
-from xcube_cci.timeutil import get_timestrings_from_string
+from xcube_cci.timeutil import (
+    find_datetime_format,
+    get_time_period,
+    get_timestrings_from_string,
+)
 
 from .constants import (CCI_ODD_URL, COMMON_TIME_COORD_VAR_NAMES,
                         DATASET_STATES_FILE, DEFAULT_NUM_RETRIES,
@@ -80,16 +86,6 @@ _FEATURE_LIST_LOCK = asyncio.Lock()
 
 _EARLY_START_TIME = '1000-01-01T00:00:00'
 _LATE_END_TIME = '3000-12-31T23:59:59'
-
-_RE_TO_DATETIME_FORMATS = \
-    [(re.compile(14 * '\\d'), '%Y%m%d%H%M%S', relativedelta()),
-     (re.compile(12 * '\\d'), '%Y%m%d%H%M',
-      relativedelta(minutes=1, seconds=-1)),
-     (re.compile(8 * '\\d'), '%Y%m%d', relativedelta(days=1, seconds=-1)),
-     (re.compile(4 * '\\d' + '-' + 2 * '\\d' + '-' + 2 * '\\d'), '%Y-%m-%d',
-      relativedelta(days=1, seconds=-1)),
-     (re.compile(6 * '\\d'), '%Y%m', relativedelta(months=1, seconds=-1)),
-     (re.compile(4 * '\\d'), '%Y', relativedelta(years=1, seconds=-1))]
 
 _DTYPES_TO_DTYPES_WITH_MORE_BYTES = {
     'int8': 'int16',
@@ -292,17 +288,6 @@ def _get_linked_content_from_descxml_elem(
     for descxml_elem in descxml_elements:
         if descxml_elem.text == paths[1]:
             return _get_element_content(descxml_elem, paths[2])
-
-
-def find_datetime_format(
-        filename: str
-) -> Tuple[Optional[str], int, int, relativedelta]:
-    for regex, time_format, timedelta in _RE_TO_DATETIME_FORMATS:
-        searcher = regex.search(filename)
-        if searcher:
-            p1, p2 = searcher.span()
-            return time_format, p1, p2, timedelta
-    return None, -1, -1, relativedelta()
 
 
 def _extract_feature_info(feature: dict) -> List:
@@ -916,13 +901,19 @@ class CciOdp:
                 )
         return var_data
 
-    async def _get_feature_list(self, session, request, file_format):
+    async def _get_feature_list(
+            self, session: ClientSession, request: Dict[str, str], file_format: str
+    ) -> List[Tuple]:
         async with _FEATURE_LIST_LOCK:
             request["fileFormat"] = file_format
             extender = self._extract_times_and_opendap_url
             if file_format != ".nc":
                 extender = self._extract_times_and_download_url
             ds_id = request['drsId']
+            data_source = self._data_sources.get(ds_id, {})
+            extender = partial(
+                extender, time_frequency=data_source.get('time_frequency')
+            )
             sdrsid = ds_id.split("~")
             ds_id = sdrsid[0]
             name_filter = ""
@@ -1006,21 +997,28 @@ class CciOdp:
 
     @staticmethod
     def _extract_times_and_opendap_url(
-            features: List[Tuple], feature_list: List[Dict], name_filter: str
-    ):
-        CciOdp._extract_times_and_url(features, feature_list, "Opendap", name_filter)
+            features: List[Tuple], feature_list: List[Dict], name_filter: str,
+            time_frequency: Optional[str] = None
+    ) -> None:
+        CciOdp._extract_times_and_url(
+            features, feature_list, "Opendap", name_filter, time_frequency
+        )
 
     @staticmethod
     def _extract_times_and_download_url(
-            features: List[Tuple], feature_list: List[Dict], name_filter: str
-    ):
-        CciOdp._extract_times_and_url(features, feature_list, "Download", name_filter)
+            features: List[Tuple], feature_list: List[Dict], name_filter: str,
+            time_frequency: Optional[str] = None
+    ) -> None:
+        CciOdp._extract_times_and_url(
+            features, feature_list, "Download", name_filter, time_frequency
+        )
 
     @staticmethod
     def _extract_times_and_url(
             features: List[Tuple], feature_list: List[Dict], url_type: str,
-            name_filter: str
-    ):
+            name_filter: str, time_frequency: Optional[str] = None
+    ) -> None:
+        period, minimum_digits = get_time_period(time_frequency)
         for feature in feature_list:
             start_time = None
             end_time = None
@@ -1036,47 +1034,43 @@ class CciOdp:
             uuid = properties.get("identifier")
             date_property = properties.get('date')
             if date_property is not None:
-                split_date = date_property.split('/')
-                # remove trailing symbols from times
-                start_time = datetime.strptime(
-                    split_date[0].split('.')[0].split('+')[0], TIMESTAMP_FORMAT
-                )
-                end_time = datetime.strptime(
-                    split_date[1].split('.')[0].split('+')[0], TIMESTAMP_FORMAT
-                )
-            else:
-                title = properties.get('title')
-                if title is not None:
-                    start_time, end_time = get_timestrings_from_string(title)
-                    if start_time:
-                        try:
-                            start_time = datetime.strptime(
-                                start_time, TIMESTAMP_FORMAT
-                            )
-                        except TypeError:
-                            # just use the previous start value
-                            pass
-                    if end_time:
-                        try:
-                            end_time = datetime.strptime(
-                                end_time, TIMESTAMP_FORMAT
-                            )
-                        except TypeError:
-                            # just use the previous end value
-                            pass
-                    else:
-                        end_time = start_time
-            if start_time:
                 try:
-                    start_time = pd.Timestamp(datetime.strftime(
-                        start_time, TIMESTAMP_FORMAT)
-                    )
-                    end_time = pd.Timestamp(datetime.strftime(
-                        end_time, TIMESTAMP_FORMAT)
-                    )
-                except (TypeError, IndexError, ValueError, KeyError):
-                    # just use the previous values
+                    start, end = date_property.split('/')
+                    start = datetime.strptime(start.split('.')[0].split('+')[0], TIMESTAMP_FORMAT)
+                    end = datetime.strptime(end.split('.')[0].split('+')[0], TIMESTAMP_FORMAT)
+                    if start <= end:
+                        start_time, end_time = start, end
+                except (AttributeError, ValueError):
                     pass
+
+            if start_time is None or (period is not None and end_time > start_time + period):
+                title = properties.get('title')
+                filename = urlsplit(url).path.rsplit("/", 1)[-1]
+                for name in (title, filename):
+                    if not name:
+                        continue
+                    file_start, file_end = get_timestrings_from_string(name, minimum_digits)
+                    if file_start is None:
+                        continue
+                    if isinstance(file_start, str):
+                        file_start = datetime.strptime(file_start, TIMESTAMP_FORMAT)
+                    if file_end is not None:
+                        file_end = datetime.strptime(file_end, TIMESTAMP_FORMAT)
+                    elif period is not None:
+                        if period.months:
+                            file_start = file_start.replace(day=1, hour=0, minute=0, second=0)
+                        file_end = file_start + period - relativedelta(seconds=1)
+                    else:
+                        file_end = file_start
+                    if file_end < file_start:
+                        continue
+                    if start_time is None or (file_start <= end_time and start_time <= file_end):
+                        start_time, end_time = file_start, file_end
+                        break
+
+            if start_time is not None:
+                if isinstance(start_time, datetime):
+                    start_time, end_time = pd.Timestamp(start_time), pd.Timestamp(end_time)
                 features.append((start_time, end_time, url, uuid))
 
     async def get_time_chunking(self, session, dataset_name: str):
