@@ -397,7 +397,15 @@ class CciOdpDataOpener(DataOpener):
 
     def _normalize_dataset(self, ds: xr.Dataset) -> xr.Dataset:
         if self._normalize_data:
-            return normalize_dataset(ds)
+            ds_orig = ds.copy()
+            ds = normalize_dataset(ds)
+            # Addressing that during normalisation, in some cases "lat" and "lon" may be
+            # removed but not replaced by new values
+            if ("lat" in ds_orig and "lon" in ds_orig) and not ("lat" in ds or "lon" in ds):
+                ds = ds.assign_coords({
+                    "lat": ds_orig["lat"],
+                    "lon": ds_orig["lon"]
+                })
         return ds
 
     def _normalize_dims(self, dims: dict) -> dict:
