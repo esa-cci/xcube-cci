@@ -650,10 +650,17 @@ class CciOdp:
             -> Tuple[List[str], List[str]]:
         names_of_dims = list(data_source.get('dimensions', {}).keys())
         variable_infos = data_source['variable_infos']
+        var_coords = {
+            coord
+            for var_info in variable_infos.values()
+            for coord in var_info.get("coordinates", "").split()
+        }
         variables = []
         coords = []
         for variable_name, variable_info in variable_infos.items():
             if variable_name in names_of_dims:
+                coords.append(variable_name)
+            elif variable_name in var_coords:
                 coords.append(variable_name)
             elif variable_name.endswith('bounds') or variable_name.endswith('bnds'):
                 coords.append(variable_name)

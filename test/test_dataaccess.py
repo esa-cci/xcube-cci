@@ -662,6 +662,20 @@ class CciOdpDatasetOpenerNormalizeTest(unittest.TestCase):
 
     @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
             'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
+    def test_open_data_seaice(self):
+        dataset = self.opener.open_data(
+            SEAICE_ID,
+            variable_names=['ice_conc'],
+            time_range=['2004-01-01','2004-04-30']
+        )
+        self.assertIsNotNone(dataset)
+        self.assertEqual({'ice_conc', 'Lambert_Azimuthal_Grid'}, set(dataset.data_vars))
+        self.assertEqual({'lon', 'lat', 'time', 'time_bnds', 'xc', 'yc'}, set(dataset.coords))
+        self.assertEqual({'time', 'xc', 'yc'}, set(dataset.ice_conc.dims))
+        self.assertIsNotNone(dataset.zarr_store.get())
+
+    @skipIf(os.environ.get('XCUBE_CCI_DISABLE_WEB_TESTS', '1') == '1',
+            'XCUBE_CCI_DISABLE_WEB_TESTS = 1')
     @skip('Disabled while time series are not supported')
     def test_open_data_with_time_series_and_latitude_centers(self):
         dataset = self.opener.open_data(
